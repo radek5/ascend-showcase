@@ -1,0 +1,261 @@
+import Link from "next/link";
+import { activeEvent } from "@/data/event";
+import { createRegistration } from "./actions/createRegistration";
+import HeadshotUpload from "@/components/registration/HeadshotUpload";
+
+const steps = [
+  "Player",
+  "Contact",
+  "Representation",
+  "Video",
+  "Medical & Consent",
+  "Review",
+  "Payment",
+  "Confirmation",
+];
+
+export default function RegisterPage() {
+  return (
+    <main className="min-h-screen bg-[#090909] text-white">
+      <header className="border-b border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
+          <Link href="/" className="flex items-center gap-4">
+            <svg
+              viewBox="0 0 54 54"
+              className="h-10 w-10"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path d="M27 3 49 46 27 35 5 46 27 3Z" fill="#1685ff" />
+              <path d="M27 15 38 37 27 31 16 37 27 15Z" fill="#020812" />
+            </svg>
+
+            <div>
+              <span className="block text-lg font-semibold tracking-[0.36em]">
+                ASCEND
+              </span>
+              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
+                Football Showcase
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            href="/"
+            className="text-sm font-medium text-white/60 transition hover:text-white"
+          >
+            Back to event
+          </Link>
+        </div>
+      </header>
+
+      <section className="border-b border-white/10 bg-white/[0.02]">
+        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+          <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
+            {activeEvent.edition}
+          </div>
+
+          <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
+            Secure Your Place
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-white/55">
+            Complete your player registration before proceeding to payment.
+          </p>
+        </div>
+      </section>
+
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
+          <div className="flex min-w-[760px]">
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex flex-1 items-center gap-3 border-r border-white/10 py-5 pr-5 first:pl-0"
+              >
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 0
+                      ? "bg-[#c7ff2f] text-black"
+                      : "border border-white/15 text-white/40"
+                  }`}
+                >
+                  {index + 1}
+                </div>
+
+                <span
+                  className={`text-xs font-bold uppercase tracking-[0.12em] ${
+                    index === 0 ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[1fr_340px] lg:px-8">
+        <div>
+          <div className="mb-8">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+              Step 1 of 8
+            </div>
+
+            <h2 className="mt-3 text-3xl font-black">Player Details</h2>
+
+            <p className="mt-2 text-sm text-white/50">
+              Tell us about the player attending the showcase.
+            </p>
+          </div>
+
+          <form
+              action={createRegistration}
+              className="grid gap-6 sm:grid-cols-2"
+            >
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">First name</span>
+                <input
+                  name="firstName"
+                  type="text"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Last name</span>
+                <input
+                  name="lastName"
+                  type="text"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Date of birth</span>
+                <input
+                  name="dateOfBirth"
+                  type="date"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Nationality</span>
+                <input
+                  name="nationality"
+                  type="text"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Primary position</span>
+                <select
+                  name="primaryPosition"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                >
+                  <option value="">Select position</option>
+                  <option value="Goalkeeper">Goalkeeper</option>
+                  <option value="Defender">Defender</option>
+                  <option value="Midfielder">Midfielder</option>
+                  <option value="Forward">Forward</option>
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold">Preferred foot</span>
+                <select
+                  name="preferredFoot"
+                  required
+                  className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                >
+                  <option value="">Select</option>
+                  <option value="Right">Right</option>
+                  <option value="Left">Left</option>
+                  <option value="Both">Both</option>
+                </select>
+              </label>
+
+              <label className="space-y-2 sm:col-span-2">
+                <span className="text-sm font-semibold">
+                  Current club or academy
+                </span>
+                <input
+                  name="currentClub"
+                  type="text"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+                />
+              </label>
+
+              <HeadshotUpload />
+
+              <div className="sm:col-span-2 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/55">
+                Next, you&apos;ll add contact details, representation information,
+                and a short football video of up to 5 minutes. The video can also
+                be added later before event review.
+              </div>
+
+              <div className="mt-4 flex justify-end sm:col-span-2">
+                <button
+                  type="submit"
+                  className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
+                >
+                  Continue
+                </button>
+              </div>
+            </form>
+        </div>
+
+        <aside>
+          <div className="sticky top-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-white/40">
+              Your Event
+            </div>
+
+            <div className="mt-5 text-xl font-black">
+              {activeEvent.name}
+            </div>
+
+            <div className="mt-1 text-[#c7ff2f]">
+              {activeEvent.edition}
+            </div>
+
+            <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
+              <div className="flex justify-between gap-6">
+                <span className="text-white/40">Venue</span>
+                <span className="text-right">{activeEvent.venue}</span>
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <span className="text-white/40">Date</span>
+                <span>{activeEvent.month}</span>
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <span className="text-white/40">Programme</span>
+                <span>{activeEvent.footballDays}</span>
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <span className="text-white/40">Registration</span>
+                <span>{activeEvent.registrationDays}</span>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-[#c7ff2f]/15 bg-[#c7ff2f]/[0.05] p-4 text-sm leading-6 text-white/60">
+              Your place is only confirmed after ASCEND has verified your
+              payment.
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  );
+}

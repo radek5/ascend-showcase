@@ -1,0 +1,939 @@
+// ============================================================
+// ASCEND FOOTBALL SHOWCASE
+// Core data model
+// Prisma 7
+// ============================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum RegistrationStatus {
+  DRAFT
+  AWAITING_PAYMENT
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum RegistrationStep {
+  PLAYER
+  CONTACT
+  REPRESENTATION
+  VIDEO
+  MEDICAL_CONSENT
+  REVIEW
+  PAYMENT
+  CONFIRMATION
+}
+
+enum RepresentationStatus {
+  UNREPRESENTED_OPEN
+  REPRESENTED
+  STATUS_UNCLEAR
+}
+
+enum RepresentationVerificationStatus {
+  DECLARED
+  PENDING_REVIEW
+  AGENT_CONFIRMATION_PENDING
+  CONFIRMED
+  DISPUTED
+}
+
+enum RepresentationChangeType {
+  INITIAL_DECLARATION
+  UPDATED_BY_PLAYER
+  UPDATED_BY_GUARDIAN
+  UPDATED_BY_ADMIN
+  AGENT_CONFIRMED
+  AGENT_DISPUTED
+}
+
+enum ExclusiveRepresentation {
+  YES
+  NO
+  UNKNOWN
+}
+
+enum VideoStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  PROCESSING
+  READY
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum ScoutInterestLevel {
+  WATCH
+  INTERESTED
+  HIGH_INTEREST
+  REQUEST_INTRODUCTION
+  CLOSED
+}
+
+enum IntroductionStatus {
+  REQUESTED
+  REVIEWING
+  APPROVED
+  DECLINED
+  INTRODUCED
+  FOLLOW_UP
+  CLOSED
+}
+
+enum IntroductionPartyType {
+  PLAYER
+  GUARDIAN
+  AGENT
+}
+
+enum ProspectStatus {
+  NOT_ELIGIBLE
+  POTENTIAL
+  REVIEW
+  APPROVED
+  DECLINED
+  REPRESENTATION_DISCUSSION
+  SIGNED
+}
+
+// ------------------------------------------------------------
+// EVENT
+// ------------------------------------------------------------
+
+model Event {
+  id      String @id @default(cuid())
+  slug    String @unique
+  name    String
+  edition String
+
+  city    String
+  country String
+  venue   String
+
+  registrationStartsAt DateTime?
+  registrationEndsAt   DateTime?
+
+  footballStartsAt DateTime?
+  footballEndsAt   DateTime?
+
+  registrationOpen Boolean @default(false)
+  active           Boolean @default(false)
+
+  capacity Int?
+
+  registrations Registration[]
+  scouts        Scout[]
+  introductions Introduction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+  @@index([city])
+}
+
+// ------------------------------------------------------------
+// REGISTRATION / PLAYER
+// ------------------------------------------------------------
+
+model Registration {
+  id String @id @default(cuid())
+
+  registrationNumber String? @unique
+
+  status      RegistrationStatus @default(DRAFT)
+  currentStep RegistrationStep   @default(PLAYER)
+
+  eventId String
+  event   Event @relation(fields: [eventId], references: [id])
+
+  // Player identity
+  firstName       String?
+  lastName        String?
+  dateOfBirth     DateTime?
+  nationality     String?
+  primaryPosition String?
+  secondaryPosition String?
+  preferredFoot   String?
+  currentClub     String?
+  academyName     String?
+
+  // Optional football information
+  heightCm Int?
+  weightKg Int?
+
+  // Player contact
+  email String?
+  phone String?
+
+  // Guardian / emergency contact
+  guardianName         String?
+  guardianRelationship String?
+  guardianEmail        String?
+  guardianPhone        String?
+
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  // Representation
+  representationStatus RepresentationStatus?
+  prospectStatus       ProspectStatus @default(POTENTIAL)
+
+  // Medical / consent
+  medicalNotes       String?
+  medicalConsent     Boolean @default(false)
+  eventConsent       Boolean @default(false)
+  privacyConsent     Boolean @default(false)
+  mediaConsent       Boolean @default(false)
+  declarationConsent Boolean @default(false)
+
+  // Related records
+  representationDeclaration RepresentationDeclaration?
+  representationHistory     RepresentationHistory[]
+
+  videos PlayerVideo[]
+
+  payments Payment[]
+
+  scoutInterests ScoutInterest[]
+
+  introductions Introduction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+  @@index([representationStatus])
+  @@index([prospectStatus])
+  @@index([email])
+}
+
+// ------------------------------------------------------------
+// REPRESENTATION DECLARATION
+// ------------------------------------------------------------
+
+model RepresentationDeclaration {
+  id String @id @default(cuid())
+
+  registrationId String       @unique
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  status RepresentationStatus
+
+  verificationStatus RepresentationVerificationStatus @default(DECLARED)
+
+  // Existing representative details
+  agentName         String?
+  agencyName        String?
+  agentEmail        String?
+  agentPhone        String?
+  agentCountry      String?
+  fifaLicenceNumber String?
+
+  representationStart DateTime?
+  representationEnd   DateTime?
+
+  exclusiveRepresentation ExclusiveRepresentation?
+
+  agentContactConsent Boolean @default(false)
+
+  // Player/guardian declaration
+  declarationConfirmed Boolean @default(false)
+  declaredByName       String?
+  declaredAt           DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// REPRESENTATION HISTORY / AUDIT
+// ------------------------------------------------------------
+
+model RepresentationHistory {
+  id String @id @default(cuid())
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  previousStatus RepresentationStatus?
+  newStatus      RepresentationStatus
+
+  changeType RepresentationChangeType
+
+  changedByName String?
+  reason        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([registrationId])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------
+// PLAYER VIDEO
+// ------------------------------------------------------------
+
+model PlayerVideo {
+  id String @id @default(cuid())
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  status VideoStatus @default(NOT_SUBMITTED)
+
+  // DIRECT_UPLOAD or EXTERNAL_LINK
+  sourceType String?
+
+  externalUrl String?
+
+  storageProvider String?
+  storageKey      String?
+  playbackUrl     String?
+
+  originalFilename String?
+  mimeType         String?
+  sizeBytes        BigInt?
+  durationSeconds  Int?
+
+  submittedAt DateTime?
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([registrationId])
+  @@index([status])
+}
+
+// ------------------------------------------------------------
+// PAYMENT
+// ------------------------------------------------------------
+
+model Payment {
+  id String @id @default(cuid())
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  status PaymentStatus @default(PENDING)
+
+  provider String
+
+  providerReference   String? @unique
+  providerTransaction String?
+
+  // Stored in minor currency units.
+  // Example: ₦100,000 = 10000000 kobo
+  amount   Int
+  currency String
+
+  failureReason String?
+
+  initiatedAt DateTime @default(now())
+  paidAt      DateTime?
+  refundedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([registrationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------
+// SCOUT
+// ------------------------------------------------------------
+
+model Scout {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event @relation(fields: [eventId], references: [id])
+
+  fullName String
+  email    String?
+  phone    String?
+
+  organisationName String?
+  organisationType String?
+  role             String?
+  country          String?
+
+  verified Boolean @default(false)
+
+  interests ScoutInterest[]
+
+  requestedIntroductions Introduction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([organisationName])
+}
+
+// ------------------------------------------------------------
+// SCOUT INTEREST
+// Interest does NOT equal an ASCEND introduction.
+// ------------------------------------------------------------
+
+model ScoutInterest {
+  id String @id @default(cuid())
+
+  scoutId String
+  scout   Scout @relation(fields: [scoutId], references: [id])
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  level ScoutInterestLevel @default(WATCH)
+
+  privateNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scoutId, registrationId])
+  @@index([registrationId])
+  @@index([level])
+}
+
+// ------------------------------------------------------------
+// ASCEND INTRODUCTION
+//
+// This record is created only when ASCEND formally facilitates
+// contact arising from the Showcase.
+// ------------------------------------------------------------
+
+model Introduction {
+  id String @id @default(cuid())
+
+  introductionNumber String @unique
+
+  eventId String
+  event   Event @relation(fields: [eventId], references: [id])
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  requestedByScoutId String
+  requestedByScout   Scout @relation(fields: [requestedByScoutId], references: [id])
+
+  status IntroductionStatus @default(REQUESTED)
+
+  // Who ASCEND should route the opportunity through.
+  routedTo IntroductionPartyType?
+
+  representationStatusAtRequest RepresentationStatus?
+
+  requestReason String?
+  internalNotes String?
+
+  requestedAt DateTime @default(now())
+  approvedAt  DateTime?
+  introducedAt DateTime?
+  closedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([registrationId])
+  @@index([requestedByScoutId])
+  @@index([status])
+}
+EOFcat > prisma/schema.prisma <<'EOF'
+// ============================================================
+// ASCEND FOOTBALL SHOWCASE
+// Core data model
+// Prisma 7
+// ============================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum RegistrationStatus {
+  DRAFT
+  AWAITING_PAYMENT
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum RegistrationStep {
+  PLAYER
+  CONTACT
+  REPRESENTATION
+  VIDEO
+  MEDICAL_CONSENT
+  REVIEW
+  PAYMENT
+  CONFIRMATION
+}
+
+enum RepresentationStatus {
+  UNREPRESENTED_OPEN
+  REPRESENTED
+  STATUS_UNCLEAR
+}
+
+enum RepresentationVerificationStatus {
+  DECLARED
+  PENDING_REVIEW
+  AGENT_CONFIRMATION_PENDING
+  CONFIRMED
+  DISPUTED
+}
+
+enum RepresentationChangeType {
+  INITIAL_DECLARATION
+  UPDATED_BY_PLAYER
+  UPDATED_BY_GUARDIAN
+  UPDATED_BY_ADMIN
+  AGENT_CONFIRMED
+  AGENT_DISPUTED
+}
+
+enum ExclusiveRepresentation {
+  YES
+  NO
+  UNKNOWN
+}
+
+enum VideoStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  PROCESSING
+  READY
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum ScoutInterestLevel {
+  WATCH
+  INTERESTED
+  HIGH_INTEREST
+  REQUEST_INTRODUCTION
+  CLOSED
+}
+
+enum IntroductionStatus {
+  REQUESTED
+  REVIEWING
+  APPROVED
+  DECLINED
+  INTRODUCED
+  FOLLOW_UP
+  CLOSED
+}
+
+enum IntroductionPartyType {
+  PLAYER
+  GUARDIAN
+  AGENT
+}
+
+enum ProspectStatus {
+  NOT_ELIGIBLE
+  POTENTIAL
+  REVIEW
+  APPROVED
+  DECLINED
+  REPRESENTATION_DISCUSSION
+  SIGNED
+}
+
+// ------------------------------------------------------------
+// EVENT
+// ------------------------------------------------------------
+
+model Event {
+  id      String @id @default(cuid())
+  slug    String @unique
+  name    String
+  edition String
+
+  city    String
+  country String
+  venue   String
+
+  registrationStartsAt DateTime?
+  registrationEndsAt   DateTime?
+
+  footballStartsAt DateTime?
+  footballEndsAt   DateTime?
+
+  registrationOpen Boolean @default(false)
+  active           Boolean @default(false)
+
+  capacity Int?
+
+  registrations Registration[]
+  scouts        Scout[]
+  introductions Introduction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+  @@index([city])
+}
+
+// ------------------------------------------------------------
+// REGISTRATION / PLAYER
+// ------------------------------------------------------------
+
+model Registration {
+  id String @id @default(cuid())
+
+  registrationNumber String? @unique
+
+  status      RegistrationStatus @default(DRAFT)
+  currentStep RegistrationStep   @default(PLAYER)
+
+  eventId String
+  event   Event @relation(fields: [eventId], references: [id])
+
+  // Player identity
+  firstName       String?
+  lastName        String?
+  dateOfBirth     DateTime?
+  nationality     String?
+  primaryPosition String?
+  secondaryPosition String?
+  preferredFoot   String?
+  currentClub     String?
+  academyName     String?
+
+  // Optional football information
+  heightCm Int?
+  weightKg Int?
+
+  // Player contact
+  email String?
+  phone String?
+
+  // Guardian / emergency contact
+  guardianName         String?
+  guardianRelationship String?
+  guardianEmail        String?
+  guardianPhone        String?
+
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  // Representation
+  representationStatus RepresentationStatus?
+  prospectStatus       ProspectStatus @default(POTENTIAL)
+
+  // Medical / consent
+  medicalNotes       String?
+  medicalConsent     Boolean @default(false)
+  eventConsent       Boolean @default(false)
+  privacyConsent     Boolean @default(false)
+  mediaConsent       Boolean @default(false)
+  declarationConsent Boolean @default(false)
+
+  // Related records
+  representationDeclaration RepresentationDeclaration?
+  representationHistory     RepresentationHistory[]
+
+  videos PlayerVideo[]
+
+  payments Payment[]
+
+  scoutInterests ScoutInterest[]
+
+  introductions Introduction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+  @@index([representationStatus])
+  @@index([prospectStatus])
+  @@index([email])
+}
+
+// ------------------------------------------------------------
+// REPRESENTATION DECLARATION
+// ------------------------------------------------------------
+
+model RepresentationDeclaration {
+  id String @id @default(cuid())
+
+  registrationId String       @unique
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  status RepresentationStatus
+
+  verificationStatus RepresentationVerificationStatus @default(DECLARED)
+
+  // Existing representative details
+  agentName         String?
+  agencyName        String?
+  agentEmail        String?
+  agentPhone        String?
+  agentCountry      String?
+  fifaLicenceNumber String?
+
+  representationStart DateTime?
+  representationEnd   DateTime?
+
+  exclusiveRepresentation ExclusiveRepresentation?
+
+  agentContactConsent Boolean @default(false)
+
+  // Player/guardian declaration
+  declarationConfirmed Boolean @default(false)
+  declaredByName       String?
+  declaredAt           DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// REPRESENTATION HISTORY / AUDIT
+// ------------------------------------------------------------
+
+model RepresentationHistory {
+  id String @id @default(cuid())
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  previousStatus RepresentationStatus?
+  newStatus      RepresentationStatus
+
+  changeType RepresentationChangeType
+
+  changedByName String?
+  reason        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([registrationId])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------
+// PLAYER VIDEO
+// ------------------------------------------------------------
+
+model PlayerVideo {
+  id String @id @default(cuid())
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  status VideoStatus @default(NOT_SUBMITTED)
+
+  // DIRECT_UPLOAD or EXTERNAL_LINK
+  sourceType String?
+
+  externalUrl String?
+
+  storageProvider String?
+  storageKey      String?
+  playbackUrl     String?
+
+  originalFilename String?
+  mimeType         String?
+  sizeBytes        BigInt?
+  durationSeconds  Int?
+
+  submittedAt DateTime?
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([registrationId])
+  @@index([status])
+}
+
+// ------------------------------------------------------------
+// PAYMENT
+// ------------------------------------------------------------
+
+model Payment {
+  id String @id @default(cuid())
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  status PaymentStatus @default(PENDING)
+
+  provider String
+
+  providerReference   String? @unique
+  providerTransaction String?
+
+  // Stored in minor currency units.
+  // Example: ₦100,000 = 10000000 kobo
+  amount   Int
+  currency String
+
+  failureReason String?
+
+  initiatedAt DateTime @default(now())
+  paidAt      DateTime?
+  refundedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([registrationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------
+// SCOUT
+// ------------------------------------------------------------
+
+model Scout {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event @relation(fields: [eventId], references: [id])
+
+  fullName String
+  email    String?
+  phone    String?
+
+  organisationName String?
+  organisationType String?
+  role             String?
+  country          String?
+
+  verified Boolean @default(false)
+
+  interests ScoutInterest[]
+
+  requestedIntroductions Introduction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([organisationName])
+}
+
+// ------------------------------------------------------------
+// SCOUT INTEREST
+// Interest does NOT equal an ASCEND introduction.
+// ------------------------------------------------------------
+
+model ScoutInterest {
+  id String @id @default(cuid())
+
+  scoutId String
+  scout   Scout @relation(fields: [scoutId], references: [id])
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  level ScoutInterestLevel @default(WATCH)
+
+  privateNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scoutId, registrationId])
+  @@index([registrationId])
+  @@index([level])
+}
+
+// ------------------------------------------------------------
+// ASCEND INTRODUCTION
+//
+// This record is created only when ASCEND formally facilitates
+// contact arising from the Showcase.
+// ------------------------------------------------------------
+
+model Introduction {
+  id String @id @default(cuid())
+
+  introductionNumber String @unique
+
+  eventId String
+  event   Event @relation(fields: [eventId], references: [id])
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id])
+
+  requestedByScoutId String
+  requestedByScout   Scout @relation(fields: [requestedByScoutId], references: [id])
+
+  status IntroductionStatus @default(REQUESTED)
+
+  // Who ASCEND should route the opportunity through.
+  routedTo IntroductionPartyType?
+
+  representationStatusAtRequest RepresentationStatus?
+
+  requestReason String?
+  internalNotes String?
+
+  requestedAt DateTime @default(now())
+  approvedAt  DateTime?
+  introducedAt DateTime?
+  closedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([registrationId])
+  @@index([requestedByScoutId])
+  @@index([status])
+}
