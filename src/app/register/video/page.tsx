@@ -341,43 +341,13 @@ async function handleContinue() {
     Add video later
   </button>
 
- <button
+<button
   type="button"
   disabled={!registrationId || uploading}
-  onClick={async () => {
-    if (!registrationId) {
-      setError(
-        "Registration session not found. Please return to registration and continue again.",
-      );
-      return;
-    }
-
-    try {
-      setUploading(true);
-      setError("");
-
-      if (videoFile) {
-        await uploadDirectVideo();
-      }
-
-      router.push(
-        `/register/medical-consent?registration=${registrationId}`,
-      );
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to save video.",
-      );
-    } finally {
-      setUploading(false);
-    }
-  }}
+  onClick={handleContinue}
   className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black disabled:cursor-not-allowed disabled:opacity-40"
 >
-  {uploading
-    ? "Uploading..."
-    : "Continue"}
+  {uploading ? "Uploading..." : "Continue"}
 </button>
 </div>
         </div>
