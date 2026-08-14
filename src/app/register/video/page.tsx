@@ -12,6 +12,9 @@ function VideoPageContent() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [videoLink, setVideoLink] = useState("");
 
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -19,6 +22,148 @@ function VideoPageContent() {
 
   const [error, setError] = useState("");
   
+  async function uploadDirectVideo() {
+  if (!registrationId) {
+    throw new Error(
+      "Registration session not found.",
+    );
+  }
+
+  if (!videoFile) {
+    return;
+  }
+
+  const presignResponse = await fetch(
+    "/api/video-upload/presign",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        registrationId,
+        filename: videoFile.name,
+        contentType: videoFile.type,
+        size: videoFile.size,
+      }),
+    },
+  );
+
+  const presignData =
+    await presignResponse.json();
+
+  if (!presignResponse.ok) {
+    throw new Error(
+      presignData.error ||
+        "Unable to prepare video upload.",
+    );
+  }
+
+  const uploadResponse = await fetch(
+    presignData.uploadUrl,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": videoFile.type,
+      },
+      body: videoFile,
+    },
+  );
+
+  if (!uploadResponse.ok) {
+    throw new Error(
+      "Video upload failed.",
+    );
+  }
+
+  const completeResponse = await fetch(
+    "/api/video-upload/complete",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        registrationId,
+        storageKey:
+          presignData.storageKey,
+        originalFilename:
+          videoFile.name,
+        mimeType:
+          videoFile.type,
+        size:
+          videoFile.size,
+      }),
+    },
+  );
+
+  const completeData =
+    await completeResponse.json();
+
+  if (!completeResponse.ok) {
+    throw new Error(
+      completeData.error ||
+        "Video uploaded but its details could not be saved.",
+    );
+  }
+}
+
+async function handleContinue() {
+  if (!registrationId) {
+    setError(
+      "Registration session not found. Please return to registration and continue again.",
+    );
+    return;
+  }
+
+  try {
+    setUploading(true);
+    setError("");
+
+    // Upload selected local video to R2 first.
+    if (videoFile) {
+      await uploadDirectVideo();
+    }
+
+    // If an external video link was entered, save that too.
+    if (videoLink.trim()) {
+      const response = await fetch(
+        "/api/video-upload/external",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            registrationId,
+            videoLink: videoLink.trim(),
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Unable to save video link.",
+        );
+      }
+    }
+
+    router.push(
+      `/register/medical-consent?registration=${registrationId}`,
+    );
+  } catch (error) {
+    setError(
+      error instanceof Error
+        ? error.message
+        : "Unable to save video.",
+    );
+  } finally {
+    setUploading(false);
+  }
+}
+
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
@@ -94,11 +239,13 @@ function VideoPageContent() {
         const file = event.target.files?.[0];
 
         if (!file) {
+          setVideoFile(null); 
           setVideoFileName("");
           setVideoPreview(null);
           return;
         }
-
+ 
+        setVideoFile(file);
         setVideoFileName(file.name);
 
         if (videoPreview) {
@@ -129,6 +276,7 @@ function VideoPageContent() {
     />
   )}
 </div>
+
             <div className="mt-8 border-t border-white/10 pt-8">
               <div className="text-sm font-bold">
                 Or add a video link
@@ -139,6 +287,7 @@ function VideoPageContent() {
               </p>
 
               <input
+                name="videoLink"
                 type="url"
                 placeholder="https://..."
                 value={videoLink}
@@ -173,19 +322,18 @@ function VideoPageContent() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-
- 
-
   <button
     type="button"
     onClick={() => {
       if (!registrationId) {
-         setError("Registration session not found. Please return to registration and continue again.");
+         setError(
+            "Registration session not found. Please return to registration and continue again.",
+         );
          return;
       }
 
       router.push(
-        `/register/medical-consent?registration=${registrationId}`
+        `/register/medical-consent?registration=${registrationId}`,
       );
     }}
     className="text-sm font-semibold text-white/45 transition hover:text-white"
@@ -193,19 +341,44 @@ function VideoPageContent() {
     Add video later
   </button>
 
-  <button
-    type="button"
-    onClick={() => {
-      if (!registrationId) return;
+ <button
+  type="button"
+  disabled={!registrationId || uploading}
+  onClick={async () => {
+    if (!registrationId) {
+      setError(
+        "Registration session not found. Please return to registration and continue again.",
+      );
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError("");
+
+      if (videoFile) {
+        await uploadDirectVideo();
+      }
 
       router.push(
-        `/register/medical-consent?registration=${registrationId}`
+        `/register/medical-consent?registration=${registrationId}`,
       );
-    }}
-    className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black"
-  >
-    Continue
-  </button>
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to save video.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  }}
+  className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black disabled:cursor-not-allowed disabled:opacity-40"
+>
+  {uploading
+    ? "Uploading..."
+    : "Continue"}
+</button>
 </div>
         </div>
 

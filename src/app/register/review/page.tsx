@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getAgeAtEvent } from "@/lib/registration/ageAtEvent";
 import { continueToPayment } from "../actions/continueToPayment";
 
+import PlayVideoButton from "@/components/video/PlayVideoButton";
+
 type ReviewPageProps = {
   searchParams: Promise<{
     registration?: string;
@@ -323,16 +325,59 @@ export default async function ReviewPage({
               </div>
 
               <div className="mt-6 border-t border-white/10 pt-6">
-                <ReviewItem
-                  label="Video"
-                  value={
-                    registration.videos.length > 0
-                      ? `${registration.videos.length} video${
-                          registration.videos.length === 1 ? "" : "s"
-                        } added`
-                      : "No saved video yet"
-                  }
-                />
+{registration.videos.length > 0 ? (
+  <div className="grid gap-5 sm:grid-cols-2">
+    {registration.videos.map((video) => (
+      <div key={video.id} className="space-y-4">
+        <ReviewItem
+          label="Video source"
+          value={
+            video.sourceType === "EXTERNAL_LINK"
+              ? "External video link"
+              : video.sourceType === "DIRECT_UPLOAD"
+                ? "Uploaded video"
+                : "Video"
+          }
+        />
+
+        {video.externalUrl && (
+          <div>
+            <div className="text-xs uppercase tracking-[0.1em] text-white/35">
+              Video link
+            </div>
+
+            <a
+              href={video.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 block break-all text-sm leading-6 text-[#c7ff2f] underline underline-offset-4"
+            >
+              {video.externalUrl}
+            </a>
+          </div>
+        )}
+
+        {video.originalFilename && (
+         <>
+          <ReviewItem
+            label="Uploaded file"
+            value={video.originalFilename}
+          />
+
+        <PlayVideoButton
+           videoId={video.id}
+        />
+       </>
+        )}
+      </div>
+    ))}
+  </div>
+) : (
+  <ReviewItem
+    label="Video"
+    value="No saved video yet"
+  />
+)}
               </div>
             </section>
 
