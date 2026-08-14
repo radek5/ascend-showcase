@@ -398,32 +398,50 @@ const qrCodeDataUrl =
           </section>
         </div>
 
-        <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-          <div className="text-lg font-black">
-            What happens next?
-          </div>
+        <section className="mt-8 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-6 sm:p-8">
+          <div className="flex items-start gap-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#c7ff2f] text-black">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <path d="M4 6h16v12H4z" />
+                <path d="m4 7 8 6 8-6" />
+              </svg>
+            </div>
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-3">
-            <NextStep
-              number="01"
-              title="Confirmation"
-              text="ASCEND will send your registration confirmation and event information."
-            />
+            <div className="min-w-0">
+              <h2 className="text-2xl font-black sm:text-3xl">
+                Check your email
+              </h2>
 
-            <NextStep
-              number="02"
-              title="Event Updates"
-              text="Important Showcase information and preparation guidance will be sent before the event."
-            />
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60 sm:text-base">
+                Your{" "}
+                <span className="font-bold text-[#c7ff2f]">
+                  registration confirmation, ASCEND Football Showcase brochure
+                </span>{" "}
+                and{" "}
+                <span className="font-bold text-[#c7ff2f]">
+                  check-in instructions
+                </span>{" "}
+                have been sent to your registered email address.
+              </p>
 
-            <NextStep
-              number="03"
-              title="Check-in"
-              text="Use your ASCEND registration number when arriving for Showcase registration."
-            />
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60 sm:text-base">
+                Please keep your confirmation email and{" "}
+                <span className="font-bold text-[#c7ff2f]">
+                  {registration.registrationNumber}
+                </span>{" "}
+                registration number safe — you will need them when you arrive
+                at the Showcase check-in.
+              </p>
+            </div>
           </div>
         </section>
-
         <div className="mt-10 flex flex-wrap gap-4">
           <Link
             href="/"

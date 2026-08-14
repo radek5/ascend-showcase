@@ -59,12 +59,17 @@ export async function updateDeclarations(formData: FormData) {
   const privacyConsent =
     formData.get("privacyConsent") === "on";
 
+  const playerAgreementConsent =
+    formData.get("playerAgreementConsent") === "on";
+
   if (
     !eventConsent ||
     !declarationConsent ||
     !termsConsent ||
-    !privacyConsent
+    !privacyConsent ||
+    !playerAgreementConsent
   ) {
+
     throw new Error(
       "Please complete all required declarations.",
     );
@@ -79,6 +84,7 @@ export async function updateDeclarations(formData: FormData) {
       declarationConsent,
       termsConsent,
       privacyConsent,
+      playerAgreementConsent,
       currentStep: "PRIVACY_MEDIA",
     },
   });

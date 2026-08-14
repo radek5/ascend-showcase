@@ -272,20 +272,32 @@ export default async function ReviewPage({
                 </Link>
               </div>
 
-              <div className="mt-6 border-t border-white/10 pt-6">
+              <div className="mt-6 grid gap-5 border-t border-white/10 pt-6 sm:grid-cols-2">
                 <ReviewItem
                   label="Status"
                   value={
-                    registration.representationStatus ===
-                    "UNREPRESENTED_OPEN"
+                    registration.representationStatus === "UNREPRESENTED_OPEN"
                       ? "Not currently represented"
                       : registration.representationStatus === "REPRESENTED"
                         ? "Currently represented"
-                        : displayValue(
-                            registration.representationStatus,
-                          )
+                        : displayValue(registration.representationStatus)
                   }
                 />
+
+                {registration.representationStatus === "UNREPRESENTED_OPEN" && (
+                  <ReviewItem
+                    label="ASCEND representation interest"
+                    value={
+                      registration.representationDeclaration
+                        ?.interestedInAscendRepresentation === true
+                        ? "Interested in being contacted by ASCEND"
+                        : registration.representationDeclaration
+                              ?.interestedInAscendRepresentation === false
+                          ? "Not interested at this time"
+                          : "No choice recorded"
+                    }
+                  />
+                )}
               </div>
             </section>
 
@@ -490,7 +502,6 @@ export default async function ReviewPage({
             </form>
           </div>
         </div>
-
         {/* SIDEBAR */}
         <aside>
           <div className="sticky top-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">

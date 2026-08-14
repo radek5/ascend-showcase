@@ -221,6 +221,7 @@ model Registration {
   privacyConsent     Boolean @default(false)
   mediaConsent       Boolean?
   declarationConsent Boolean @default(false)
+  playerAgreementConsent Boolean @default(false)
 
   // Terms & Conditions
   termsConsent Boolean @default(false)
@@ -315,6 +316,7 @@ model RepresentationDeclaration {
   exclusiveRepresentation ExclusiveRepresentation?
 
   agentContactConsent Boolean @default(false)
+  interestedInAscendRepresentation Boolean?
 
   // Player/guardian declaration
   declarationConfirmed Boolean   @default(false)

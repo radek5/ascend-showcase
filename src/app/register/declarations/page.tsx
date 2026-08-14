@@ -247,6 +247,34 @@ export default async function DeclarationsPage({
               </div>
             </label>
 
+<label className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+  <input
+    name="playerAgreementConsent"
+    type="checkbox"
+    required
+    defaultChecked={registration.playerAgreementConsent}
+    className="mt-1"
+  />
+
+  <div>
+    <div className="font-bold">
+      Player Agreement
+    </div>
+
+    <p className="mt-2 text-sm leading-6 text-white/55">
+      I confirm that I have read and agree to the{" "}
+      <Link
+        href="/player-agreement"
+        target="_blank"
+        className="font-bold text-[#c7ff2f] underline underline-offset-4"
+      >
+        ASCEND Football Showcase Player Agreement
+      </Link>
+      .
+    </p>
+  </div>
+</label>
+
             <div className="flex justify-end pt-4">
               <button
                 type="submit"

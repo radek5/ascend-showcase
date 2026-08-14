@@ -8,6 +8,10 @@ import { updateRepresentation } from "../actions/updateRepresentation";
 
 function RepresentationPageContent() {
   const [hasAgent, setHasAgent] = useState<"yes" | "no" | "">("");
+
+  const [ascendRepresentationInterest, setAscendRepresentationInterest] =
+    useState<"yes" | "no" | "">("");
+
   const searchParams = useSearchParams();
   const registrationId = searchParams.get("registration");
 
@@ -73,44 +77,106 @@ function RepresentationPageContent() {
     value={hasAgent}
   />
 
+  <input
+  type="hidden"
+  name="ascendRepresentationInterest"
+  value={ascendRepresentationInterest}
+/>
+
           <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
            <div className="text-lg font-black">
               Are you currently represented?
             </div>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setHasAgent("no")}
-                className={`rounded-2xl border p-5 text-left transition ${
-                  hasAgent === "no"
-                    ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
-                    : "border-white/10 bg-white/[0.02]"
-                }`}
-              >
-                <div className="font-black">No</div>
-                <div className="mt-1 text-sm text-white/45">
-                  I am not currently represented.
-                </div>
-              </button>
+             <button
+  type="button"
+  onClick={() => {
+    setHasAgent("no");
+    setAscendRepresentationInterest("");
+  }}
+  className={`rounded-2xl border p-5 text-left transition ${
+    hasAgent === "no"
+      ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
+      : "border-white/10 bg-white/[0.02]"
+  }`}
+>
+  <div className="font-black">No</div>
+  <div className="mt-1 text-sm text-white/45">
+    I am not currently represented.
+  </div>
+</button>
 
-              <button
-                type="button"
-                onClick={() => setHasAgent("yes")}
-                className={`rounded-2xl border p-5 text-left transition ${
-                  hasAgent === "yes"
-                    ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
-                    : "border-white/10 bg-white/[0.02]"
-                }`}
-              >
-                <div className="font-black">Yes</div>
-                <div className="mt-1 text-sm text-white/45">
-                  I currently have an agent or representative.
-                </div>
-              </button>
+<button
+  type="button"
+  onClick={() => setHasAgent("yes")}
+  className={`rounded-2xl border p-5 text-left transition ${
+    hasAgent === "yes"
+      ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
+      : "border-white/10 bg-white/[0.02]"
+  }`}
+>
+  <div className="font-black">Yes</div>
+  <div className="mt-1 text-sm text-white/45">
+    I currently have an agent or representative.
+  </div>
+</button>
             </div>
           </div>
 
+{/* NO — ASCEND REPRESENTATION INTEREST */}
+{hasAgent === "no" && (
+  <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+    <div className="text-lg font-black">
+      Would you like to be represented by ASCEND?
+    </div>
+
+    <p className="mt-2 text-sm leading-6 text-white/50">
+      ASCEND provides professional football agent representation and
+      career support for selected players.
+    </p>
+
+    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <button
+        type="button"
+        onClick={() => setAscendRepresentationInterest("yes")}
+        className={`rounded-2xl border p-5 text-left transition ${
+          ascendRepresentationInterest === "yes"
+            ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
+            : "border-white/10 bg-white/[0.02]"
+        }`}
+      >
+        <div className="font-black">Yes</div>
+        <div className="mt-1 text-sm text-white/45">
+          I would like ASCEND to contact me about representation.
+        </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setAscendRepresentationInterest("no")}
+        className={`rounded-2xl border p-5 text-left transition ${
+          ascendRepresentationInterest === "no"
+            ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
+            : "border-white/10 bg-white/[0.02]"
+        }`}
+      >
+        <div className="font-black">No</div>
+        <div className="mt-1 text-sm text-white/45">
+          I am not interested at this time.
+        </div>
+      </button>
+    </div>
+
+    <div className="mt-5 rounded-xl border border-[#c7ff2f]/15 bg-[#c7ff2f]/[0.05] p-4 text-xs leading-5 text-white/45">
+      Selecting Yes is an expression of interest only and does not appoint
+      ASCEND as your football agent. Any representation would be discussed
+      and agreed separately.
+    </div>
+  </div>
+)}
+
+{/* YES — EXISTING AGENT DETAILS */}
           {hasAgent === "yes" && (
             <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
               <div className="text-lg font-black">Agent Details</div>
