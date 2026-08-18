@@ -478,6 +478,16 @@ export default async function ReviewPage({
                   label="Privacy Notice"
                   accepted={registration.privacyConsent}
                 />
+
+                <ConsentStatus
+                  label="Player Agreement"
+                  accepted={registration.playerAgreementConsent}
+                />
+
+                <ConsentStatus
+                  label="Future ASCEND updates"
+                  accepted={registration.futureEventConsent}
+                />
               </div>
             </section>
 

@@ -275,6 +275,43 @@ export default async function DeclarationsPage({
   </div>
 </label>
 
+{/* FUTURE ASCEND COMMUNICATIONS - OPTIONAL */}
+<label className="flex gap-4 rounded-2xl border border-[#1685ff]/20 bg-[#1685ff]/[0.04] p-5">
+  <input
+    name="futureEventConsent"
+    type="checkbox"
+    defaultChecked={registration.futureEventConsent}
+    className="mt-1"
+  />
+
+  <div>
+    <div className="font-bold">
+      Future ASCEND Events & Opportunities
+    </div>
+
+    <p className="mt-2 text-sm leading-6 text-white/55">
+      {isUnder18AtEvent ? (
+        <>
+          I would like ASCEND to keep me informed about future football
+          showcases, trials and relevant opportunities for{" "}
+          <span className="text-white">
+            {registration.firstName} {registration.lastName}
+          </span>
+          .
+        </>
+      ) : (
+        <>
+          I would like ASCEND to keep me informed about future football
+          showcases, trials and relevant opportunities.
+        </>
+      )}
+    </p>
+
+    <div className="mt-3 text-xs font-bold uppercase tracking-[0.1em] text-[#1685ff]">
+      Optional
+    </div>
+  </div>
+</label>
             <div className="flex justify-end pt-4">
               <button
                 type="submit"

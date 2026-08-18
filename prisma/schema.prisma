@@ -118,6 +118,111 @@ enum ProspectStatus {
   SIGNED
 }
 
+enum StaffRole {
+  ADMIN
+  STAFF
+}
+
+enum ProfessionalRegistrationRole {
+  CLUB_REPRESENTATIVE
+  SCOUT
+  FOOTBALL_AGENT
+}
+
+enum ProfessionalRegistrationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  MORE_INFO_REQUIRED
+  REJECTED
+  ACCREDITED
+  CHECKED_IN
+}
+
+model ProfessionalRegistration {
+  id String @id @default(cuid())
+
+  // Event
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id])
+
+  // Accreditation
+  accreditationNumber    String?   @unique
+  checkInToken           String?   @unique
+  checkedInAt            DateTime?
+  checkedInByStaffUserId String?
+  approvalEmailSentAt    DateTime?
+
+  status ProfessionalRegistrationStatus @default(DRAFT)
+  role   ProfessionalRegistrationRole
+
+  // Identity / contact
+  fullName String
+  email    String
+  phone    String
+
+  // Headshot
+  headshotUrl String?
+
+  // Arrival
+  arrivalTransfer Boolean   @default(false)
+  arrivalDate     DateTime?
+  arrivalTime     String?
+  arrivalAirline  String?
+  arrivalFlight   String?
+
+  // Departure
+  departureTransfer Boolean   @default(false)
+  departureDate     DateTime?
+  departureTime     String?
+  departureAirline  String?
+  departureFlight   String?
+
+  // Accommodation
+  hotelStatus  String?
+  lagosAddress String?
+
+  // Event declarations
+  safeguardingConsent Boolean @default(false)
+  privacyConsent      Boolean @default(false)
+
+  // Administration
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  archivedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Future ASCEND communications / mailing list
+  futureEventConsent   Boolean   @default(false)
+  futureEventConsentAt DateTime?
+
+  @@index([eventId])
+  @@index([status])
+  @@index([role])
+  @@index([email])
+}
+
+model StaffUser {
+  id String @id @default(cuid())
+
+  name  String
+  email String @unique
+
+  passwordHash String
+
+  role   StaffRole @default(STAFF)
+  active Boolean   @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ------------------------------------------------------------
 // EVENT
 // ------------------------------------------------------------
@@ -133,7 +238,7 @@ model Event {
   venue   String
 
   // Event registration / check-in
-  registrationVenue       String?
+  registrationVenue        String?
   registrationInstructions String?
 
   registrationStartsAt DateTime?
@@ -146,7 +251,7 @@ model Event {
   active           Boolean @default(false)
 
   capacity Int?
-  
+
   // Registration pricing
   registrationFeeAmount   Int?
   registrationFeeCurrency String @default("NGN")
@@ -157,6 +262,8 @@ model Event {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  professionalRegistrations ProfessionalRegistration[]
 
   @@index([active])
   @@index([city])
@@ -172,9 +279,10 @@ model Registration {
   registrationNumber String? @unique
 
   // Event check-in
-  checkInToken String?   @unique
-  checkedInAt DateTime?
-  confirmationEmailSentAt DateTime?  
+  checkInToken            String?   @unique
+  checkedInAt             DateTime?
+  checkedInByStaffUserId  String?
+  confirmationEmailSentAt DateTime?
 
   status      RegistrationStatus @default(DRAFT)
   currentStep RegistrationStep   @default(PLAYER)
@@ -215,13 +323,13 @@ model Registration {
   prospectStatus       ProspectStatus        @default(POTENTIAL)
 
   // Medical / consent
-  medicalNotes       String?
-  medicalConsent     Boolean @default(false)
-  eventConsent       Boolean @default(false)
-  privacyConsent     Boolean @default(false)
-  mediaConsent       Boolean?
-  declarationConsent Boolean @default(false)
-  playerAgreementConsent Boolean @default(false)
+  medicalNotes           String?
+  medicalConsent         Boolean  @default(false)
+  eventConsent           Boolean  @default(false)
+  privacyConsent         Boolean  @default(false)
+  mediaConsent           Boolean?
+  declarationConsent     Boolean  @default(false)
+  playerAgreementConsent Boolean  @default(false)
 
   // Terms & Conditions
   termsConsent Boolean @default(false)
@@ -229,6 +337,10 @@ model Registration {
   // Related records
   representationDeclaration RepresentationDeclaration?
   representationHistory     RepresentationHistory[]
+
+  // Future ASCEND communications / mailing list
+  futureEventConsent   Boolean   @default(false)
+  futureEventConsentAt DateTime?
 
   videos PlayerVideo[]
 
@@ -238,8 +350,9 @@ model Registration {
 
   introductions Introduction[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
 
   assessment PlayerAssessment?
 
@@ -253,7 +366,7 @@ model Registration {
 model PlayerAssessment {
   id String @id @default(cuid())
 
-  registrationId String @unique
+  registrationId String       @unique
   registration   Registration @relation(fields: [registrationId], references: [id])
 
   source String @default("DEMO")
@@ -274,11 +387,11 @@ model PlayerAssessment {
   workRateScore        Int?
   composureScore       Int?
 
-  topSpeedKmh        Decimal?
-  distanceCoveredKm  Decimal?
-  sprintCount        Int?
-  highIntensityRuns  Int?
-  accelerations      Int?
+  topSpeedKmh       Decimal?
+  distanceCoveredKm Decimal?
+  sprintCount       Int?
+  highIntensityRuns Int?
+  accelerations     Int?
 
   aiSummary String?
 
@@ -315,7 +428,7 @@ model RepresentationDeclaration {
 
   exclusiveRepresentation ExclusiveRepresentation?
 
-  agentContactConsent Boolean @default(false)
+  agentContactConsent              Boolean  @default(false)
   interestedInAscendRepresentation Boolean?
 
   // Player/guardian declaration
@@ -415,7 +528,7 @@ model Payment {
   baseAmount   Int?
   baseCurrency String?
 
-// FX quote used at checkout
+  // FX quote used at checkout
   fxRate     Decimal?
   fxSource   String?
   fxQuotedAt DateTime?

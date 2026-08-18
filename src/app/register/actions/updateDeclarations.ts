@@ -62,6 +62,9 @@ export async function updateDeclarations(formData: FormData) {
   const playerAgreementConsent =
     formData.get("playerAgreementConsent") === "on";
 
+  const futureEventConsent =
+    formData.get("futureEventConsent") === "on";
+
   if (
     !eventConsent ||
     !declarationConsent ||
@@ -85,6 +88,11 @@ export async function updateDeclarations(formData: FormData) {
       termsConsent,
       privacyConsent,
       playerAgreementConsent,
+ 
+      futureEventConsent,
+      futureEventConsentAt:
+        futureEventConsent ? new Date() : null,    
+
       currentStep: "PRIVACY_MEDIA",
     },
   });
