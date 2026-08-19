@@ -54,12 +54,21 @@ export default function Home() {
             </a>
           </nav>
 
-          <a
-            href="/registration"
-            className="rounded-full bg-[#c7ff2f] px-5 py-3 text-sm font-bold text-black transition hover:opacity-90"
-          >
-            Register Now
-          </a>
+<div className="flex items-center gap-3">
+  <a
+    href="/staff/login"
+    className="hidden rounded-full border border-white/10 px-4 py-3 text-xs font-black uppercase tracking-[0.08em] text-white/45 transition hover:border-white/20 hover:text-white md:inline-flex"
+  >
+    Staff Login
+  </a>
+
+  <a
+    href="/registration"
+    className="rounded-full bg-[#c7ff2f] px-5 py-3 text-sm font-bold text-black transition hover:opacity-90"
+  >
+    Register Now
+  </a>
+</div>
         </div>
       </header>
 
