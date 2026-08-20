@@ -143,50 +143,76 @@ export default async function ReviewPage({
                 </Link>
               </div>
 
-              <div className="mt-6 grid gap-5 border-t border-white/10 pt-6 sm:grid-cols-2">
-                <ReviewItem
-                  label="Name"
-                  value={`${registration.firstName ?? ""} ${
-                    registration.lastName ?? ""
-                  }`.trim()}
-                />
+<div className="mt-6 border-t border-white/10 pt-6">
+  <div className="grid gap-6 sm:grid-cols-[160px_1fr]">
+    <div>
+      <div className="text-xs font-bold uppercase tracking-[0.1em] text-white/30">
+        Player headshot
+      </div>
 
-                <ReviewItem
-                  label="Date of birth"
-                  value={formatDate(registration.dateOfBirth)}
-                />
+      <div className="mt-3 h-40 w-40 overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+        {registration.headshotUrl ? (
+          <img
+            src={`/api/registration/${registration.id}/headshot`}
+            alt={`${registration.firstName ?? ""} ${
+              registration.lastName ?? ""
+            }`.trim()}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center px-4 text-center text-xs uppercase tracking-[0.12em] text-white/25">
+            Headshot unavailable
+          </div>
+        )}
+      </div>
+    </div>
 
-                <ReviewItem
-                  label="Age at event"
-                  value={
-                    ageAtEvent !== null
-                      ? `${ageAtEvent} ${
-                          isUnder18AtEvent ? "(U18)" : "(18+)"
-                        }`
-                      : "Unavailable"
-                  }
-                />
+    <div className="grid gap-5 sm:grid-cols-2">
+      <ReviewItem
+        label="Name"
+        value={`${registration.firstName ?? ""} ${
+          registration.lastName ?? ""
+        }`.trim()}
+      />
 
-                <ReviewItem
-                  label="Nationality"
-                  value={displayValue(registration.nationality)}
-                />
+      <ReviewItem
+        label="Date of birth"
+        value={formatDate(registration.dateOfBirth)}
+      />
 
-                <ReviewItem
-                  label="Primary position"
-                  value={displayValue(registration.primaryPosition)}
-                />
+      <ReviewItem
+        label="Age at event"
+        value={
+          ageAtEvent !== null
+            ? `${ageAtEvent} ${
+                isUnder18AtEvent ? "(U18)" : "(18+)"
+              }`
+            : "Unavailable"
+        }
+      />
 
-                <ReviewItem
-                  label="Preferred foot"
-                  value={displayValue(registration.preferredFoot)}
-                />
+      <ReviewItem
+        label="Nationality"
+        value={displayValue(registration.nationality)}
+      />
 
-                <ReviewItem
-                  label="Current club / academy"
-                  value={displayValue(registration.currentClub)}
-                />
-              </div>
+      <ReviewItem
+        label="Primary position"
+        value={displayValue(registration.primaryPosition)}
+      />
+
+      <ReviewItem
+        label="Preferred foot"
+        value={displayValue(registration.preferredFoot)}
+      />
+
+      <ReviewItem
+        label="Current club / academy"
+        value={displayValue(registration.currentClub)}
+      />
+    </div>
+  </div>
+</div>
             </section>
 
             {/* CONTACT */}

@@ -301,6 +301,9 @@ model Registration {
   currentClub       String?
   academyName       String?
 
+  // Player headshot / accreditation photo
+  headshotUrl String?
+ 
   // Optional football information
   heightCm Int?
   weightKg Int?

@@ -18,22 +18,35 @@ export async function checkInPlayer(
     throw new Error("Registration ID missing.");
   }
 
-  const registration =
-    await prisma.registration.findUnique({
-      where: {
-        id: registrationId,
+const registration =
+  await prisma.registration.findUnique({
+    where: {
+      id: registrationId,
+    },
+    include: {
+      payments: {
+        where: {
+          status: "PAID",
+        },
+        take: 1,
       },
-    });
+    },
+  });
 
-  if (!registration) {
-    throw new Error("Player registration not found.");
-  }
+if (!registration) {
+  throw new Error(
+    "Player registration not found.",
+  );
+}
 
-  if (registration.status !== "PAID") {
-    throw new Error(
-      "Only paid player registrations can be checked in.",
-    );
-  }
+if (
+  registration.status !== "PAID" ||
+  registration.payments.length === 0
+) {
+  throw new Error(
+    "Player registration and payment must both be confirmed before event check-in.",
+  );
+}
 
   // Idempotent — scanning/checking twice does not create another check-in.
   if (!registration.checkedInAt) {

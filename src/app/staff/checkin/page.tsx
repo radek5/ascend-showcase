@@ -50,23 +50,36 @@ export default async function StaffCheckInPage({
     professionals,
   ] = await Promise.all([
     prisma.registration.count({
-      where: {
-        eventId: activeEvent.id,
-        status: "PAID",
-        archivedAt: null,
-      },
-    }),
+  where: {
+    eventId: activeEvent.id,
+    archivedAt: null,
+    status: "PAID",
 
-    prisma.registration.count({
-      where: {
-        eventId: activeEvent.id,
+    payments: {
+      some: {
         status: "PAID",
-        archivedAt: null,
-        checkedInAt: {
-          not: null,
-        },
       },
-    }),
+    },
+  },
+}),
+
+prisma.registration.count({
+  where: {
+    eventId: activeEvent.id,
+    archivedAt: null,
+    status: "PAID",
+
+    payments: {
+      some: {
+        status: "PAID",
+      },
+    },
+
+    checkedInAt: {
+      not: null,
+    },
+  },
+}),
 
     prisma.professionalRegistration.count({
       where: {
@@ -97,6 +110,12 @@ export default async function StaffCheckInPage({
         eventId: activeEvent.id,
         archivedAt: null,
         status: "PAID",
+
+          payments: {
+            some: {
+              status: "PAID",
+      },
+    },
 
         ...(q
           ? {
@@ -139,7 +158,7 @@ export default async function StaffCheckInPage({
         },
       ],
 
-      take: q ? 50 : 15,
+      take: q ? 50 : 0,
     }),
 
     prisma.professionalRegistration.findMany({
@@ -190,7 +209,7 @@ export default async function StaffCheckInPage({
         },
       ],
 
-      take: q ? 50 : 15,
+      take: q ? 50 : 0,
     }),
   ]);
 

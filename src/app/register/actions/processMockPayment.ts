@@ -24,7 +24,7 @@ function buildRegistrationPrefix(
     ? yearMatch[0].slice(-2)
     : "XX";
 
-  return `ASC-${cityCode}${yearCode}`;
+  return `ASC-${cityCode}${yearCode}-P`;
 }
 
 export async function processMockPayment(formData: FormData) {
@@ -119,6 +119,7 @@ await prisma.registration.update({
   },
   data: {
     registrationNumber,
+    status: "PAID",
     currentStep: "CONFIRMATION",
   },
 });
@@ -223,6 +224,7 @@ await prisma.registration.update({
   data: {
     registrationNumber,
     checkInToken,
+    status: "PAID",
     currentStep: "CONFIRMATION",
   },
 });

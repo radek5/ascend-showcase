@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { sendProfessionalAccreditation } from "@/lib/email/sendProfessionalAccreditation";
 
 function buildAccreditationNumber(sequence: number) {
-  return `ASC-LAG-2027-${String(sequence).padStart(4, "0")}`;
+  return `ASC-LAG27-PR-${String(sequence).padStart(4, "0")}`;
 }
 
 export async function POST(

@@ -37,7 +37,7 @@ function buildRegistrationPrefix(
     ? yearMatch[0].slice(-2)
     : "XX";
 
-  return `ASC-${cityCode}${yearCode}`;
+  return `ASC-${cityCode}${yearCode}-P`;
 }
 
 export default async function ConfirmationPage({
