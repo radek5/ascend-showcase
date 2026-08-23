@@ -474,15 +474,18 @@ function formatStatus(value: string) {
 }
 
 function formatMoney(
-  amountInMinorUnits: number,
+  amountInMinorUnits: bigint,
   currency: string,
 ) {
+  const majorUnits =
+    Number(amountInMinorUnits) / 100;
+
   try {
     return new Intl.NumberFormat("en-GB", {
       style: "currency",
       currency,
-    }).format(amountInMinorUnits / 100);
+    }).format(majorUnits);
   } catch {
-    return `${currency} ${(amountInMinorUnits / 100).toFixed(2)}`;
+    return `${currency} ${majorUnits.toFixed(2)}`;
   }
 }

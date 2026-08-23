@@ -1,0 +1,18 @@
+-- AlterTable
+ALTER TABLE "CommercialRelationship" ALTER COLUMN "proposedValue" SET DATA TYPE BIGINT,
+ALTER COLUMN "agreedValue" SET DATA TYPE BIGINT;
+
+-- AlterTable
+ALTER TABLE "FinanceExpense" ALTER COLUMN "budgetAmount" SET DATA TYPE BIGINT,
+ALTER COLUMN "forecastAmount" SET DATA TYPE BIGINT,
+ALTER COLUMN "committedAmount" SET DATA TYPE BIGINT,
+ALTER COLUMN "paidAmount" SET DATA TYPE BIGINT;
+
+-- AlterTable
+ALTER TABLE "FinanceIncome" ALTER COLUMN "expectedAmount" SET DATA TYPE BIGINT,
+ALTER COLUMN "agreedAmount" SET DATA TYPE BIGINT,
+ALTER COLUMN "invoicedAmount" SET DATA TYPE BIGINT,
+ALTER COLUMN "receivedAmount" SET DATA TYPE BIGINT;
+
+-- AlterTable
+ALTER TABLE "Payment" ALTER COLUMN "amount" SET DATA TYPE BIGINT;

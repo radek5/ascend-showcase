@@ -13,13 +13,13 @@ type ConfirmationPageProps = {
 };
 
 function formatCurrency(
-  amount: number,
+  amount: bigint,
   currency: string,
 ) {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency,
-  }).format(amount / 100);
+  }).format(Number(amount) / 100);
 }
 
 function buildRegistrationPrefix(

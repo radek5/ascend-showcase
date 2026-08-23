@@ -140,6 +140,54 @@ enum ProfessionalRegistrationStatus {
   CHECKED_IN
 }
 
+enum CommercialOrganisationType {
+  SPONSOR
+  PARTNER
+  SUPPLIER
+}
+
+enum CommercialPipelineStatus {
+  PROSPECT
+  CONTACTED
+  DISCUSSION
+  PROPOSAL_SENT
+  NEGOTIATION
+  CONFIRMED
+  ACTIVATED
+  COMPLETED
+  DECLINED
+}
+
+enum CommercialContributionType {
+  CASH
+  IN_KIND
+  CASH_AND_IN_KIND
+}
+
+enum FinanceExpenseStatus {
+  PLANNED
+  QUOTED
+  APPROVED
+  COMMITTED
+  PART_PAID
+  PAID
+  CANCELLED
+}
+
+enum FinanceIncomeStatus {
+  EXPECTED
+  AGREED
+  INVOICED
+  PART_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum FinanceCategoryType {
+  INCOME
+  EXPENSE
+}
+
 model ProfessionalRegistration {
   id String @id @default(cuid())
 
@@ -237,6 +285,10 @@ model Event {
   country String
   venue   String
 
+  financeCategories FinanceCategory[]
+  financeExpenses   FinanceExpense[]
+  financeIncomes    FinanceIncome[]
+
   // Event registration / check-in
   registrationVenue        String?
   registrationInstructions String?
@@ -259,6 +311,8 @@ model Event {
   registrations Registration[]
   scouts        Scout[]
   introductions Introduction[]
+
+  commercialRelationships CommercialRelationship[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -303,7 +357,7 @@ model Registration {
 
   // Player headshot / accreditation photo
   headshotUrl String?
- 
+
   // Optional football information
   heightCm Int?
   weightKg Int?
@@ -524,7 +578,7 @@ model Payment {
 
   // Stored in minor currency units.
   // Example: ₦100,000 = 10000000 kobo
-  amount   Int
+  amount   BigInt
   currency String
 
   // Original event price
@@ -651,4 +705,177 @@ model Introduction {
   @@index([registrationId])
   @@index([requestedByScoutId])
   @@index([status])
+}
+
+model CommercialOrganisation {
+  id String @id @default(cuid())
+
+  name String
+  type CommercialOrganisationType
+
+  sector  String?
+  website String?
+
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  logoUrl String?
+
+  relationships CommercialRelationship[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([type])
+}
+
+model CommercialRelationship {
+  id String @id @default(cuid())
+
+  organisationId String
+  organisation   CommercialOrganisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  financeIncomes FinanceIncome[]
+
+  status CommercialPipelineStatus @default(PROSPECT)
+
+  packageName String?
+
+  // Minor currency units.
+  // Example: NGN 5,000,000 = 500000000 kobo
+  proposedValue BigInt?
+  agreedValue   BigInt?
+  currency      String?
+
+  nextAction     String?
+  nextActionDate DateTime?
+
+  notes String?
+
+  contributionType  CommercialContributionType?
+  inKindDescription String?
+
+  showOnWebsite Boolean @default(false)
+  displayOrder  Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organisationId, eventId])
+  @@index([eventId])
+  @@index([status])
+  @@index([nextActionDate])
+}
+
+model FinanceCategory {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  type FinanceCategoryType
+
+  name        String
+  description String?
+
+  sortOrder Int?
+
+  expenses FinanceExpense[]
+  incomes  FinanceIncome[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, type, name])
+  @@index([eventId])
+  @@index([type])
+}
+
+model FinanceExpense {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   FinanceCategory? @relation(fields: [categoryId], references: [id])
+
+  supplierName String?
+  description  String
+
+  currency String @default("NGN")
+
+  // Minor currency units.
+  budgetAmount    BigInt?
+  forecastAmount  BigInt?
+  committedAmount BigInt?
+  paidAmount      BigInt  @default(0)
+
+  status FinanceExpenseStatus @default(PLANNED)
+
+  invoiceReference String?
+  paymentReference String?
+
+  dueDate DateTime?
+  paidAt  DateTime?
+
+  notes String?
+
+  createdByStaffUserId  String?
+  approvedByStaffUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model FinanceIncome {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   FinanceCategory? @relation(fields: [categoryId], references: [id])
+
+  sourceName  String
+  description String?
+
+  currency String @default("NGN")
+
+  expectedAmount BigInt?
+  agreedAmount   BigInt?
+  invoicedAmount BigInt?
+  receivedAmount BigInt  @default(0)
+
+  status FinanceIncomeStatus @default(EXPECTED)
+
+  invoiceReference String?
+  paymentReference String?
+
+  dueDate    DateTime?
+  receivedAt DateTime?
+
+  commercialRelationshipId String?
+  commercialRelationship   CommercialRelationship? @relation(fields: [commercialRelationshipId], references: [id], onDelete: SetNull)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([commercialRelationshipId])
 }

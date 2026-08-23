@@ -296,7 +296,7 @@ export default async function PaymentsPage({
                     className="text-xl font-black"
                   >
                     {formatMoney(
-                      item._sum.amount ?? 0,
+                      item._sum.amount ?? 0n,
                       item.currency,
                     )}
                   </div>
@@ -610,9 +610,12 @@ function formatDateTime(
 }
 
 function formatMoney(
-  amountInMinorUnits: number,
+  amountInMinorUnits: bigint,
   currency: string,
 ) {
+  const majorUnits =
+    Number(amountInMinorUnits) / 100;
+
   try {
     return new Intl.NumberFormat(
       "en-GB",
@@ -620,8 +623,9 @@ function formatMoney(
         style: "currency",
         currency,
       },
-    ).format(amountInMinorUnits / 100);
+    ).format(majorUnits);
   } catch {
-    return `${currency} ${(amountInMinorUnits / 100).toFixed(2)}`;
+    return `${currency} ${majorUnits.toFixed(2)}`;
   }
 }
+

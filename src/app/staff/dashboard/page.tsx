@@ -258,6 +258,16 @@ export default async function StaffDashboardPage() {
             />
 
             <QuickLink
+              href="/staff/finance"
+              label="Finance"
+            />
+
+            <QuickLink
+              href="/staff/commercial"
+              label="Sponsors & Partners"
+            />
+
+            <QuickLink
               href="/staff/checkin"
               label="Check-In"
             />
