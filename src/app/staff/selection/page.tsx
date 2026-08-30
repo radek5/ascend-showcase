@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import ShowcaseConfirmationButton from "./ShowcaseConfirmationButton";
+
 import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
 
@@ -389,60 +391,38 @@ export default async function SelectionPage() {
                         </td>
 
 <td className="px-5 py-5">
-{application.confirmationEmailSentAt ? (
-  <div>
-    <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
-      Sent
+  {application.confirmationEmailSentAt ? (
+    <div>
+      <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
+        Sent
+      </div>
+
+      <div className="mt-1 text-[11px] text-white/35">
+        {new Intl.DateTimeFormat("en-GB", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(
+          application.confirmationEmailSentAt,
+        )}
+      </div>
+
+      <ShowcaseConfirmationButton
+        applicationId={application.id}
+        mode="resend"
+      />
     </div>
-
-    <div className="mt-1 text-[11px] text-white/35">
-      {new Intl.DateTimeFormat("en-GB", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(
-        application.confirmationEmailSentAt,
-      )}
-    </div>
-
-    <form
-      action={async () => {
-        "use server";
-
-        await resendShowcaseConfirmation(
-          application.id,
-        );
-      }}
-    >
-      <button
-        type="submit"
-        className="mt-2 text-[11px] font-black uppercase tracking-[0.05em] text-white/40 transition hover:text-white"
-      >
-        Resend
-      </button>
-    </form>
-  </div>
   ) : application.assessmentFeePaid &&
     application.registrationNumber ? (
-    <form
-      action={async () => {
-        "use server";
-
-        await resendShowcaseConfirmation(
-          application.id,
-        );
-      }}
-    >
+    <div>
       <div className="text-xs font-bold text-amber-300">
         Not sent
       </div>
 
-      <button
-        type="submit"
-        className="mt-2 rounded-xl border border-amber-300/30 px-3 py-2 text-[11px] font-black uppercase tracking-[0.05em] text-amber-200 transition hover:bg-amber-300/10"
-      >
-        Send confirmation
-      </button>
-    </form>
+      <ShowcaseConfirmationButton
+        applicationId={application.id}
+        mode="send"
+      />
+    </div>
   ) : (
     <span className="text-xs text-white/30">
       Not ready
