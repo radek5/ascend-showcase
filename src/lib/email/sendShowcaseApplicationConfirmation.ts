@@ -54,28 +54,11 @@ export async function sendShowcaseApplicationConfirmation({
     };
   }
 
-  /*
-   * Under-18 applications go to the guardian
-   * where a guardian email has been supplied.
-   */
-  const isUnder18 =
-    application.age !== null &&
-    application.age < 18;
+const recipientEmail =
+  application.email;
 
-  const recipientEmail =
-    isUnder18 &&
-    application.guardianEmail
-      ? application.guardianEmail
-      : application.email;
-
-  const recipientName =
-    isUnder18
-      ? application.guardianName ||
-        "Parent / Guardian"
-      : application.firstName;
-
-  const playerName =
-    `${application.firstName} ${application.lastName}`.trim();
+const recipientName =
+  application.firstName;
 
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL;
@@ -121,21 +104,11 @@ export async function sendShowcaseApplicationConfirmation({
     application.assessmentPaymentReference ||
     "Recorded";
 
-  const intro =
-    isUnder18
-      ? `
-        <p style="margin:0 0 18px;color:#c8c8c8;">
-          Dear ${recipientName}, this confirmation relates to
-          <strong style="color:#ffffff;">
-            ${playerName}
-          </strong>.
-        </p>
-      `
-      : `
-        <p style="margin:0 0 18px;color:#c8c8c8;">
-          Dear ${recipientName},
-        </p>
-      `;
+  const intro = `
+    <p style="margin:0 0 18px;color:#c8c8c8;">
+      Dear ${recipientName},
+    </p>
+  `;
 
   const html = `
 <!DOCTYPE html>
@@ -261,12 +234,13 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 
 <div style="margin-bottom:22px;">
   <div style="font-weight:800;color:#c7ff2f;">
-    1. Eligibility Review
+    1. Identity, Age & Eligibility Verification
   </div>
 
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    ASCEND will review the information supplied
-    with your application.
+    ASCEND will review your identity documents, age
+    eligibility and the information supplied with your
+    application.
   </p>
 </div>
 
@@ -277,8 +251,9 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
   </div>
 
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    Your submitted football videos will be
-    assessed by authorised ASCEND selectors.
+    Once the required eligibility checks have been completed,
+    your football evidence may be released for assessment by
+    authorised ASCEND selectors.
   </p>
 </div>
 
@@ -289,25 +264,78 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
   </div>
 
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    If required, ASCEND may contact you and ask
-    you to provide one or more additional videos
-    before a final assessment decision is made.
+    If required, ASCEND may contact you and ask you to provide
+    one or more additional videos before a final assessment
+    decision is made.
   </p>
 </div>
 
 
 <div>
   <div style="font-weight:800;color:#c7ff2f;">
-    4. Selection
+    4. Final Selection
   </div>
 
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    Applicants who progress through the assessment
-    process will continue to the final selection stage.
+    Eligible applicants who progress through the football
+    assessment process will continue to final selection.
   </p>
 
   <p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.7;">
-    The best 100 players will be selected for the
+    The best 100 eligible players will be selected for the
+    ASCEND Lagos 2027 camp.
+  </p>
+</div><div style="margin-bottom:22px;">
+  <div style="font-weight:800;color:#c7ff2f;">
+    1. Identity, Age & Eligibility Verification
+  </div>
+
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    ASCEND will review your identity documents, age
+    eligibility and the information supplied with your
+    application.
+  </p>
+</div>
+
+
+<div style="margin-bottom:22px;">
+  <div style="font-weight:800;color:#c7ff2f;">
+    2. Football Assessment
+  </div>
+
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    Once the required eligibility checks have been completed,
+    your football evidence may be released for assessment by
+    authorised ASCEND selectors.
+  </p>
+</div>
+
+
+<div style="margin-bottom:22px;">
+  <div style="font-weight:800;color:#c7ff2f;">
+    3. Further Video Evidence
+  </div>
+
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    If required, ASCEND may contact you and ask you to provide
+    one or more additional videos before a final assessment
+    decision is made.
+  </p>
+</div>
+
+
+<div>
+  <div style="font-weight:800;color:#c7ff2f;">
+    4. Final Selection
+  </div>
+
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    Eligible applicants who progress through the football
+    assessment process will continue to final selection.
+  </p>
+
+  <p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.7;">
+    The best 100 eligible players will be selected for the
     ASCEND Lagos 2027 camp.
   </p>
 </div>

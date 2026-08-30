@@ -123,7 +123,7 @@ export default async function ConfirmationPage({
 
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-          Step 9 of 9
+          Step 10 of 10
         </div>
 
         <div className="mt-6 rounded-[2rem] border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.04] p-8 sm:p-10">
@@ -244,25 +244,31 @@ export default async function ConfirmationPage({
 
           <div className="mt-5 space-y-5 text-sm leading-7 text-white/55">
             <p>
-              Your application will now enter the ASCEND eligibility and
-              football assessment process.
+              Your application will now enter ASCEND&apos;s identity,
+              age and eligibility verification process.
             </p>
 
             <p>
-              Your submitted football videos may be reviewed by authorised
-              ASCEND selectors. The assessment process does not guarantee
-              selection for the Lagos 2027 camp.
+              ASCEND will review the identity documents and information
+              submitted with your application before your football
+              evidence is released for assessment.
             </p>
 
             <p>
-              If further football evidence is required, ASCEND may contact you
-              and ask you to submit one or more additional videos before a
-              final decision is made.
+              Once your application has passed the required eligibility
+              checks, your submitted football videos may be reviewed by
+              authorised ASCEND selectors.
+            </p>
+
+            <p>
+              If further football evidence is required, ASCEND may
+              contact you and ask you to submit one or more additional
+              videos before a final decision is made.
             </p>
 
             <p className="font-bold text-white">
-              The best 100 players will be selected for the final ASCEND Lagos
-              2027 camp.
+              The best 100 eligible players will be selected for the
+              final ASCEND Lagos 2027 camp.
             </p>
           </div>
         </div>

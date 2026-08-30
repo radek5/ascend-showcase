@@ -9,6 +9,8 @@ import {
   sendForSecondReview,
 } from "./actions";
 
+import { resendShowcaseConfirmation } from "./resendShowcaseConfirmation";
+
 export default async function SelectionPage() {
   await requireStaffUser();
 
@@ -47,6 +49,9 @@ export default async function SelectionPage() {
           assessmentCode: true,
 
           assessmentFeePaid: true,
+
+          registrationNumber: true,
+          confirmationEmailSentAt: true,
 
           videos: {
             where: {
@@ -246,6 +251,10 @@ export default async function SelectionPage() {
                   </th>
 
                   <th className="px-5 py-4">
+                    Email
+                  </th>
+
+                  <th className="px-5 py-4">
                     Action
                   </th>
                 </tr>
@@ -379,6 +388,51 @@ export default async function SelectionPage() {
                           )}
                         </td>
 
+<td className="px-5 py-5">
+  {application.confirmationEmailSentAt ? (
+    <div>
+      <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
+        Sent
+      </div>
+
+      <div className="mt-1 text-[11px] text-white/35">
+        {new Intl.DateTimeFormat("en-GB", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(
+          application.confirmationEmailSentAt,
+        )}
+      </div>
+    </div>
+  ) : application.assessmentFeePaid &&
+    application.registrationNumber ? (
+    <form
+      action={async () => {
+        "use server";
+
+        await resendShowcaseConfirmation(
+          application.id,
+        );
+      }}
+    >
+      <div className="text-xs font-bold text-amber-300">
+        Not sent
+      </div>
+
+      <button
+        type="submit"
+        className="mt-2 rounded-xl border border-amber-300/30 px-3 py-2 text-[11px] font-black uppercase tracking-[0.05em] text-amber-200 transition hover:bg-amber-300/10"
+      >
+        Send confirmation
+      </button>
+    </form>
+  ) : (
+    <span className="text-xs text-white/30">
+      Not ready
+    </span>
+  )}
+</td>
+
                         <td className="px-5 py-5">
                           {!application.assessmentCode ? (
                             <form
@@ -499,7 +553,7 @@ export default async function SelectionPage() {
                 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-14 text-center text-sm text-white/35"
                     >
                       No applications are
