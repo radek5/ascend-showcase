@@ -5,10 +5,12 @@ import { getMailTransport } from "./mailer";
 
 type Args = {
   applicationId: string;
+  force?: boolean;
 };
 
 export async function sendShowcaseApplicationConfirmation({
   applicationId,
+  force = false,
 }: Args) {
   const application =
     await prisma.showcaseApplication.findUnique({
@@ -45,7 +47,8 @@ export async function sendShowcaseApplicationConfirmation({
    * Prevent duplicate confirmation emails.
    */
   if (
-    application.confirmationEmailSentAt
+    application.confirmationEmailSentAt &&
+    !force
   ) {
     return {
       messageId: null,

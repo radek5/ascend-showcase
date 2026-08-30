@@ -389,21 +389,38 @@ export default async function SelectionPage() {
                         </td>
 
 <td className="px-5 py-5">
-  {application.confirmationEmailSentAt ? (
-    <div>
-      <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
-        Sent
-      </div>
-
-      <div className="mt-1 text-[11px] text-white/35">
-        {new Intl.DateTimeFormat("en-GB", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(
-          application.confirmationEmailSentAt,
-        )}
-      </div>
+{application.confirmationEmailSentAt ? (
+  <div>
+    <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
+      Sent
     </div>
+
+    <div className="mt-1 text-[11px] text-white/35">
+      {new Intl.DateTimeFormat("en-GB", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(
+        application.confirmationEmailSentAt,
+      )}
+    </div>
+
+    <form
+      action={async () => {
+        "use server";
+
+        await resendShowcaseConfirmation(
+          application.id,
+        );
+      }}
+    >
+      <button
+        type="submit"
+        className="mt-2 text-[11px] font-black uppercase tracking-[0.05em] text-white/40 transition hover:text-white"
+      >
+        Resend
+      </button>
+    </form>
+  </div>
   ) : application.assessmentFeePaid &&
     application.registrationNumber ? (
     <form

@@ -16,15 +16,13 @@ export async function resendShowcaseConfirmation(
       where: {
         id: applicationId,
       },
+
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
         email: true,
         assessmentFeePaid: true,
         registrationNumber: true,
         checkInToken: true,
-        confirmationEmailSentAt: true,
       },
     });
 
@@ -52,26 +50,16 @@ export async function resendShowcaseConfirmation(
     );
   }
 
-  if (application.confirmationEmailSentAt) {
-    return {
-      sent: false,
-      reason: "ALREADY_SENT" as const,
-      sentAt:
-        application.confirmationEmailSentAt,
-      recipientEmail: application.email,
-    };
-  }
-
   const result =
     await sendShowcaseApplicationConfirmation({
       applicationId: application.id,
+      force: true,
     });
 
   revalidatePath("/staff/selection");
 
   return {
     sent: true,
-    reason: "SENT" as const,
     recipientEmail:
       result.recipientEmail,
     messageId:
