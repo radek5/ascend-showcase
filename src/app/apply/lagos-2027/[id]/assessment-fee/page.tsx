@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
+import { formatCurrency } from "@/lib/payments/formatCurrency";
 import { prisma } from "@/lib/prisma";
 
 import {
@@ -12,28 +12,6 @@ type PageProps = {
     id: string;
   }>;
 };
-
-function formatAmount(
-  amount: number | null,
-  currency: string
-) {
-  if (amount === null) {
-    return null;
-  }
-
-  try {
-    return new Intl.NumberFormat(
-      "en-NG",
-      {
-        style: "currency",
-        currency,
-        maximumFractionDigits: 0,
-      }
-    ).format(amount);
-  } catch {
-    return `${currency} ${amount.toLocaleString()}`;
-  }
-}
 
 export default async function AssessmentFeePage({
   params,
@@ -67,11 +45,13 @@ export default async function AssessmentFeePage({
     notFound();
   }
 
-  const formattedAmount =
-    formatAmount(
-      application.assessmentFeeAmount,
-      application.assessmentFeeCurrency
-    );
+   const formattedAmount =
+     application.assessmentFeeAmount !== null
+       ? formatCurrency(
+           application.assessmentFeeAmount,
+           application.assessmentFeeCurrency
+         )
+    : null;
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">

@@ -135,6 +135,10 @@ const calculatedAge =
         data: {
           eventSlug: EVENT_SLUG,
 
+          assessmentFeeRequired: true,
+          assessmentFeeAmount: 5000000,
+          assessmentFeeCurrency: "NGN",
+
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.trim().toLowerCase(),
