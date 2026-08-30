@@ -30,69 +30,114 @@ export async function GET(
   if (!reference) {
     return NextResponse.redirect(
       new URL(
-        "/",
+        "/?payment=missing-reference",
         request.nextUrl.origin
       )
     );
   }
 
-  const payment =
-    await prisma.showcasePayment.findUnique({
-      where: {
-        reference,
-      },
-
-      select: {
-        id: true,
-        reference: true,
-        amountMinor: true,
-        currency: true,
-        status: true,
-
-        application: {
-          select: {
-            id: true,
-            eventSlug: true,
-            assessmentFeePaid: true,
-          },
-        },
-      },
-    });
-
-  if (!payment) {
-    return NextResponse.redirect(
-      new URL(
-        "/?payment=unknown",
-        request.nextUrl.origin
-      )
-    );
-  }
-
-  const paymentPage =
-    `/apply/${payment.application.eventSlug}/${payment.application.id}/payment`;
-
-  const confirmationPage =
-    `/apply/${payment.application.eventSlug}/${payment.application.id}/confirmation`;
-
-  /*
-   * If already successfully processed,
-   * do not process it again.
-   */
-
-  if (
-    payment.status === "SUCCESS" &&
-    payment.application
-      .assessmentFeePaid
-  ) {
-    return NextResponse.redirect(
-      new URL(
-        confirmationPage,
-        request.nextUrl.origin
-      )
-    );
-  }
+  let stage = "START";
 
   try {
+    /*
+     * --------------------------------------------------------
+     * FIND ASCEND PAYMENT
+     * --------------------------------------------------------
+     */
+
+    stage = "FIND_PAYMENT";
+
+    console.log(
+      "PAYSTACK CALLBACK:",
+      {
+        stage,
+        reference,
+      }
+    );
+
+    const payment =
+      await prisma.showcasePayment.findUnique({
+        where: {
+          reference,
+        },
+
+        select: {
+          id: true,
+          reference: true,
+          amountMinor: true,
+          currency: true,
+          status: true,
+
+          application: {
+            select: {
+              id: true,
+              eventSlug: true,
+              assessmentFeePaid: true,
+            },
+          },
+        },
+      });
+
+    if (!payment) {
+      console.error(
+        "PAYSTACK CALLBACK PAYMENT NOT FOUND:",
+        reference
+      );
+
+      return NextResponse.redirect(
+        new URL(
+          "/?payment=unknown",
+          request.nextUrl.origin
+        )
+      );
+    }
+
+    const paymentPage =
+      `/apply/${payment.application.eventSlug}/${payment.application.id}/payment`;
+
+    const confirmationPage =
+      `/apply/${payment.application.eventSlug}/${payment.application.id}/confirmation`;
+
+    /*
+     * --------------------------------------------------------
+     * ALREADY FINALISED
+     * --------------------------------------------------------
+     */
+
+    if (
+      payment.status === "SUCCESS" &&
+      payment.application
+        .assessmentFeePaid
+    ) {
+      console.log(
+        "PAYSTACK CALLBACK ALREADY FINALISED:",
+        reference
+      );
+
+      return NextResponse.redirect(
+        new URL(
+          confirmationPage,
+          request.nextUrl.origin
+        )
+      );
+    }
+
+    /*
+     * --------------------------------------------------------
+     * VERIFY WITH PAYSTACK
+     * --------------------------------------------------------
+     */
+
+    stage = "VERIFY_PAYSTACK";
+
+    console.log(
+      "PAYSTACK CALLBACK:",
+      {
+        stage,
+        reference,
+      }
+    );
+
     const verified =
       await verifyPaystackTransaction(
         reference
@@ -104,20 +149,24 @@ export async function GET(
      * --------------------------------------------------------
      */
 
+    stage = "VERIFY_REFERENCE";
+
     if (
       verified.reference !==
       payment.reference
     ) {
       throw new Error(
-        "Paystack payment reference mismatch."
+        `Paystack reference mismatch. Expected ${payment.reference}, received ${verified.reference}.`
       );
     }
 
     /*
      * --------------------------------------------------------
-     * VERIFY PAYMENT STATUS
+     * VERIFY STATUS
      * --------------------------------------------------------
      */
+
+    stage = "VERIFY_STATUS";
 
     if (
       verified.status !== "success"
@@ -129,6 +178,7 @@ export async function GET(
 
         data: {
           status: "FAILED",
+
           providerStatus:
             verified.status,
 
@@ -142,6 +192,15 @@ export async function GET(
           verifiedAt: new Date(),
         },
       });
+
+      console.warn(
+        "PAYSTACK CALLBACK PAYMENT NOT SUCCESSFUL:",
+        {
+          reference,
+          providerStatus:
+            verified.status,
+        }
+      );
 
       return NextResponse.redirect(
         new URL(
@@ -158,9 +217,13 @@ export async function GET(
      * VERIFY EXACT AMOUNT
      * --------------------------------------------------------
      *
-     * Paystack returns amount in the smallest
-     * currency unit.
+     * Both values are minor units.
+     *
+     * For NGN:
+     * 5,000,000 kobo = ₦50,000
      */
+
+    stage = "VERIFY_AMOUNT";
 
     if (
       verified.amount !==
@@ -177,6 +240,8 @@ export async function GET(
      * --------------------------------------------------------
      */
 
+    stage = "VERIFY_CURRENCY";
+
     if (
       verified.currency.toUpperCase() !==
       payment.currency.toUpperCase()
@@ -188,12 +253,29 @@ export async function GET(
 
     /*
      * --------------------------------------------------------
-     * VERIFIED PAYMENT
+     * FINALISE VERIFIED PAYMENT
      * --------------------------------------------------------
      */
 
+    stage = "FINALISE_PAYMENT";
+
+    console.log(
+      "PAYSTACK CALLBACK:",
+      {
+        stage,
+        reference,
+        amountMinor:
+          verified.amount,
+        currency:
+          verified.currency,
+        providerTransactionId:
+          String(verified.id),
+      }
+    );
+
     await finaliseShowcasePayment({
-      paymentId: payment.id,
+      paymentId:
+        payment.id,
 
       providerTransactionId:
         String(verified.id),
@@ -213,6 +295,23 @@ export async function GET(
           : new Date(),
     });
 
+    /*
+     * --------------------------------------------------------
+     * COMPLETE
+     * --------------------------------------------------------
+     */
+
+    stage = "COMPLETE";
+
+    console.log(
+      "PAYSTACK CALLBACK SUCCESS:",
+      {
+        reference,
+        applicationId:
+          payment.application.id,
+      }
+    );
+
     return NextResponse.redirect(
       new URL(
         confirmationPage,
@@ -221,20 +320,28 @@ export async function GET(
     );
   } catch (error) {
     console.error(
-      "Paystack callback verification failed:",
-      error
+      "PAYSTACK CALLBACK ERROR:",
+      {
+        stage,
+        reference,
+        error,
+      }
     );
 
     /*
-     * Do NOT mark the application as paid
-     * if verification throws or any amount /
-     * currency / reference check fails.
+     * Important:
+     *
+     * Paystack may already have taken payment.
+     * Never create or retry a charge from here.
+     *
+     * The same reference can safely be replayed
+     * after the underlying issue is corrected.
      */
 
     return NextResponse.redirect(
       new URL(
-        `${paymentPage}?payment=verification-failed&currency=${encodeURIComponent(
-          payment.currency
+        `/?payment=callback-error&reference=${encodeURIComponent(
+          reference
         )}`,
         request.nextUrl.origin
       )
