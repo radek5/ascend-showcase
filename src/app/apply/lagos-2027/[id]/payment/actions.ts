@@ -94,9 +94,7 @@ export async function startPaystackPayment(
     requestedCurrency
   );
 
-  const amountMinor = Math.round(
-    quote.chargeAmount * 100
-  );
+  const amountMinor = quote.chargeAmount;
 
   const reference =
     `ASC-PAY-LAG27-${Date.now()}-${crypto
