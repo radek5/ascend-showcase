@@ -188,6 +188,79 @@ enum FinanceCategoryType {
   EXPENSE
 }
 
+enum ShowcaseApplicationStatus {
+  DRAFT
+  AWAITING_VIDEO
+  AWAITING_ASSESSMENT_FEE
+  SUBMITTED
+  ELIGIBILITY_REVIEW
+  VIDEO_REVIEW
+  LONGLISTED
+  FINAL_REVIEW
+  SELECTED
+  RESERVE
+  NOT_SELECTED
+  WITHDRAWN
+}
+
+enum ShowcaseVideoType {
+  MATCH_1
+  MATCH_2
+  HIGHLIGHTS
+  ADDITIONAL_MATCH
+  FULL_MATCH
+  ASSESSMENT_CLIP
+  AI_TRACKED
+}
+
+enum ShowcaseVideoStatus {
+  REQUESTED
+  UPLOADING
+  SUBMITTED
+  PROCESSING
+  READY
+  REJECTED
+}
+
+enum ShowcaseIdentityDocumentType {
+  PASSPORT
+  NIN
+  HEADSHOT
+}
+
+enum ShowcaseIdentityDocumentStatus {
+  UPLOADED
+  VERIFIED
+  MORE_INFO_REQUIRED
+  REJECTED
+}
+
+enum SelectorAssignmentStatus {
+  ASSIGNED
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum SelectorRecommendation {
+  NOT_SELECTED
+  REQUEST_MORE_VIDEO
+  SECOND_REVIEW
+  LONGLIST
+}
+
+enum ShowcasePaymentProvider {
+  PAYSTACK
+}
+
+enum ShowcasePaymentStatus {
+  INITIALISED
+  PENDING
+  SUCCESS
+  FAILED
+  ABANDONED
+}
+
 model ProfessionalRegistration {
   id String @id @default(cuid())
 
@@ -267,6 +340,8 @@ model StaffUser {
 
   lastLoginAt DateTime?
 
+  selectorAccount SelectorAccount?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -321,6 +396,249 @@ model Event {
 
   @@index([active])
   @@index([city])
+}
+
+model ShowcaseApplication {
+  id String @id @default(cuid())
+
+  eventSlug String
+  userId    String?
+
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+
+  guardianName         String?
+  guardianRelationship String?
+  guardianEmail        String?
+  guardianPhone        String?
+
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactPhone        String?
+
+  dateOfBirth        DateTime?
+  age                Int?
+  nationality        String?
+  countryOfResidence String?
+  stateRegion        String?
+  city               String?
+
+  position          String?
+  secondaryPosition String?
+  preferredFoot     String?
+
+  currentClub        String?
+  currentAcademy     String?
+  footballBackground String?
+
+  // Representation
+  hasAgent                         Boolean?
+  interestedInAscendRepresentation Boolean?
+
+  agentName         String?
+  agencyName        String?
+  agentEmail        String?
+  agentPhone        String?
+  agentCountry      String?
+  fifaLicenceNumber String?
+
+  representationStart     DateTime?
+  representationEnd       DateTime?
+  exclusiveRepresentation String?
+
+  agentContactConsent                 Boolean   @default(false)
+  representationDeclarationAccepted   Boolean   @default(false)
+  representationDeclarationAcceptedAt DateTime?
+
+  // Medical / consent
+  medicalNotes           String?
+  medicalConsent         Boolean @default(false)
+  eventConsent           Boolean @default(false)
+  privacyConsent         Boolean @default(false)
+  declarationConsent     Boolean @default(false)
+  playerAgreementConsent Boolean @default(false)
+  termsConsent           Boolean @default(false)
+
+  // Future ASCEND communications / mailing list
+  futureEventConsent   Boolean   @default(false)
+  futureEventConsentAt DateTime?
+
+  videos        ShowcaseApplicationVideo[]
+  videoRequests ShowcaseVideoRequest[]
+
+  identityDocuments ShowcaseIdentityDocument[]
+
+  additionalVideoRequestedAt  DateTime?
+  additionalVideoDeadline     DateTime?
+  additionalVideoCompletedAt  DateTime?
+  additionalVideoRequestNotes String?
+
+  assessmentFeeRequired      Boolean   @default(true)
+  assessmentFeeAmount        Int?
+  assessmentFeeCurrency      String    @default("NGN")
+  assessmentFeePaid          Boolean   @default(false)
+  assessmentFeePaidAt        DateTime?
+  assessmentPaymentReference String?
+
+  assessmentDisclaimerAccepted   Boolean   @default(false)
+  assessmentDisclaimerAcceptedAt DateTime?
+
+  payments ShowcasePayment[]
+
+  status ShowcaseApplicationStatus @default(DRAFT)
+
+  assessmentCode      String?              @unique
+  selectorAssignments SelectorAssignment[]
+
+  // Permanent player-facing registration identity
+  registrationNumber String? @unique
+  checkInToken       String? @unique
+
+  // Application confirmation
+  confirmationEmailSentAt DateTime?
+
+  submittedAt                     DateTime?
+  identityVerificationCompletedAt DateTime?
+  eligibilityReviewedAt           DateTime?
+  videoReviewedAt                 DateTime?
+  longlistedAt                    DateTime?
+  finalReviewedAt                 DateTime?
+  selectedAt                      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventSlug])
+  @@index([email])
+  @@index([status])
+  @@index([eventSlug, status])
+}
+
+model ShowcasePayment {
+  id String @id @default(cuid())
+
+  applicationId String
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  provider ShowcasePaymentProvider
+  status   ShowcasePaymentStatus   @default(INITIALISED)
+
+  reference String @unique
+
+  // Amount actually sent to the gateway.
+  // Stored in the smallest currency unit.
+  // Example: NGN 25,000 = 2,500,000 kobo.
+  amountMinor Int
+  currency    String
+
+  providerTransactionId String?
+  providerStatus        String?
+  gatewayResponse       String?
+
+  initialisedAt DateTime  @default(now())
+  verifiedAt    DateTime?
+  paidAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([status])
+  @@index([provider])
+}
+
+model ShowcaseIdentityDocument {
+  id String @id @default(cuid())
+
+  applicationId String
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  type   ShowcaseIdentityDocumentType
+  status ShowcaseIdentityDocumentStatus @default(UPLOADED)
+
+  originalFilename String?
+  mimeType         String?
+  sizeBytes        BigInt?
+
+  storageProvider String?
+  storageKey      String?
+
+  uploadedAt DateTime?
+
+  verifiedAt DateTime?
+  verifiedBy String?
+
+  reviewNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([applicationId, type])
+  @@index([applicationId])
+  @@index([status])
+}
+
+model ShowcaseApplicationVideo {
+  id String @id @default(cuid())
+
+  applicationId String
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  type   ShowcaseVideoType
+  status ShowcaseVideoStatus @default(SUBMITTED)
+
+  originalFilename String?
+  mimeType         String?
+  sizeBytes        BigInt?
+  durationSeconds  Int?
+
+  storageProvider String?
+  storageKey      String?
+  playbackUrl     String?
+
+  originalUrl  String?
+  processedUrl String?
+
+  requestedAt DateTime?
+  submittedAt DateTime?
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requestId String?
+  request   ShowcaseVideoRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  @@index([requestId])
+  @@index([applicationId])
+  @@index([applicationId, type])
+  @@index([status])
+}
+
+model ShowcaseVideoRequest {
+  id String @id @default(cuid())
+
+  applicationId String
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  requestedCount     Int
+  requestedVideoType ShowcaseVideoType @default(ADDITIONAL_MATCH)
+
+  instructions String?
+  deadline     DateTime?
+
+  requestedAt DateTime  @default(now())
+  completedAt DateTime?
+
+  videos ShowcaseApplicationVideo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([completedAt])
 }
 
 // ------------------------------------------------------------
@@ -878,4 +1196,79 @@ model FinanceIncome {
   @@index([status])
   @@index([dueDate])
   @@index([commercialRelationshipId])
+}
+
+model SelectorAccount {
+  id String @id @default(cuid())
+
+  name  String
+  email String @unique
+
+  // External selectors have their own password.
+  // Internal staff selectors use the staff-session handoff,
+  // so this may be null.
+  passwordHash String?
+
+  active Boolean @default(true)
+
+  staffUserId String?    @unique
+  staffUser   StaffUser? @relation(fields: [staffUserId], references: [id], onDelete: SetNull)
+
+  assignments SelectorAssignment[]
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
+
+model SelectorAssignment {
+  id String @id @default(cuid())
+
+  selectorId String
+  selector   SelectorAccount @relation(fields: [selectorId], references: [id], onDelete: Cascade)
+
+  applicationId String
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  round  Int                      @default(1)
+  status SelectorAssignmentStatus @default(ASSIGNED)
+
+  assignedAt  DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  assessment SelectorAssessment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([selectorId, applicationId, round])
+  @@index([selectorId, status])
+  @@index([applicationId])
+}
+
+model SelectorAssessment {
+  id String @id @default(cuid())
+
+  assignmentId String             @unique
+  assignment   SelectorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  technical      Int?
+  tactical       Int?
+  physical       Int?
+  positioning    Int?
+  decisionMaking Int?
+  potential      Int?
+
+  notes String?
+
+  recommendation SelectorRecommendation?
+
+  submittedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

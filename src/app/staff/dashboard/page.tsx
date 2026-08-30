@@ -7,6 +7,18 @@ import { staffLogout } from "../actions/logout";
 export default async function StaffDashboardPage() {
   const staffUser = await requireStaffUser();
 
+  const selectorAccess =
+  await prisma.selectorAccount.findUnique({
+    where: {
+      staffUserId: staffUser.id,
+    },
+
+    select: {
+      id: true,
+      active: true,
+    },
+  });
+
   const [
     playerCount,
     professionalCount,
@@ -273,9 +285,25 @@ export default async function StaffDashboardPage() {
             />
 
             <QuickLink
+              href="/staff/selection"
+              label="Selection Control"
+            />
+
+            <QuickLink
               href="/staff/scout-requests"
               label="Scout Requests"
             />
+
+{selectorAccess?.active ? (
+  <Link
+    href="/selectors/enter"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="rounded-full border border-[#c7ff2f]/30 bg-[#c7ff2f]/[0.05] px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f] transition hover:bg-[#c7ff2f]/10"
+  >
+    Selector Portal ↗
+  </Link>
+) : null}
 
             {staffUser.role === "ADMIN" && (
   <>

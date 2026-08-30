@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "ShowcaseApplication" ADD COLUMN     "agencyName" TEXT,
+ADD COLUMN     "agentContactConsent" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "agentCountry" TEXT,
+ADD COLUMN     "agentEmail" TEXT,
+ADD COLUMN     "agentName" TEXT,
+ADD COLUMN     "agentPhone" TEXT,
+ADD COLUMN     "exclusiveRepresentation" TEXT,
+ADD COLUMN     "fifaLicenceNumber" TEXT,
+ADD COLUMN     "hasAgent" BOOLEAN,
+ADD COLUMN     "interestedInAscendRepresentation" BOOLEAN,
+ADD COLUMN     "representationDeclarationAccepted" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "representationDeclarationAcceptedAt" TIMESTAMP(3),
+ADD COLUMN     "representationEnd" TIMESTAMP(3),
+ADD COLUMN     "representationStart" TIMESTAMP(3);
