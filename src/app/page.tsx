@@ -63,7 +63,7 @@ export default function Home() {
   </a>
 
   <a
-    href="/apply/lagos-2027"
+    href="/registration"
     className="rounded-full bg-[#c7ff2f] px-5 py-3 text-sm font-bold text-black transition hover:opacity-90"
   >
     Register Now
@@ -107,7 +107,7 @@ export default function Home() {
 
             <div className="mt-10 flex flex-wrap gap-4">
               <a
-                href="/apply/lagos-2027"
+                href="/registration"
                 className="rounded-full bg-[#c7ff2f] px-7 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
               >
                 Secure Your Place

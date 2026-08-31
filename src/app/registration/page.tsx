@@ -47,7 +47,7 @@ export default function RegistrationChoicePage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            Choose how you will be attending the ASCEND Football Showcase.
+            Choose how you  would like to register for the ASCEND Lagos 2027 Football Showcase.
           </p>
         </div>
       </section>
@@ -55,7 +55,7 @@ export default function RegistrationChoicePage() {
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-2">
           <Link
-            href="/register"
+            href="/apply/lagos-2027"
             className="group rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 transition hover:border-[#c7ff2f]/50 hover:bg-white/[0.05] sm:p-10"
           >
             <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
@@ -67,11 +67,11 @@ export default function RegistrationChoicePage() {
             </h2>
 
             <p className="mt-4 max-w-lg leading-7 text-white/55">
-              Register to participate in the ASCEND Football Showcase.
+              Apply as a player for the ASCEND Lagos 2027 Football Showcase.
             </p>
 
             <div className="mt-10 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.1em]">
-              Register Here
+              Player Registration
               <span className="text-[#c7ff2f] transition group-hover:translate-x-1">
                 →
               </span>

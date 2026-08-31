@@ -2,51 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
-import {
-  updateShowcaseConsent,
-} from "./actions";
+import { updateShowcaseConsent } from "./actions";
 
 type PageProps = {
   params: Promise<{
     id: string;
   }>;
 };
-
-function calculateAge(
-  dateOfBirth: Date | null
-) {
-  if (!dateOfBirth) {
-    return null;
-  }
-
-  /*
-   * Lagos 2027 currently uses January 2027.
-   * We can later derive the exact assessment
-   * date from Event once ShowcaseApplication
-   * has a direct Event relation.
-   */
-  const eventDate =
-    new Date("2027-01-01T00:00:00Z");
-
-  let age =
-    eventDate.getUTCFullYear() -
-    dateOfBirth.getUTCFullYear();
-
-  const month =
-    eventDate.getUTCMonth() -
-    dateOfBirth.getUTCMonth();
-
-  if (
-    month < 0 ||
-    (month === 0 &&
-      eventDate.getUTCDate() <
-        dateOfBirth.getUTCDate())
-  ) {
-    age--;
-  }
-
-  return age;
-}
 
 export default async function ConsentPage({
   params,
@@ -63,14 +25,6 @@ export default async function ConsentPage({
   if (!application) {
     notFound();
   }
-
-  const age =
-    calculateAge(
-      application.dateOfBirth
-    );
-
-  const isUnder18 =
-    age !== null && age < 18;
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
@@ -108,7 +62,7 @@ export default async function ConsentPage({
           </Link>
 
           <Link
-            href={`/apply/${application.eventSlug}/${application.id}/video`}
+            href={`/apply/${application.eventSlug}/${application.id}/identity`}
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
             Back
@@ -119,7 +73,7 @@ export default async function ConsentPage({
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[1fr_340px] lg:px-8">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Step 5 of 9
+            Step 6 of 10
           </div>
 
           <h1 className="mt-3 text-3xl font-black sm:text-4xl">
@@ -127,42 +81,11 @@ export default async function ConsentPage({
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            {isUnder18
-              ? "A parent or legal guardian must review and accept the required medical consent and declarations on behalf of the player."
-              : "Please provide the required medical information and review the declarations for the ASCEND Football Showcase."}
+            Please provide any relevant medical
+            information and review the required
+            declarations for the ASCEND Football
+            Showcase.
           </p>
-
-          {isUnder18 && (
-            <div className="mt-8 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-5">
-              <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
-                Parent / Guardian
-              </div>
-
-              <div className="mt-2 text-lg font-bold">
-                {application.guardianName ||
-                  "Guardian details required"}
-              </div>
-
-              {application.guardianRelationship && (
-                <div className="mt-1 text-sm text-white/45">
-                  {
-                    application.guardianRelationship
-                  }
-                </div>
-              )}
-
-              <p className="mt-4 text-sm leading-6 text-white/60">
-                The following consents and
-                declarations are being made on
-                behalf of{" "}
-                <span className="font-semibold text-white">
-                  {application.firstName}{" "}
-                  {application.lastName}
-                </span>
-                .
-              </p>
-            </div>
-          )}
 
           <form
             action={updateShowcaseConsent}
@@ -180,11 +103,10 @@ export default async function ConsentPage({
               </div>
 
               <p className="mt-2 text-sm leading-6 text-white/45">
-                Please tell us about any
-                allergies, medical conditions,
-                medication, previous injuries or
-                other information the event
-                medical team should know.
+                Please tell us about any allergies,
+                medical conditions, medication,
+                previous injuries or other information
+                the event medical team should know.
               </p>
 
               <textarea
@@ -200,30 +122,23 @@ export default async function ConsentPage({
 
             <ConsentCard
               name="medicalConsent"
-              title={
-                isUnder18
-                  ? "Parent / Guardian Medical Consent"
-                  : "Medical Consent"
-              }
-              checked={
-                application.medicalConsent
-              }
+              title="Medical Consent"
+              checked={application.medicalConsent}
             >
-              {isUnder18
-                ? "I confirm that I am the parent or legal guardian of the player and consent to appropriate first aid and emergency medical assistance being provided if required during the event."
-                : "I consent to appropriate first aid and emergency medical assistance being provided if required during the event."}
+              I consent to appropriate first aid and
+              emergency medical assistance being
+              provided if required during the event.
             </ConsentCard>
 
             <ConsentCard
               name="eventConsent"
               title="Participation Declaration"
-              checked={
-                application.eventConsent
-              }
+              checked={application.eventConsent}
             >
-              {isUnder18
-                ? `I give permission for ${application.firstName} ${application.lastName} to participate in the ASCEND Football Showcase and acknowledge that football involves physical activity and an inherent risk of injury.`
-                : "I agree to participate in the ASCEND Football Showcase and acknowledge that football involves physical activity and an inherent risk of injury."}
+              I agree to participate in the ASCEND
+              Football Showcase and acknowledge that
+              football involves physical activity and
+              an inherent risk of injury.
             </ConsentCard>
 
             <ConsentCard
@@ -233,31 +148,28 @@ export default async function ConsentPage({
                 application.declarationConsent
               }
             >
-              I confirm that the information
-              provided during this application,
-              including player, representation
-              and medical information, is
-              accurate to the best of my
-              knowledge.
+              I confirm that the information provided
+              during this application, including
+              player, representation and medical
+              information, is accurate to the best of
+              my knowledge.
             </ConsentCard>
 
             <ConsentCard
               name="termsConsent"
               title="Terms & Conditions"
-              checked={
-                application.termsConsent
-              }
+              checked={application.termsConsent}
             >
               <>
-                I confirm that I have read and
-                agree to the{" "}
+                I confirm that I have read and agree
+                to the{" "}
                 <Link
                   href="/terms"
                   target="_blank"
                   className="font-bold text-[#c7ff2f] underline underline-offset-4"
                 >
-                  ASCEND Football Showcase Terms
-                  & Conditions
+                  ASCEND Football Showcase Terms &
+                  Conditions
                 </Link>
                 .
               </>
@@ -266,9 +178,7 @@ export default async function ConsentPage({
             <ConsentCard
               name="privacyConsent"
               title="Privacy Notice"
-              checked={
-                application.privacyConsent
-              }
+              checked={application.privacyConsent}
             >
               <>
                 I confirm that I have read and
@@ -278,12 +188,12 @@ export default async function ConsentPage({
                   target="_blank"
                   className="font-bold text-[#c7ff2f] underline underline-offset-4"
                 >
-                  ASCEND Football Showcase
-                  Privacy Notice
+                  ASCEND Football Showcase Privacy
+                  Notice
                 </Link>
                 , including how ASCEND processes
-                personal details, football
-                information and video evidence.
+                personal details, football information
+                and video evidence.
               </>
             </ConsentCard>
 
@@ -295,8 +205,8 @@ export default async function ConsentPage({
               }
             >
               <>
-                I confirm that I have read and
-                agree to the{" "}
+                I confirm that I have read and agree
+                to the{" "}
                 <Link
                   href="/player-agreement"
                   target="_blank"
@@ -326,9 +236,10 @@ export default async function ConsentPage({
                 </div>
 
                 <p className="mt-2 text-sm leading-6 text-white/55">
-                  {isUnder18
-                    ? `I would like ASCEND to keep me informed about future football showcases, trials and relevant opportunities for ${application.firstName} ${application.lastName}.`
-                    : "I would like ASCEND to keep me informed about future football showcases, trials and relevant opportunities."}
+                  I would like ASCEND to keep me
+                  informed about future football
+                  showcases, trials and relevant
+                  opportunities.
                 </p>
 
                 <div className="mt-3 text-xs font-bold uppercase tracking-[0.1em] text-[#1685ff]">
@@ -365,16 +276,8 @@ export default async function ConsentPage({
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <Row
-                label="Age at event"
-                value={
-                  age !== null
-                    ? `${age} ${
-                        isUnder18
-                          ? "(U18)"
-                          : "(18+)"
-                      }`
-                    : "Unavailable"
-                }
+                label="Eligibility"
+                value="18–20"
               />
 
               <Row
@@ -392,9 +295,9 @@ export default async function ConsentPage({
             </div>
 
             <div className="mt-6 rounded-xl border border-[#c7ff2f]/15 bg-[#c7ff2f]/[0.05] p-4 text-sm leading-6 text-white/60">
-              Medical information should be
-              accurate and updated if anything
-              changes before the Showcase.
+              Medical information should be accurate
+              and updated if anything changes before
+              the Showcase.
             </div>
           </div>
         </aside>

@@ -79,7 +79,7 @@ const recipientName =
    * is later selected.
    */
   const qrUrl =
-    `${appUrl}/checkin/showcase/${application.checkInToken}`;
+    `${appUrl}/checkin/${application.checkInToken}`;
 
   const qrBuffer =
     await QRCode.toBuffer(

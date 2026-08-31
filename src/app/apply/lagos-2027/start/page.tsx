@@ -268,7 +268,7 @@ const ageResult =
         <div>
           <div className="mb-8">
             <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-              Step 1 of 8
+              Step 1 of 10
             </div>
 
             <h2 className="mt-3 text-3xl font-black">

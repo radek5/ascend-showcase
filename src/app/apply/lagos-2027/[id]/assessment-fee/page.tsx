@@ -100,7 +100,7 @@ export default async function AssessmentFeePage({
 
       <section className="mx-auto max-w-4xl px-6 py-14 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-          Step 7 of 9
+          Step 8 of 10
         </div>
 
         <h1 className="mt-3 text-4xl font-black sm:text-5xl">
@@ -108,10 +108,11 @@ export default async function AssessmentFeePage({
         </h1>
 
         <p className="mt-4 max-w-2xl text-white/55">
-          Your application and submitted
-          football evidence will be assessed
-          as part of the ASCEND Lagos 2027
-          player-selection process.
+          Subject to identity, age and eligibility
+  verification, your application and submitted
+  football evidence will be professionally
+  assessed as part of the ASCEND Lagos 2027
+  player-selection process.
         </p>
 
         <div className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.025] p-7 sm:p-9">
@@ -153,10 +154,11 @@ export default async function AssessmentFeePage({
           </p>
 
           <p className="mt-4 text-sm leading-7 text-white/60">
-            Following the assessment and
-            selection process, the best 100
-            players will be selected for the
-            Lagos 2027 camp.
+            <p className="mt-4 text-sm leading-7 text-white/60">
+  Following the assessment and selection
+  process, the best 100 eligible players
+  will be selected for the Lagos 2027 camp.
+</p>
           </p>
         </div>
 

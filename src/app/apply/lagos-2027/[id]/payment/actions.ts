@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 
 import {
   getFxQuote,
-  isSupportedCurrency,
 } from "@/lib/payments/fx";
 
 import {
@@ -22,21 +21,9 @@ export async function startPaystackPayment(
     formData.get("applicationId") || ""
   ).trim();
 
-  const requestedCurrency = String(
-    formData.get("currency") || "NGN"
-  )
-    .trim()
-    .toUpperCase();
-
   if (!applicationId) {
     throw new Error(
       "Application ID is required."
-    );
-  }
-
-  if (!isSupportedCurrency(requestedCurrency)) {
-    throw new Error(
-      "Unsupported payment currency."
     );
   }
 
@@ -91,7 +78,7 @@ export async function startPaystackPayment(
 
   const quote = getFxQuote(
     application.assessmentFeeAmount,
-    requestedCurrency
+    "NGN"
   );
 
   const amountMinor = quote.chargeAmount;

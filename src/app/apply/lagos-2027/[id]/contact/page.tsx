@@ -242,7 +242,7 @@ export default function ContactPage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[1fr_340px] lg:px-8">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Step 2 of 9
+            Step 2 of 10
           </div>
 
           <h1 className="mt-3 text-3xl font-black sm:text-4xl">

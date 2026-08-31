@@ -37,12 +37,27 @@ export async function acceptAssessmentFeeTerms(
       select: {
         id: true,
         eventSlug: true,
+
+        assessmentFeePaid: true,
+
+        assessmentDisclaimerAccepted: true,
+        assessmentDisclaimerAcceptedAt: true,
       },
     });
 
   if (!application) {
     throw new Error(
       "Application not found."
+    );
+  }
+
+  /*
+   * A completed payment must never be moved
+   * backwards into the fee/payment workflow.
+   */
+  if (application.assessmentFeePaid) {
+    redirect(
+      `/apply/${application.eventSlug}/${application.id}/confirmation`
     );
   }
 
@@ -53,7 +68,9 @@ export async function acceptAssessmentFeeTerms(
 
     data: {
       assessmentDisclaimerAccepted: true,
+
       assessmentDisclaimerAcceptedAt:
+        application.assessmentDisclaimerAcceptedAt ??
         new Date(),
 
       status:

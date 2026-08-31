@@ -65,7 +65,7 @@ export default async function ConfirmationPage({
 
     if (appUrl) {
       const qrUrl =
-        `${appUrl}/checkin/showcase/${application.checkInToken}`;
+        `${appUrl}/checkin/${application.checkInToken}`;
 
       qrDataUrl =
         await QRCode.toDataURL(qrUrl, {
@@ -166,7 +166,11 @@ export default async function ConfirmationPage({
 
             <SummaryItem
               label="Application Status"
-              value={application.status.replaceAll("_", " ")}
+              value={
+                application.assessmentFeePaid
+                  ? "Submitted — Eligibility Review"
+                  : "Application in progress"
+              }
             />
 
             <SummaryItem

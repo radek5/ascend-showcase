@@ -5,8 +5,6 @@ import { prisma } from "@/lib/prisma";
 
 import {
   getFxQuote,
-  getSupportedCurrencies,
-  isSupportedCurrency,
 } from "@/lib/payments/fx";
 
 import {
@@ -127,31 +125,10 @@ export default async function ShowcasePaymentPage({
     );
   }
 
-  const requestedCurrency =
-    query.currency &&
-    isSupportedCurrency(query.currency)
-      ? query.currency
-      : application.assessmentFeeCurrency ===
-          "NGN"
-        ? "NGN"
-        : "NGN";
-
-  const supportedCurrencies =
-    getSupportedCurrencies();
-
-  const quotes =
-    supportedCurrencies.map(
-      (currency) =>
-        getFxQuote(
-          baseAmount,
-          currency
-        )
-    );
-
   const selectedQuote =
     getFxQuote(
       baseAmount,
-      requestedCurrency
+      "NGN"
     );
 
   const initialisationFailed =
@@ -253,60 +230,6 @@ export default async function ShowcasePaymentPage({
             </div>
           </div>
 
-          <div className="mt-8">
-            <div className="text-lg font-black">
-              Choose payment currency
-            </div>
-
-            <p className="mt-2 text-sm text-white/45">
-              Select the currency you would
-              prefer to use for payment.
-            </p>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {quotes.map((quote) => {
-                const selected =
-                  quote.chargeCurrency ===
-                  requestedCurrency;
-
-                return (
-                  <Link
-                    key={
-                      quote.chargeCurrency
-                    }
-                    href={`/apply/${application.eventSlug}/${application.id}/payment?currency=${quote.chargeCurrency}`}
-                    className={`rounded-2xl border p-5 transition ${
-                      selected
-                        ? "border-[#c7ff2f]/70 bg-[#c7ff2f]/[0.07]"
-                        : "border-white/10 bg-white/[0.025] hover:border-white/20"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-5">
-                      <div>
-                        <div className="text-sm font-black">
-                          {
-                            quote.chargeCurrency
-                          }
-                        </div>
-
-                        <div className="mt-1 text-xs text-white/35">
-                          Payment currency
-                        </div>
-                      </div>
-
-                      <div className="text-xl font-black">
-                        {formatCurrency(
-                          quote.chargeAmount,
-                          quote.chargeCurrency
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.025] p-7">
             <div className="flex items-start gap-4">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#c7ff2f] font-black text-black">
@@ -402,10 +325,7 @@ export default async function ShowcasePaymentPage({
                 <input
                   type="hidden"
                   name="currency"
-                  value={
-                    selectedQuote
-                      .chargeCurrency
-                  }
+                  value="NGN"
                 />
 
                 <button

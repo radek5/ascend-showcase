@@ -115,7 +115,7 @@ export default async function ReviewPage({
 
       <section className="mx-auto max-w-6xl px-6 py-14 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-          Step 6 of 9
+          Step 7 of 10
         </div>
 
         <h1 className="mt-3 text-4xl font-black sm:text-5xl">
@@ -294,46 +294,6 @@ export default async function ReviewPage({
               />
             </ReviewGrid>
 
-            {application.guardianName ? (
-              <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4">
-                <div className="text-xs font-black uppercase tracking-[0.1em] text-white/35">
-                  Parent / Guardian
-                </div>
-
-                <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <Item
-                    label="Name"
-                    value={
-                      application.guardianName
-                    }
-                  />
-
-                  <Item
-                    label="Relationship"
-                    value={
-                      application.guardianRelationship ||
-                      "Not provided"
-                    }
-                  />
-
-                  <Item
-                    label="Email"
-                    value={
-                      application.guardianEmail ||
-                      "Not provided"
-                    }
-                  />
-
-                  <Item
-                    label="Phone"
-                    value={
-                      application.guardianPhone ||
-                      "Not provided"
-                    }
-                  />
-                </div>
-              </div>
-            ) : null}
           </ReviewSection>
 
           {/* REPRESENTATION */}
@@ -452,6 +412,43 @@ export default async function ReviewPage({
             </div>
           </ReviewSection>
 
+{/* IDENTITY & AGE VERIFICATION */}
+
+<ReviewSection
+  title="Identity & Age Verification"
+  editHref={`/apply/${application.eventSlug}/${application.id}/identity`}
+>
+  <ReviewGrid>
+    <Item
+      label="International Passport"
+      value="Submitted for verification"
+    />
+
+    <Item
+      label="NIN Documentation"
+      value="Submitted for verification"
+    />
+
+    <Item
+      label="Player Headshot"
+      value="Submitted for verification"
+    />
+  </ReviewGrid>
+
+  <div className="mt-5 rounded-xl border border-[#1685ff]/20 bg-[#1685ff]/[0.04] p-4">
+    <div className="text-xs font-black uppercase tracking-[0.1em] text-[#1685ff]">
+      Verification
+    </div>
+
+    <p className="mt-2 text-sm leading-6 text-white/60">
+      Your identity documents and age eligibility
+      will be verified by the ASCEND team before
+      your football evidence is released for
+      selector assessment.
+    </p>
+  </div>
+</ReviewSection>
+
           {/* MEDICAL / CONSENT */}
 
           <ReviewSection
@@ -540,26 +537,27 @@ export default async function ReviewPage({
             Important
           </div>
 
-          <p className="mt-3 text-sm leading-7 text-white/65">
-            The Application & Assessment Fee
-            covers the processing and professional
-            assessment of your application and
-            submitted football evidence.
-          </p>
+<p className="mt-3 text-sm leading-7 text-white/65">
+  The Application & Assessment Fee covers
+  the processing and professional assessment
+  of your application and submitted football
+  evidence.
+</p>
 
-          <p className="mt-3 font-bold leading-7 text-white">
-            Payment of the Application &
-            Assessment Fee does not guarantee
-            selection or an invitation to the
-            ASCEND Lagos 2027 camp.
-          </p>
+<p className="mt-3 font-bold leading-7 text-white">
+  Payment of the Application & Assessment
+  Fee does not guarantee selection or an
+  invitation to the ASCEND Lagos 2027 camp.
+</p>
 
-          <p className="mt-3 text-sm leading-7 text-white/55">
-            The strongest applicants will progress
-            through ASCEND's selection process.
-            The best 100 players will be selected
-            for the final camp.
-          </p>
+<p className="mt-3 text-sm leading-7 text-white/55">
+  Further video evidence may be requested
+  during the assessment process. The
+  strongest eligible applicants will
+  progress, with the best 100 players
+  selected for the final camp.
+</p>        
+
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
