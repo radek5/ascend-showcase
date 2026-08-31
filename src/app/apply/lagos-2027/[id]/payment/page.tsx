@@ -1,7 +1,11 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
+
+import {
+  getApplicationPaymentReadiness,
+} from "@/lib/showcase/getApplicationPaymentReadiness";
 
 import {
   getFxQuote,
@@ -63,6 +67,24 @@ export default async function ShowcasePaymentPage({
 
   if (!application) {
     notFound();
+  }
+
+  if (!application.assessmentFeePaid) {
+    const readiness =
+      await getApplicationPaymentReadiness(
+        application.id
+      );
+
+    if (!readiness) {
+      notFound();
+    }
+
+    if (!readiness.ready) {
+      redirect(
+        readiness.redirectPath ??
+          `/apply/${application.eventSlug}/${application.id}/review`
+      );
+    }
   }
 
   if (

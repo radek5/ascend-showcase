@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/payments/formatCurrency";
 import { prisma } from "@/lib/prisma";
+
+import { getApplicationPaymentReadiness } from "@/lib/showcase/getApplicationPaymentReadiness";
 
 import {
   acceptAssessmentFeeTerms,
@@ -43,6 +45,28 @@ export default async function AssessmentFeePage({
 
   if (!application) {
     notFound();
+  }
+
+  if (application.assessmentFeePaid) {
+    redirect(
+      `/apply/${application.eventSlug}/${application.id}/confirmation`
+    );
+  }
+
+  const readiness =
+    await getApplicationPaymentReadiness(
+      application.id
+    );
+
+  if (!readiness) {
+    notFound();
+  }
+
+  if (!readiness.ready) {
+    redirect(
+      readiness.redirectPath ??
+        `/apply/${application.eventSlug}/${application.id}/review`
+    );
   }
 
    const formattedAmount =

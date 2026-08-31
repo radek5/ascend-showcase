@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
+import {
+  getApplicationPaymentReadiness,
+} from "@/lib/showcase/getApplicationPaymentReadiness";
 
 export async function acceptAssessmentFeeTerms(
   formData: FormData
@@ -58,6 +61,32 @@ export async function acceptAssessmentFeeTerms(
   if (application.assessmentFeePaid) {
     redirect(
       `/apply/${application.eventSlug}/${application.id}/confirmation`
+    );
+  }
+
+  /*
+   * Server-side workflow protection.
+   *
+   * A player cannot enter the assessment-fee
+   * / payment workflow until all mandatory
+   * identity uploads and consent declarations
+   * are complete.
+   */
+  const readiness =
+    await getApplicationPaymentReadiness(
+      application.id
+    );
+
+  if (!readiness) {
+    throw new Error(
+      "Application not found."
+    );
+  }
+
+  if (!readiness.ready) {
+    redirect(
+      readiness.redirectPath ??
+        `/apply/${application.eventSlug}/${application.id}/review`
     );
   }
 

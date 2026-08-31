@@ -14,6 +14,10 @@ import {
   initialisePaystackTransaction,
 } from "@/lib/payments/paystack";
 
+import {
+  getApplicationPaymentReadiness,
+} from "@/lib/showcase/getApplicationPaymentReadiness";
+
 export async function startPaystackPayment(
   formData: FormData
 ) {
@@ -55,18 +59,45 @@ export async function startPaystackPayment(
     );
   }
 
+  /*
+   * Never interfere with an already completed
+   * payment.
+   */
+  if (application.assessmentFeePaid) {
+    redirect(
+      `/apply/${application.eventSlug}/${application.id}/confirmation`
+    );
+  }
+
+  /*
+   * Payment must not be initialised for an
+   * incomplete application, even if somebody
+   * navigates directly to Step 9.
+   */
+  const readiness =
+    await getApplicationPaymentReadiness(
+      application.id
+    );
+
+  if (!readiness) {
+    throw new Error(
+      "Showcase application not found."
+    );
+  }
+
+  if (!readiness.ready) {
+    redirect(
+      readiness.redirectPath ??
+        `/apply/${application.eventSlug}/${application.id}/review`
+    );
+  }
+
   if (
     application.assessmentFeeRequired &&
     !application.assessmentDisclaimerAccepted
   ) {
     redirect(
       `/apply/${application.eventSlug}/${application.id}/assessment-fee`
-    );
-  }
-
-  if (application.assessmentFeePaid) {
-    redirect(
-      `/apply/${application.eventSlug}/${application.id}/confirmation`
     );
   }
 
