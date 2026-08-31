@@ -261,6 +261,17 @@ enum ShowcasePaymentStatus {
   ABANDONED
 }
 
+enum ShowcaseCompetitionCategory {
+  MEN
+  WOMEN
+  OPEN
+}
+
+enum PlayerSex {
+  MALE
+  FEMALE
+}
+
 model ProfessionalRegistration {
   id String @id @default(cuid())
 
@@ -356,6 +367,10 @@ model Event {
   name    String
   edition String
 
+  showcaseCompetitionCategory ShowcaseCompetitionCategory @default(OPEN)
+  showcaseMinimumAge          Int?
+  showcaseMaximumAge          Int?
+
   city    String
   country String
   venue   String
@@ -420,6 +435,7 @@ model ShowcaseApplication {
 
   dateOfBirth        DateTime?
   age                Int?
+  sex                PlayerSex?
   nationality        String?
   countryOfResidence String?
   stateRegion        String?

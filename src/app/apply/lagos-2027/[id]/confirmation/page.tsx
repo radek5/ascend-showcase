@@ -136,8 +136,9 @@ export default async function ConfirmationPage({
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
-            Thank you, {application.firstName}. Your ASCEND Lagos 2027
-            application and football evidence have been received.
+            Thank you, {application.firstName}. Your application for the
+            Lagos 2027 Men&apos;s Football Showcase and your submitted
+            football evidence have been received.
           </p>
 
           {application.registrationNumber && (
@@ -151,9 +152,9 @@ export default async function ConfirmationPage({
               </div>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
-                Keep this registration code safe. It remains your ASCEND
-                Lagos 2027 registration identity throughout the application,
-                assessment and selection process.
+                Keep this registration code safe. It remains your permanent
+                Lagos 2027 Men&apos;s Football Showcase registration identity
+                throughout the application, assessment and selection process.
               </p>
             </div>
           )}
@@ -249,7 +250,9 @@ export default async function ConfirmationPage({
           <div className="mt-5 space-y-5 text-sm leading-7 text-white/55">
             <p>
               Your application will now enter ASCEND&apos;s identity,
-              age and eligibility verification process.
+              age and event eligibility verification process. Lagos 2027
+              is the Men&apos;s Football Showcase for eligible male players
+              aged 18–20 on the first day of the programme.
             </p>
 
             <p>
@@ -272,7 +275,7 @@ export default async function ConfirmationPage({
 
             <p className="font-bold text-white">
               The best 100 eligible players will be selected for the
-              final ASCEND Lagos 2027 camp.
+              final Lagos 2027 Men&apos;s Football Showcase camp.
             </p>
           </div>
         </div>
@@ -285,7 +288,7 @@ export default async function ConfirmationPage({
           <p className="mt-3 text-sm leading-7 text-white/60">
             Submission of an application and payment of the Application &
             Assessment Fee does not guarantee selection or an invitation to
-            the ASCEND Lagos 2027 camp.
+            the Lagos 2027 Men&apos;s Football Showcase camp.
           </p>
         </div>
 

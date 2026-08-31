@@ -32,7 +32,7 @@ export default function Lagos2027ApplicationPage() {
           <p className="mt-3 font-bold leading-7 text-white">
             Payment of the Application &amp; Assessment Fee does
             not guarantee selection or an invitation to the
-            ASCEND Lagos 2027 camp.
+            Lagos 2027 Men&apos;s Football Showcase camp.
           </p>
         </section>
 

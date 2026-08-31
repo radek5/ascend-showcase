@@ -398,7 +398,7 @@ export default async function ShowcasePaymentPage({
                 processing and football
                 assessment. Payment does not
                 guarantee selection for the
-                ASCEND Lagos 2027 camp.
+                Lagos 2027 Men&apos;s Football Showcase camp.
               </p>
             </div>
           </div>

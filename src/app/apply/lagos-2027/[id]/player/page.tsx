@@ -32,6 +32,8 @@ export default async function PlayerEditPage({
         phone: true,
 
         dateOfBirth: true,
+        sex: true,
+
         nationality: true,
         countryOfResidence: true,
         stateRegion: true,
@@ -55,6 +57,12 @@ export default async function PlayerEditPage({
     <PlayerEditForm
       application={{
         ...application,
+
+        sex:
+          application.sex === "MALE" ||
+          application.sex === "FEMALE"
+            ? application.sex
+            : "",
 
         dateOfBirth:
           application.dateOfBirth

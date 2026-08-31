@@ -9,10 +9,12 @@ const steps = [
   "Contact",
   "Representation",
   "Video",
+  "Identity",
   "Consent",
   "Review",
   "Assessment Fee",
-  "Submitted",
+  "Payment",
+  "Confirmation",
 ];
 
 const positions = [
@@ -28,14 +30,7 @@ const positions = [
   "Striker",
 ];
 
-export default function Lagos2027StartApplicationPage() {
-  const router = useRouter();
-
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const [dateOfBirth, setDateOfBirth] =
-  useState("");
+type PlayerSex = "" | "MALE" | "FEMALE";
 
 type AgeResult =
   | {
@@ -67,7 +62,8 @@ function getAgeResult(
    * UI convenience only.
    *
    * The API remains authoritative and obtains
-   * footballStartsAt from the Event record.
+   * footballStartsAt and eligibility configuration
+   * from the Event record.
    *
    * Lagos 2027 currently starts:
    * 11 January 2027.
@@ -114,61 +110,107 @@ function getAgeResult(
   };
 }
 
-const ageResult =
-  getAgeResult(dateOfBirth);
+export default function Lagos2027StartApplicationPage() {
+  const router = useRouter();
 
+  const [submitting, setSubmitting] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [dateOfBirth, setDateOfBirth] =
+    useState("");
+
+  const [sex, setSex] =
+    useState<PlayerSex>("");
+
+  const ageResult =
+    getAgeResult(dateOfBirth);
+
+  const sexEligible =
+    sex === "MALE";
+
+  const canProceed =
+    Boolean(
+      ageResult?.eligible &&
+      sexEligible
+    );
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
+    if (!sex) {
+      setError(
+        "Please select the player's sex."
+      );
+      return;
+    }
+
+    if (!sexEligible) {
+      setError(
+        "Lagos 2027 is the Men's Football Showcase and is open to eligible male players."
+      );
+      return;
+    }
+
     if (!ageResult?.eligible) {
-  setError(
-    "You must meet the Lagos 2027 age requirement before continuing."
-  );
-  return;
-}
+      setError(
+        "You must meet the Lagos 2027 age requirement before continuing."
+      );
+      return;
+    }
 
     setSubmitting(true);
     setError("");
 
-    const formData = new FormData(event.currentTarget);
+    const formData =
+      new FormData(event.currentTarget);
 
-    const payload = Object.fromEntries(
-      formData.entries()
-    );
+    const payload =
+      Object.fromEntries(
+        formData.entries()
+      );
 
     try {
       const response = await fetch(
         "/api/showcase-applications",
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify(payload),
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         setError(
           data.error ||
             "We could not create your application."
         );
+
         setSubmitting(false);
         return;
       }
 
       router.push(
-        `/apply/lagos-2027/${data.application.id}/contact`
+        data.next ||
+          `/apply/lagos-2027/${data.application.id}/contact`
       );
     } catch {
       setError(
         "We could not create your application. Please try again."
       );
+
       setSubmitting(false);
     }
   }
@@ -177,7 +219,10 @@ const ageResult =
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="flex items-center gap-4"
+          >
             <svg
               viewBox="0 0 54 54"
               className="h-10 w-10"
@@ -188,6 +233,7 @@ const ageResult =
                 d="M27 3 49 46 27 35 5 46 27 3Z"
                 fill="#1685ff"
               />
+
               <path
                 d="M27 15 38 37 27 31 16 37 27 15Z"
                 fill="#020812"
@@ -221,45 +267,53 @@ const ageResult =
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
-            Player Application
+            Men&apos;s Football Showcase
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            Complete your player application for professional assessment
-            and selection.
+            Apply for professional football
+            assessment and selection for the
+            inaugural Lagos 2027 Men&apos;s
+            Football Showcase.
           </p>
+
+          <div className="mt-5 inline-flex rounded-full border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.06] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#c7ff2f]">
+            Male players · Ages 18–20
+          </div>
         </div>
       </section>
 
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
-          <div className="flex min-w-[920px]">
-            {steps.map((step, index) => (
-              <div
-                key={step}
-                className="flex flex-1 items-center gap-3 border-r border-white/10 py-5 pr-5 first:pl-0"
-              >
+          <div className="flex min-w-[1180px]">
+            {steps.map(
+              (step, index) => (
                 <div
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    index === 0
-                      ? "bg-[#c7ff2f] text-black"
-                      : "border border-white/15 text-white/40"
-                  }`}
+                  key={step}
+                  className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-4 first:pl-0"
                 >
-                  {index + 1}
-                </div>
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                      index === 0
+                        ? "bg-[#c7ff2f] text-black"
+                        : "border border-white/15 text-white/40"
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
 
-                <span
-                  className={`text-[11px] font-bold uppercase tracking-[0.1em] ${
-                    index === 0
-                      ? "text-white"
-                      : "text-white/35"
-                  }`}
-                >
-                  {step}
-                </span>
-              </div>
-            ))}
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
+                      index === 0
+                        ? "text-white"
+                        : "text-white/35"
+                    }`}
+                  >
+                    {step}
+                  </span>
+                </div>
+              )
+            )}
           </div>
         </div>
       </section>
@@ -276,7 +330,8 @@ const ageResult =
             </h2>
 
             <p className="mt-2 text-sm text-white/50">
-              Tell us about the player applying for assessment.
+              Tell us about the player applying
+              for assessment.
             </p>
           </div>
 
@@ -296,69 +351,186 @@ const ageResult =
               required
             />
 
-<label className="space-y-2">
-  <span className="text-sm font-semibold">
-    Date of birth
-  </span>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold">
+                Sex
+              </span>
 
-  <input
-    name="dateOfBirth"
-    type="date"
-    required
-    value={dateOfBirth}
-    onChange={(event) => {
-      setDateOfBirth(event.target.value);
-      setError("");
-    }}
-    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
-  />
+              <select
+                name="sex"
+                required
+                value={sex}
+                onChange={(event) => {
+                  setSex(
+                    event.target
+                      .value as PlayerSex
+                  );
 
-  <p className="text-xs leading-5 text-white/40">
-    Lagos 2027 is open to players aged 18–20
-    on the first day of the programme.
-  </p>
-</label>
+                  setError("");
+                }}
+                className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+              >
+                <option value="">
+                  Select
+                </option>
 
-{ageResult ? (
-  <div
-    className={`rounded-xl border p-4 ${
-      ageResult.eligible
-        ? "border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.06]"
-        : "border-red-400/25 bg-red-400/[0.08]"
-    }`}
-  >
-    {ageResult.eligible ? (
-      <>
-        <div className="text-sm font-black text-[#c7ff2f]">
-          ✓ Eligible for Lagos 2027
-        </div>
+                <option value="MALE">
+                  Male
+                </option>
 
-        <p className="mt-1 text-xs leading-5 text-white/55">
-          You will be {ageResult.age} years old
-          on the first day of the programme and
-          meet the 18–20 age requirement.
-        </p>
-      </>
-    ) : (
-      <>
-        <div className="text-sm font-black text-red-300">
-          ✕ Not eligible for Lagos 2027
-        </div>
+                <option value="FEMALE">
+                  Female
+                </option>
+              </select>
 
-        <p className="mt-1 text-xs leading-5 text-red-100/70">
-          {ageResult.reason ===
-          "AGE_TOO_YOUNG"
-            ? `You will be ${ageResult.age} years old on the first day of the programme and are below the minimum age of 18.`
-            : `You will be ${ageResult.age} years old on the first day of the programme and are above the maximum age of 20.`}
-        </p>
+              <p className="text-xs leading-5 text-white/40">
+                Lagos 2027 is the
+                Men&apos;s Football Showcase
+                and is open to eligible male
+                players.
+              </p>
+            </label>
 
-        <p className="mt-2 text-xs font-semibold leading-5 text-white/50">
-          This application cannot proceed.
-        </p>
-      </>
-    )}
-  </div>
-) : null}
+            <label className="space-y-2">
+              <span className="text-sm font-semibold">
+                Date of birth
+              </span>
+
+              <input
+                name="dateOfBirth"
+                type="date"
+                required
+                value={dateOfBirth}
+                onChange={(event) => {
+                  setDateOfBirth(
+                    event.target.value
+                  );
+
+                  setError("");
+                }}
+                className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+              />
+
+              <p className="text-xs leading-5 text-white/40">
+                You must be aged 18–20 on the
+                first day of the programme,
+                11 January 2027.
+              </p>
+            </label>
+
+            {sex ? (
+              <div
+                className={`rounded-xl border p-4 ${
+                  sexEligible
+                    ? "border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.06]"
+                    : "border-red-400/25 bg-red-400/[0.08]"
+                }`}
+              >
+                {sexEligible ? (
+                  <>
+                    <div className="text-sm font-black text-[#c7ff2f]">
+                      ✓ Men&apos;s Showcase
+                      eligibility
+                    </div>
+
+                    <p className="mt-1 text-xs leading-5 text-white/55">
+                      You meet the competition
+                      category requirement for
+                      Lagos 2027.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-black text-red-300">
+                      ✕ Not eligible for this
+                      event
+                    </div>
+
+                    <p className="mt-1 text-xs leading-5 text-red-100/70">
+                      Lagos 2027 is the
+                      Men&apos;s Football
+                      Showcase and is open to
+                      eligible male players.
+                    </p>
+
+                    <p className="mt-2 text-xs font-semibold leading-5 text-white/50">
+                      A dedicated women&apos;s
+                      programme is planned as
+                      part of the Showcase&apos;s
+                      future expansion.
+                    </p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+                <div className="text-sm font-bold text-white/60">
+                  Competition category
+                </div>
+
+                <p className="mt-1 text-xs leading-5 text-white/40">
+                  Select the player&apos;s sex
+                  to confirm eligibility for
+                  this event.
+                </p>
+              </div>
+            )}
+
+            {ageResult ? (
+              <div
+                className={`rounded-xl border p-4 ${
+                  ageResult.eligible
+                    ? "border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.06]"
+                    : "border-red-400/25 bg-red-400/[0.08]"
+                }`}
+              >
+                {ageResult.eligible ? (
+                  <>
+                    <div className="text-sm font-black text-[#c7ff2f]">
+                      ✓ Age eligible
+                    </div>
+
+                    <p className="mt-1 text-xs leading-5 text-white/55">
+                      You will be{" "}
+                      {ageResult.age} years old
+                      on the first day of the
+                      programme and meet the
+                      18–20 age requirement.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-black text-red-300">
+                      ✕ Not age eligible
+                    </div>
+
+                    <p className="mt-1 text-xs leading-5 text-red-100/70">
+                      {ageResult.reason ===
+                      "AGE_TOO_YOUNG"
+                        ? `You will be ${ageResult.age} years old on the first day of the programme and are below the minimum age of 18.`
+                        : `You will be ${ageResult.age} years old on the first day of the programme and are above the maximum age of 20.`}
+                    </p>
+
+                    <p className="mt-2 text-xs font-semibold leading-5 text-white/50">
+                      This application cannot
+                      proceed.
+                    </p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4">
+                <div className="text-sm font-bold text-white/60">
+                  Age eligibility
+                </div>
+
+                <p className="mt-1 text-xs leading-5 text-white/40">
+                  Enter the player&apos;s date
+                  of birth to confirm the
+                  18–20 age requirement.
+                </p>
+              </div>
+            )}
 
             <Field
               label="Nationality"
@@ -380,14 +552,16 @@ const ageResult =
                   Select position
                 </option>
 
-                {positions.map((position) => (
-                  <option
-                    key={position}
-                    value={position}
-                  >
-                    {position}
-                  </option>
-                ))}
+                {positions.map(
+                  (position) => (
+                    <option
+                      key={position}
+                      value={position}
+                    >
+                      {position}
+                    </option>
+                  )
+                )}
               </select>
             </label>
 
@@ -401,10 +575,21 @@ const ageResult =
                 required
                 className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
               >
-                <option value="">Select</option>
-                <option value="Right">Right</option>
-                <option value="Left">Left</option>
-                <option value="Both">Both</option>
+                <option value="">
+                  Select
+                </option>
+
+                <option value="Right">
+                  Right
+                </option>
+
+                <option value="Left">
+                  Left
+                </option>
+
+                <option value="Both">
+                  Both
+                </option>
               </select>
             </label>
 
@@ -433,11 +618,12 @@ const ageResult =
             {/*
               Temporary application contact fields.
 
-              We currently require an email when creating the
-              ShowcaseApplication record. These will later be
-              moved fully into Step 2 — Contact.
+              We currently require an email when
+              creating the ShowcaseApplication
+              record. These will later be moved
+              fully into Step 2 — Contact.
             */}
-            <div className="sm:col-span-2 rounded-xl border border-white/10 bg-white/[0.025] p-5">
+            <div className="rounded-xl border border-white/10 bg-white/[0.025] p-5 sm:col-span-2">
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-white/35">
                 Application Contact
               </div>
@@ -457,14 +643,16 @@ const ageResult =
               </div>
             </div>
 
-            <div className="sm:col-span-2 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/55">
-              Next, you&apos;ll provide your contact and representation
-              information before submitting your football video for
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/55 sm:col-span-2">
+              Next, you&apos;ll provide your
+              contact and representation
+              information before submitting
+              your football video for
               professional assessment.
             </div>
 
             {error ? (
-              <div className="sm:col-span-2 rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-semibold text-red-200">
+              <div className="rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-semibold text-red-200 sm:col-span-2">
                 {error}
               </div>
             ) : null}
@@ -474,17 +662,19 @@ const ageResult =
                 type="submit"
                 disabled={
                   submitting ||
-                   !ageResult ||
-                   !ageResult.eligible
-               }
+                  !canProceed
+                }
                 className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting
                   ? "Saving..."
-                  : ageResult &&
-                     !ageResult.eligible
+                  : sex &&
+                      !sexEligible
                     ? "Not Eligible"
-                  : "Continue"}
+                    : ageResult &&
+                        !ageResult.eligible
+                      ? "Not Eligible"
+                      : "Continue"}
               </button>
             </div>
           </form>
@@ -507,6 +697,26 @@ const ageResult =
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <div className="flex justify-between gap-6">
                 <span className="text-white/40">
+                  Category
+                </span>
+
+                <span className="text-right">
+                  Men&apos;s
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <span className="text-white/40">
+                  Eligibility
+                </span>
+
+                <span className="text-right">
+                  Male · Ages 18–20
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <span className="text-white/40">
                   Assessment
                 </span>
 
@@ -521,7 +731,7 @@ const ageResult =
                 </span>
 
                 <span className="text-right">
-                  Best 100 players
+                  Best 100 eligible players
                 </span>
               </div>
 
@@ -542,14 +752,17 @@ const ageResult =
               </div>
 
               <p className="mt-3 text-sm leading-6 text-white/60">
-                The Application &amp; Assessment Fee pays for the
-                processing and professional assessment of your
-                application and submitted video.
+                The Application &amp;
+                Assessment Fee pays for the
+                processing and professional
+                assessment of your application
+                and submitted video.
               </p>
 
               <p className="mt-3 text-sm font-bold leading-6 text-white">
-                Payment does not guarantee selection or an invitation
-                to the Lagos 2027 camp.
+                Payment does not guarantee
+                selection or an invitation to
+                the Lagos 2027 camp.
               </p>
             </div>
           </div>

@@ -142,7 +142,7 @@ export default async function AssessmentFeePage({
             Payment of the Application &
             Assessment Fee does not guarantee
             selection or an invitation to the
-            ASCEND Lagos 2027 camp.
+            Lagos 2027 Men&apos;s Football Showcase camp.
           </p>
 
           <p className="mt-4 text-sm leading-7 text-white/60">
@@ -219,7 +219,7 @@ export default async function AssessmentFeePage({
                 and football evidence, and that
                 payment does not guarantee
                 selection or an invitation to
-                the ASCEND Lagos 2027 camp.
+                the Lagos 2027 Men&apos;s Football Showcase camp.
               </p>
             </div>
           </label>

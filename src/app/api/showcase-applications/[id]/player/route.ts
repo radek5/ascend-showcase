@@ -4,9 +4,8 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-
 import {
-  checkLagos2027AgeEligibility,
+  calculateAgeOnDate,
 } from "@/lib/showcase/lagos2027AgeEligibility";
 
 type RouteContext = {
@@ -15,13 +14,29 @@ type RouteContext = {
   }>;
 };
 
+type ApplicantSex =
+  | "MALE"
+  | "FEMALE";
+
+function isApplicantSex(
+  value: unknown
+): value is ApplicantSex {
+  return (
+    value === "MALE" ||
+    value === "FEMALE"
+  );
+}
+
 export async function PUT(
   req: Request,
   context: RouteContext
 ) {
   try {
-    const { id } = await context.params;
-    const body = await req.json();
+    const { id } =
+      await context.params;
+
+    const body =
+      await req.json();
 
     const {
       firstName,
@@ -29,6 +44,7 @@ export async function PUT(
       email,
       phone,
       dateOfBirth,
+      sex,
       nationality,
       countryOfResidence,
       stateRegion,
@@ -43,122 +59,246 @@ export async function PUT(
 
     if (!firstName?.trim()) {
       return NextResponse.json(
-        { error: "First name is required." },
+        {
+          error:
+            "First name is required.",
+        },
         { status: 400 }
       );
     }
 
     if (!lastName?.trim()) {
       return NextResponse.json(
-        { error: "Last name is required." },
+        {
+          error:
+            "Last name is required.",
+        },
         { status: 400 }
       );
     }
 
     if (!email?.trim()) {
       return NextResponse.json(
-        { error: "Email is required." },
+        {
+          error:
+            "Email is required.",
+        },
         { status: 400 }
       );
     }
 
     if (!position?.trim()) {
       return NextResponse.json(
-        { error: "Primary position is required." },
+        {
+          error:
+            "Primary position is required.",
+        },
         { status: 400 }
       );
     }
 
- if (!dateOfBirth) {
-  return NextResponse.json(
-    {
-      error:
-        "Date of birth is required for Lagos 2027.",
-    },
-    { status: 400 }
-  );
-}
+    if (!dateOfBirth) {
+      return NextResponse.json(
+        {
+          error:
+            "Date of birth is required.",
+        },
+        { status: 400 }
+      );
+    }
 
-const parsedDob = new Date(
-  `${dateOfBirth}T00:00:00.000Z`
-);
+    if (!isApplicantSex(sex)) {
+      return NextResponse.json(
+        {
+          error:
+            "Please select the player's sex.",
+        },
+        { status: 400 }
+      );
+    }
 
-if (Number.isNaN(parsedDob.getTime())) {
-  return NextResponse.json(
-    { error: "Invalid date of birth." },
-    { status: 400 }
-  );
-}
+    const parsedDob =
+      new Date(
+        `${dateOfBirth}T00:00:00.000Z`
+      );
 
-const existing =
-  await prisma.showcaseApplication.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      id: true,
-      eventSlug: true,
-    },
-  });
+    if (
+      Number.isNaN(
+        parsedDob.getTime()
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid date of birth.",
+        },
+        { status: 400 }
+      );
+    }
 
-if (!existing) {
-  return NextResponse.json(
-    {
-      error:
-        "Showcase application not found.",
-    },
-    { status: 404 }
-  );
-}
+    const existing =
+      await prisma.showcaseApplication.findUnique({
+        where: {
+          id,
+        },
 
-const event =
-  await prisma.event.findUnique({
-    where: {
-      slug: existing.eventSlug,
-    },
-    select: {
-      footballStartsAt: true,
-    },
-  });
+        select: {
+          id: true,
+          eventSlug: true,
+        },
+      });
 
-if (!event?.footballStartsAt) {
-  console.error(
-    "Showcase footballStartsAt is not configured.",
-    existing.eventSlug
-  );
+    if (!existing) {
+      return NextResponse.json(
+        {
+          error:
+            "Showcase application not found.",
+        },
+        { status: 404 }
+      );
+    }
 
-  return NextResponse.json(
-    {
-      error:
-        "Eligibility cannot currently be verified. Please try again later.",
-    },
-    { status: 503 }
-  );
-}
+    const event =
+      await prisma.event.findUnique({
+        where: {
+          slug: existing.eventSlug,
+        },
 
-const ageEligibility =
-  checkLagos2027AgeEligibility(
-    parsedDob,
-    event.footballStartsAt
-  );
+        select: {
+          footballStartsAt: true,
+          showcaseCompetitionCategory: true,
+          showcaseMinimumAge: true,
+          showcaseMaximumAge: true,
+        },
+      });
 
-if (!ageEligibility.eligible) {
-  return NextResponse.json(
-    {
-      error:
-        ageEligibility.reason === "AGE_TOO_YOUNG"
-          ? "You are below the minimum age for Lagos 2027. This programme is open only to players aged 18–20 on the first day of the programme."
-          : "You are above the maximum age for Lagos 2027. This programme is open only to players aged 18–20 on the first day of the programme.",
+    if (!event) {
+      console.error(
+        "Showcase Event is not configured.",
+        existing.eventSlug
+      );
 
-      code: ageEligibility.reason,
-      ageAtEvent: ageEligibility.age,
-    },
-    { status: 422 }
-  );
-}
+      return NextResponse.json(
+        {
+          error:
+            "Eligibility cannot currently be verified. Please try again later.",
+        },
+        { status: 503 }
+      );
+    }
 
-const calculatedAge =
-  ageEligibility.age;
+    if (!event.footballStartsAt) {
+      console.error(
+        "Showcase footballStartsAt is not configured.",
+        existing.eventSlug
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Eligibility cannot currently be verified. Please try again later.",
+        },
+        { status: 503 }
+      );
+    }
+
+    if (
+      event.showcaseMinimumAge == null ||
+      event.showcaseMaximumAge == null
+    ) {
+      console.error(
+        "Showcase age eligibility is not configured.",
+        existing.eventSlug
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Eligibility cannot currently be verified. Please try again later.",
+        },
+        { status: 503 }
+      );
+    }
+
+    if (
+      event.showcaseCompetitionCategory ===
+        "MEN" &&
+      sex !== "MALE"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Lagos 2027 is the Men's Football Showcase and is open to eligible male players.",
+
+          code:
+            "COMPETITION_CATEGORY_INELIGIBLE",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (
+      event.showcaseCompetitionCategory ===
+        "WOMEN" &&
+      sex !== "FEMALE"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "This Women's Football Showcase is open to eligible female players.",
+
+          code:
+            "COMPETITION_CATEGORY_INELIGIBLE",
+        },
+        { status: 422 }
+      );
+    }
+
+    const calculatedAge =
+      calculateAgeOnDate(
+        parsedDob,
+        event.footballStartsAt
+      );
+
+    if (
+      calculatedAge <
+      event.showcaseMinimumAge
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            `You are below the minimum age for this showcase. ` +
+            `This programme is open only to players aged ` +
+            `${event.showcaseMinimumAge}–${event.showcaseMaximumAge} ` +
+            `on the first day of the programme.`,
+
+          code: "AGE_TOO_YOUNG",
+          ageAtEvent:
+            calculatedAge,
+        },
+        { status: 422 }
+      );
+    }
+
+    if (
+      calculatedAge >
+      event.showcaseMaximumAge
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            `You are above the maximum age for this showcase. ` +
+            `This programme is open only to players aged ` +
+            `${event.showcaseMinimumAge}–${event.showcaseMaximumAge} ` +
+            `on the first day of the programme.`,
+
+          code: "AGE_TOO_OLD",
+          ageAtEvent:
+            calculatedAge,
+        },
+        { status: 422 }
+      );
+    }
 
     const application =
       await prisma.showcaseApplication.update({
@@ -167,42 +307,65 @@ const calculatedAge =
         },
 
         data: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
+          firstName:
+            firstName.trim(),
 
-          email: email.trim().toLowerCase(),
-          phone: phone?.trim() || null,
+          lastName:
+            lastName.trim(),
 
-          dateOfBirth: parsedDob,
-          age: calculatedAge,
+          email:
+            email
+              .trim()
+              .toLowerCase(),
+
+          phone:
+            phone?.trim() || null,
+
+          dateOfBirth:
+            parsedDob,
+
+          age:
+            calculatedAge,
+
+          sex,
 
           nationality:
-            nationality?.trim() || null,
+            nationality?.trim() ||
+            null,
 
           countryOfResidence:
-            countryOfResidence?.trim() || null,
+            countryOfResidence?.trim() ||
+            null,
 
           stateRegion:
-            stateRegion?.trim() || null,
+            stateRegion?.trim() ||
+            null,
 
-          city: city?.trim() || null,
+          city:
+            city?.trim() || null,
 
-          position: position.trim(),
+          position:
+            position.trim(),
 
           secondaryPosition:
-            secondaryPosition?.trim() || null,
+            secondaryPosition?.trim() ||
+            null,
 
           preferredFoot:
-            preferredFoot?.trim() || null,
+            preferredFoot?.trim() ||
+            null,
 
           currentClub:
-            currentClub?.trim() || null,
+            currentClub?.trim() ||
+            null,
 
           currentAcademy:
-            currentAcademy?.trim() || null,
+            currentAcademy?.trim() ||
+            null,
 
           footballBackground:
-            footballBackground?.trim() || null,
+            footballBackground?.trim() ||
+            null,
         },
       });
 

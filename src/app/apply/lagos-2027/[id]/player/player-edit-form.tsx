@@ -20,6 +20,11 @@ const positions = [
   "Striker",
 ];
 
+type PlayerSex =
+  | ""
+  | "MALE"
+  | "FEMALE";
+
 type Application = {
   id: string;
   eventSlug: string;
@@ -31,6 +36,8 @@ type Application = {
   phone: string | null;
 
   dateOfBirth: string;
+  sex: PlayerSex;
+
   nationality: string | null;
   countryOfResidence: string | null;
   stateRegion: string | null;
@@ -170,6 +177,8 @@ export default function PlayerEditForm({
         <p className="mt-3 text-white/50">
           Update the information below and
           return to your application review.
+          Event eligibility will be checked
+          again when you save.
         </p>
 
         <form
@@ -194,15 +203,59 @@ export default function PlayerEditForm({
             required
           />
 
-          <Field
-            label="Date of birth"
-            name="dateOfBirth"
-            type="date"
-            defaultValue={
-              application.dateOfBirth
-            }
-            required
-          />
+          <label className="space-y-2">
+            <span className="text-sm font-semibold">
+              Sex
+            </span>
+
+            <select
+              name="sex"
+              required
+              defaultValue={application.sex}
+              className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+            >
+              <option value="">
+                Select
+              </option>
+
+              <option value="MALE">
+                Male
+              </option>
+
+              <option value="FEMALE">
+                Female
+              </option>
+            </select>
+
+            <p className="text-xs leading-5 text-white/40">
+              Lagos 2027 is the
+              Men&apos;s Football Showcase.
+              Changing this may affect event
+              eligibility.
+            </p>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-semibold">
+              Date of birth
+            </span>
+
+            <input
+              name="dateOfBirth"
+              type="date"
+              required
+              defaultValue={
+                application.dateOfBirth
+              }
+              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+            />
+
+            <p className="text-xs leading-5 text-white/40">
+              Lagos 2027 requires players to
+              be aged 18–20 on the first day
+              of the programme.
+            </p>
+          </label>
 
           <Field
             label="Nationality"
@@ -341,7 +394,7 @@ export default function PlayerEditForm({
             />
           </label>
 
-          <div className="sm:col-span-2 rounded-xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="rounded-xl border border-white/10 bg-white/[0.025] p-5 sm:col-span-2">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-white/35">
               Application Contact
             </div>
@@ -368,7 +421,7 @@ export default function PlayerEditForm({
           </div>
 
           {error ? (
-            <div className="sm:col-span-2 rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-semibold text-red-200">
+            <div className="rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm font-semibold text-red-200 sm:col-span-2">
               {error}
             </div>
           ) : null}

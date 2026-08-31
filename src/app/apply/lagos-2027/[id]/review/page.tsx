@@ -153,11 +153,22 @@ export default async function ReviewPage({
               />
 
               <Item
-                label="Age"
+                label="Age at start of programme"
                 value={
                   application.age !== null
                     ? String(application.age)
                     : "Not provided"
+                }
+              />
+
+              <Item
+                label="Sex"
+                value={
+                  application.sex === "MALE"
+                    ? "Male"
+                    : application.sex === "FEMALE"
+                      ? "Female"
+                      : "Not provided"
                 }
               />
 
@@ -441,7 +452,7 @@ export default async function ReviewPage({
     </div>
 
     <p className="mt-2 text-sm leading-6 text-white/60">
-      Your identity documents and age eligibility
+      Your identity documents, age and event eligibility
       will be verified by the ASCEND team before
       your football evidence is released for
       selector assessment.
@@ -547,7 +558,8 @@ export default async function ReviewPage({
 <p className="mt-3 font-bold leading-7 text-white">
   Payment of the Application & Assessment
   Fee does not guarantee selection or an
-  invitation to the ASCEND Lagos 2027 camp.
+  invitation to the Lagos 2027 Men&apos;s
+  Football Showcase camp.
 </p>
 
 <p className="mt-3 text-sm leading-7 text-white/55">
