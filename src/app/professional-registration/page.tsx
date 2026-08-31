@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 export default function ProfessionalRegistrationPage() {
   const router = useRouter();
@@ -24,26 +25,7 @@ export default function ProfessionalRegistrationPage() {
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-4">
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path d="M27 3 49 46 27 35 5 46 27 3Z" fill="#1685ff" />
-              <path d="M27 15 38 37 27 31 16 37 27 15Z" fill="#020812" />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href="/registration"

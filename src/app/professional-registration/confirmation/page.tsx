@@ -39,7 +39,7 @@ export default async function ProfessionalConfirmationPage({
           </h1>
 
           <p className="mt-4 text-lg text-white/70">
-            Your professional registration for ASCEND Lagos 2027 is confirmed.
+            Your professional registration for REVELATIONX1 Lagos 2027 is confirmed.
           </p>
 
           <div className="mt-8 rounded-2xl border border-white/10 bg-black/20 p-6">
@@ -77,7 +77,7 @@ export default async function ProfessionalConfirmationPage({
           </div>
 
           <p className="mt-8 text-sm leading-6 text-white/50">
-             Your ASCEND Lagos 2027 professional accreditation has been confirmed.
+             Your REVELATIONX1 Lagos 2027 professional accreditation has been confirmed.
              Your accreditation number, QR code and event information have been sent
              to your registered email address.
          </p>

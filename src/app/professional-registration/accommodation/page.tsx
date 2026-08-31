@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { updateProfessionalAccommodation } from "./actions/updateProfessionalAccommodation";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 function AccommodationPageContent() {
   const searchParams = useSearchParams();
@@ -72,17 +73,7 @@ useEffect(() => {
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-4">
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href={`/professional-registration/travel?${searchParams.toString()}`}
@@ -136,13 +127,14 @@ useEffect(() => {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-white/50">
-              ASCEND has arranged a preferential discount rate for registered club
-              representatives, scouts and football agents attending Lagos 2027.
+              REVELATIONX1 is working with the Lagos Continental Hotel on preferential
+              accommodation arrangements for registered club representatives, scouts and
+              football agents attending Lagos 2027.
             </p>
 
             <div className="mt-8 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-6">
               <div className="text-xs font-black uppercase tracking-[0.2em] text-[#c7ff2f]">
-                ASCEND Preferred Hotel
+                REVELATIONX1 Preferred Hotel
               </div>
 
               <h3 className="mt-3 text-xl font-black">
@@ -151,7 +143,7 @@ useEffect(() => {
 
               <div className="mt-5 rounded-xl border border-white/10 bg-black/30 p-4">
                 <div className="text-xs uppercase tracking-[0.18em] text-white/40">
-                  ASCEND Discount Code
+                  REVELATIONX1 Discount Code
                 </div>
 
                 <div className="mt-2 text-xl font-black tracking-[0.08em] text-[#c7ff2f]">
@@ -172,7 +164,7 @@ useEffect(() => {
             <div className="mt-8">
               <label className="space-y-2">
                 <span className="text-sm font-semibold">
-                  Are you staying at the ASCEND preferred hotel?
+                  Are you staying at the REVELATIONX1 preferred hotel?
                 </span>
 
                 <select

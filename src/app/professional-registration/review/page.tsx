@@ -274,7 +274,7 @@ export default async function ProfessionalReviewPage({
             />
 
             <span className="text-sm leading-6 text-white/60">
-              I agree to comply with the ASCEND Lagos 2027 Event Code of Conduct
+              I agree to comply with the REVELATIONX1 Lagos 2027 Event Code of Conduct
               and Safeguarding Requirements.
             </span>
           </label>
@@ -288,17 +288,17 @@ export default async function ProfessionalReviewPage({
             />
 
             <span className="text-sm leading-6 text-white/60">
-              I have read the ASCEND Privacy Notice and understand that my
+              I have read the REVELATIONX1 Privacy Notice and understand that my
               information will be used for event accreditation, communications
               and event logistics.
             </span>
           </label>
 
-          {/* FUTURE ASCEND COMMUNICATIONS — OPTIONAL */}
+          {/* FUTURE REVELATIONX1 COMMUNICATIONS — OPTIONAL */}
 
 <div className="mt-6 rounded-2xl border border-[#1685ff]/20 bg-[#1685ff]/[0.05] p-5">
   <div className="text-xs font-black uppercase tracking-[0.15em] text-[#1685ff]">
-    Future ASCEND Events & Opportunities
+    Future REVELATIONX1 Events & Opportunities
   </div>
 
   <label className="mt-4 flex items-start gap-3">
@@ -310,7 +310,7 @@ export default async function ProfessionalReviewPage({
     />
 
     <span className="text-sm leading-6 text-white/60">
-      Keep me informed about future ASCEND Football Showcase events,
+      Keep me informed about future REVELATIONX1 Football Showcase events,
       scouting opportunities and relevant professional football
       activities.
       <span className="mt-2 block text-xs text-white/35">

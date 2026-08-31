@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { updateProfessionalTravel } from "./actions/updateProfessionalTravel";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 function ProfessionalTravelPageContent() {
   const searchParams = useSearchParams();
@@ -18,16 +19,7 @@ function ProfessionalTravelPageContent() {
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-4">
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href="/professional-registration"

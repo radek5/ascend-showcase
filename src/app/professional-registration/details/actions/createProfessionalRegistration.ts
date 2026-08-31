@@ -40,7 +40,7 @@ export async function createProfessionalRegistration(
 
   if (!event) {
     throw new Error(
-      "Active ASCEND Showcase event not found.",
+      "Active REVELATIONX1 Showcase event not found.",
     );
   }
 

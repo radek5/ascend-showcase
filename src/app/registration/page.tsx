@@ -1,31 +1,13 @@
 import Link from "next/link";
 import { activeEvent } from "@/data/event";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 export default function RegistrationChoicePage() {
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-4">
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path d="M27 3 49 46 27 35 5 46 27 3Z" fill="#1685ff" />
-              <path d="M27 15 38 37 27 31 16 37 27 15Z" fill="#020812" />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href="/"
@@ -47,7 +29,7 @@ export default function RegistrationChoicePage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            Choose how you  would like to register for the ASCEND Lagos 2027 Football Showcase.
+            Choose how you would like to register for the REVELATIONX1 Lagos 2027 Football Showcase.
           </p>
         </div>
       </section>
@@ -67,7 +49,7 @@ export default function RegistrationChoicePage() {
             </h2>
 
             <p className="mt-4 max-w-lg leading-7 text-white/55">
-              Apply as a player for the ASCEND Lagos 2027 Football Showcase.
+              Apply as a player for the REVELATIONX1 Lagos 2027 Football Showcase.
             </p>
 
             <div className="mt-10 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.1em]">
@@ -91,7 +73,7 @@ export default function RegistrationChoicePage() {
             </h2>
 
             <p className="mt-4 max-w-lg leading-7 text-white/55">
-              Register to attend Lagos 2027 as a football professional.
+              Register to attend REVELATIONX1 Lagos 2027 as a football professional.
             </p>
 
             <div className="mt-10 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.1em]">
@@ -106,7 +88,7 @@ export default function RegistrationChoicePage() {
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-5 text-sm leading-6 text-white/45">
           Professional registration is required for club representatives,
           scouts and football agents attending the showcase. Event access and
-          accreditation are subject to ASCEND approval.
+          accreditation are subject to REVELATIONX1 approval.
         </div>
       </section>
     </main>
