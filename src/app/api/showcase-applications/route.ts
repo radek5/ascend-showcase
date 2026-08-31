@@ -295,7 +295,7 @@ export async function POST(req: Request) {
           footballBackground:
             footballBackground?.trim() || null,
 
-          status: "AWAITING_VIDEO",
+          status: "DRAFT",
         },
       });
 
