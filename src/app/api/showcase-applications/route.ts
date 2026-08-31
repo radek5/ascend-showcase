@@ -18,6 +18,21 @@ function isApplicantSex(
   return value === "MALE" || value === "FEMALE";
 }
 
+/*
+ * Used only for duplicate-registration checks.
+ *
+ * We keep the player's original phone formatting
+ * in the application record, but compare numbers
+ * without spaces, brackets, dashes or "+".
+ */
+function normalisePhone(
+  value: unknown
+) {
+  return String(value ?? "")
+    .replace(/\D/g, "")
+    .trim();
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -248,6 +263,80 @@ export async function POST(req: Request) {
       );
     }
 
+    /*
+     * Duplicate-registration protection.
+     *
+     * Do not create another Lagos 2027 application
+     * when the same applicant appears to have
+     * already registered.
+     *
+     * IMPORTANT:
+     * We deliberately do not return the existing
+     * application ID here. Applicant ownership /
+     * secure resume access will be handled through
+     * a verified recovery flow.
+     */
+    const normalisedEmail =
+      email.trim().toLowerCase();
+
+    const normalisedPhone =
+      normalisePhone(phone);
+
+    const possibleExistingApplications =
+      await prisma.showcaseApplication.findMany({
+        where: {
+          eventSlug: EVENT_SLUG,
+          dateOfBirth: parsedDob,
+        },
+
+        select: {
+          email: true,
+          phone: true,
+        },
+      });
+
+    const emailDuplicate =
+      possibleExistingApplications.some(
+        (existing) =>
+          existing.email
+            .trim()
+            .toLowerCase() ===
+          normalisedEmail
+      );
+
+    if (emailDuplicate) {
+      return NextResponse.json(
+        {
+          error:
+            "An application already exists for Lagos 2027 matching this email address and date of birth. Please do not create another application or make another payment.",
+          code:
+            "DUPLICATE_APPLICATION",
+        },
+        { status: 409 }
+      );
+    }
+
+    const phoneDuplicate =
+      normalisedPhone.length > 0 &&
+      possibleExistingApplications.some(
+        (existing) =>
+          normalisePhone(
+            existing.phone
+          ) === normalisedPhone
+      );
+
+    if (phoneDuplicate) {
+      return NextResponse.json(
+        {
+          error:
+            "We found a possible existing Lagos 2027 application matching this date of birth and phone number. Please do not start a second application. If this application belongs to you, use the existing application or contact ASCEND for assistance.",
+          code:
+            "POSSIBLE_DUPLICATE_APPLICATION",
+        },
+        { status: 409 }
+      );
+    }
+
     const application =
       await prisma.showcaseApplication.create({
         data: {
@@ -259,7 +348,7 @@ export async function POST(req: Request) {
 
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          email: email.trim().toLowerCase(),
+          email: normalisedEmail,
           phone: phone?.trim() || null,
 
           dateOfBirth: parsedDob,
