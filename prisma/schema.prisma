@@ -449,6 +449,18 @@ model ShowcaseApplication {
   currentAcademy     String?
   footballBackground String?
 
+  // Football status
+  currentClubStartDate    DateTime?
+  currentClubEndDate      DateTime?
+  currentAcademyStartDate DateTime?
+  currentAcademyEndDate   DateTime?
+
+  footballStatusDeclarationAccepted   Boolean   @default(false)
+  footballStatusDeclarationAcceptedAt DateTime?
+  footballStatusLastConfirmedAt       DateTime?
+
+  footballStatusVerification String @default("NOT_DECLARED")
+
   // Representation
   hasAgent                         Boolean?
   interestedInAscendRepresentation Boolean?
