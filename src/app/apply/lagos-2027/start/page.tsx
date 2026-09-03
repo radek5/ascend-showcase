@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 const steps = [
   "Player",
@@ -219,37 +220,7 @@ export default function Lagos2027StartApplicationPage() {
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-4"
-          >
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M27 3 49 46 27 35 5 46 27 3Z"
-                fill="#1685ff"
-              />
-
-              <path
-                d="M27 15 38 37 27 31 16 37 27 15Z"
-                fill="#020812"
-              />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href="/apply/lagos-2027"
@@ -267,13 +238,13 @@ export default function Lagos2027StartApplicationPage() {
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
-            Men&apos;s Football Showcase
+            REVELATIONX1 Football Showcase
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
             Apply for professional football
             assessment and selection for the
-            inaugural Lagos 2027 Men&apos;s
+            inaugural REVELATIONX1 Lagos 2027
             Football Showcase.
           </p>
 
@@ -687,7 +658,7 @@ export default function Lagos2027StartApplicationPage() {
             </div>
 
             <div className="mt-5 text-xl font-black">
-              ASCEND Football Showcase
+              REVELATIONX1 Football Showcase
             </div>
 
             <div className="mt-1 text-[#c7ff2f]">

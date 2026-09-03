@@ -1,44 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
-import {
-  ChangeEvent,
-  useEffect,
-  useState,
-} from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
-import {
-  useParams,
-  useRouter,
-} from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const steps = [
   "Player",
   "Contact",
+  "Identity",
+  "Club & Academy",
   "Representation",
   "Video",
-  "Identity",
   "Consent",
   "Review",
-  "Assessment Fee",
-  "Payment",
   "Confirmation",
 ];
 
-type DocumentType =
-  | "PASSPORT"
-  | "NIN"
-  | "HEADSHOT";
+type DocumentType = "PASSPORT" | "NIN" | "HEADSHOT";
 
 type IdentityDocument = {
   id: string;
   type: DocumentType;
-  status:
-    | "UPLOADED"
-    | "VERIFIED"
-    | "MORE_INFO_REQUIRED"
-    | "REJECTED";
+  status: "UPLOADED" | "VERIFIED" | "MORE_INFO_REQUIRED" | "REJECTED";
 
   originalFilename: string | null;
   sizeBytes: string | null;
@@ -88,10 +74,8 @@ const documentConfig: Array<{
     title: "International Passport",
     description:
       "Upload the identity/photo page of the player's international passport.",
-    accept:
-      "application/pdf,image/jpeg,image/png",
-    guidance:
-      "PDF, JPG or PNG · Maximum 10 MB",
+    accept: "application/pdf,image/jpeg,image/png",
+    guidance: "PDF, JPG or PNG · Maximum 10 MB",
   },
 
   {
@@ -100,10 +84,8 @@ const documentConfig: Array<{
     title: "NIN Documentation",
     description:
       "Upload the player's Nigerian National Identification Number documentation or NIN slip.",
-    accept:
-      "application/pdf,image/jpeg,image/png",
-    guidance:
-      "PDF, JPG or PNG · Maximum 10 MB",
+    accept: "application/pdf,image/jpeg,image/png",
+    guidance: "PDF, JPG or PNG · Maximum 10 MB",
   },
 
   {
@@ -112,10 +94,8 @@ const documentConfig: Array<{
     title: "Current Player Headshot",
     description:
       "Upload a recent, clear head-and-shoulders photograph of the player.",
-    accept:
-      "image/jpeg,image/png",
-    guidance:
-      "JPG or PNG · Maximum 5 MB",
+    accept: "image/jpeg,image/png",
+    guidance: "JPG or PNG · Maximum 5 MB",
   },
 ];
 
@@ -128,27 +108,23 @@ export default function IdentityVerificationPage() {
 
   const id = params.id;
 
-  const [application, setApplication] =
-    useState<Application | null>(null);
+  const [application, setApplication] = useState<Application | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [pageError, setPageError] =
-    useState("");
+  const [pageError, setPageError] = useState("");
 
-  const [uploads, setUploads] =
-    useState<Record<DocumentType, UploadState>>({
-      PASSPORT: {
-        ...initialUploadState,
-      },
-      NIN: {
-        ...initialUploadState,
-      },
-      HEADSHOT: {
-        ...initialUploadState,
-      },
-    });
+  const [uploads, setUploads] = useState<Record<DocumentType, UploadState>>({
+    PASSPORT: {
+      ...initialUploadState,
+    },
+    NIN: {
+      ...initialUploadState,
+    },
+    HEADSHOT: {
+      ...initialUploadState,
+    },
+  });
 
   useEffect(() => {
     loadApplication();
@@ -158,24 +134,17 @@ export default function IdentityVerificationPage() {
     try {
       setPageError("");
 
-      const response = await fetch(
-        `/api/showcase-applications/${id}/identity`
-      );
+      const response = await fetch(`/api/showcase-applications/${id}/identity`);
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        setPageError(
-          data.error ||
-            "Unable to load identity verification."
-        );
+        setPageError(data.error || "Unable to load identity verification.");
 
         return;
       }
 
-      const record =
-        data.application as Application;
+      const record = data.application as Application;
 
       setApplication(record);
 
@@ -184,25 +153,17 @@ export default function IdentityVerificationPage() {
           ...current,
         };
 
-        for (const type of [
-          "PASSPORT",
-          "NIN",
-          "HEADSHOT",
-        ] as DocumentType[]) {
-          const existing =
-            record.identityDocuments.find(
-              (document) =>
-                document.type === type &&
-                Boolean(document.uploadedAt)
-            );
+        for (const type of ["PASSPORT", "NIN", "HEADSHOT"] as DocumentType[]) {
+          const existing = record.identityDocuments.find(
+            (document) =>
+              document.type === type && Boolean(document.uploadedAt),
+          );
 
           if (existing) {
             next[type] = {
               ...next[type],
               file: null,
-              filename:
-                existing.originalFilename ||
-                "Document uploaded",
+              filename: existing.originalFilename || "Document uploaded",
               uploaded: true,
               uploading: false,
               progress: 100,
@@ -214,18 +175,13 @@ export default function IdentityVerificationPage() {
         return next;
       });
     } catch {
-      setPageError(
-        "Unable to load identity verification."
-      );
+      setPageError("Unable to load identity verification.");
     } finally {
       setLoading(false);
     }
   }
 
-  function updateUpload(
-    type: DocumentType,
-    partial: Partial<UploadState>
-  ) {
+  function updateUpload(type: DocumentType, partial: Partial<UploadState>) {
     setUploads((current) => ({
       ...current,
 
@@ -238,34 +194,21 @@ export default function IdentityVerificationPage() {
 
   function chooseFile(
     type: DocumentType,
-    event: ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>,
   ) {
-    const file =
-      event.target.files?.[0] || null;
+    const file = event.target.files?.[0] || null;
 
     if (!file) {
       return;
     }
 
-    const isHeadshot =
-      type === "HEADSHOT";
+    const isHeadshot = type === "HEADSHOT";
 
-    const maxSize =
-      isHeadshot
-        ? 5 * 1024 * 1024
-        : 10 * 1024 * 1024;
+    const maxSize = isHeadshot ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
 
-    const allowedTypes =
-      isHeadshot
-        ? [
-            "image/jpeg",
-            "image/png",
-          ]
-        : [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-          ];
+    const allowedTypes = isHeadshot
+      ? ["image/jpeg", "image/png"]
+      : ["application/pdf", "image/jpeg", "image/png"];
 
     if (!allowedTypes.includes(file.type)) {
       updateUpload(type, {
@@ -305,16 +248,12 @@ export default function IdentityVerificationPage() {
     });
   }
 
-  async function uploadDocument(
-    type: DocumentType
-  ) {
-    const state =
-      uploads[type];
+  async function uploadDocument(type: DocumentType) {
+    const state = uploads[type];
 
     if (!state.file) {
       updateUpload(type, {
-        error:
-          "Please select a file first.",
+        error: "Please select a file first.",
       });
 
       return;
@@ -327,97 +266,73 @@ export default function IdentityVerificationPage() {
         error: "",
       });
 
-      const presignResponse =
-        await fetch(
-          `/api/showcase-applications/${id}/identity/presign`,
-          {
-            method: "POST",
+      const presignResponse = await fetch(
+        `/api/showcase-applications/${id}/identity/presign`,
+        {
+          method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-            body: JSON.stringify({
-              filename:
-                state.file.name,
+          body: JSON.stringify({
+            filename: state.file.name,
 
-              contentType:
-                state.file.type,
+            contentType: state.file.type,
 
-              size:
-                state.file.size,
+            size: state.file.size,
 
-              documentType:
-                type,
-            }),
-          }
-        );
-
-      const presign =
-        await presignResponse.json();
-
-      if (!presignResponse.ok) {
-        throw new Error(
-          presign.error ||
-            "Unable to prepare upload."
-        );
-      }
-
-      await uploadToR2(
-        presign.uploadUrl,
-        state.file,
-        (progress) => {
-          updateUpload(type, {
-            progress,
-          });
-        }
+            documentType: type,
+          }),
+        },
       );
 
-      const completeResponse =
-        await fetch(
-          `/api/showcase-applications/${id}/identity/complete`,
-          {
-            method: "POST",
+      const presign = await presignResponse.json();
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+      if (!presignResponse.ok) {
+        throw new Error(presign.error || "Unable to prepare upload.");
+      }
 
-            body: JSON.stringify({
-              documentId:
-                presign.documentId,
+      await uploadToR2(presign.uploadUrl, state.file, (progress) => {
+        updateUpload(type, {
+          progress,
+        });
+      });
 
-              storageKey:
-                presign.storageKey,
+      const completeResponse = await fetch(
+        `/api/showcase-applications/${id}/identity/complete`,
+        {
+          method: "POST",
 
-              originalFilename:
-                state.file.name,
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-              mimeType:
-                state.file.type,
+          body: JSON.stringify({
+            documentId: presign.documentId,
 
-              size:
-                state.file.size,
-            }),
-          }
-        );
+            storageKey: presign.storageKey,
 
-      const complete =
-        await completeResponse.json();
+            originalFilename: state.file.name,
+
+            mimeType: state.file.type,
+
+            size: state.file.size,
+          }),
+        },
+      );
+
+      const complete = await completeResponse.json();
 
       if (!completeResponse.ok) {
         throw new Error(
-          complete.error ||
-            "The file uploaded but could not be recorded."
+          complete.error || "The file uploaded but could not be recorded.",
         );
       }
 
       updateUpload(type, {
         file: null,
-        filename:
-          state.file.name,
+        filename: state.file.name,
         uploading: false,
         uploaded: true,
         progress: 100,
@@ -465,8 +380,7 @@ export default function IdentityVerificationPage() {
       <main className="min-h-screen bg-[#090909] text-white">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
           <div className="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-200">
-            {pageError ||
-              "Application not found."}
+            {pageError || "Application not found."}
           </div>
         </div>
       </main>
@@ -477,40 +391,10 @@ export default function IdentityVerificationPage() {
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-4"
-          >
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M27 3 49 46 27 35 5 46 27 3Z"
-                fill="#1685ff"
-              />
-
-              <path
-                d="M27 15 38 37 27 31 16 37 27 15Z"
-                fill="#020812"
-              />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
-            href={`/apply/${application.eventSlug}/${application.id}/video`}
+            href={`/apply/${application.eventSlug}/${application.id}/contact`}
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
             Back
@@ -529,8 +413,7 @@ export default function IdentityVerificationPage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            Complete your identity and age
-            verification before proceeding.
+            Complete your identity and age verification before proceeding.
           </p>
         </div>
       </section>
@@ -545,21 +428,21 @@ export default function IdentityVerificationPage() {
               >
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    index === 4
+                    index === 2
                       ? "bg-[#c7ff2f] text-black"
-                      : index < 4
+                      : index < 2
                         ? "border border-[#c7ff2f]/30 text-[#c7ff2f]"
                         : "border border-white/15 text-white/40"
                   }`}
                 >
-                  {index + 1}
+                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
                 </div>
 
                 <span
                   className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
-                    index === 4
+                    index === 2
                       ? "text-white"
-                      : index < 4
+                      : index < 2
                         ? "text-white/60"
                         : "text-white/30"
                   }`}
@@ -575,7 +458,7 @@ export default function IdentityVerificationPage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[1fr_340px] lg:px-8">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Step 5 of 10
+            Step 3 of 8
           </div>
 
           <h2 className="mt-3 text-3xl font-black sm:text-4xl">
@@ -583,10 +466,9 @@ export default function IdentityVerificationPage() {
           </h2>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
-            To protect the integrity of the
-            selection process, ASCEND must verify
-            the identity and age of every applicant.
-            All three items below are required.
+            To protect the integrity of the selection process, REVELATIONX1 must
+            verify the identity and age of every applicant. All three items
+            below are required.
           </p>
 
           <div className="mt-8 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-6">
@@ -597,8 +479,7 @@ export default function IdentityVerificationPage() {
             <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <div className="text-3xl font-black">
-                  {application.age ??
-                    "—"}
+                  {application.age ?? "—"}
                 </div>
 
                 <div className="mt-1 text-sm text-white/45">
@@ -613,125 +494,100 @@ export default function IdentityVerificationPage() {
           </div>
 
           <div className="mt-10 space-y-6">
-            {documentConfig.map(
-              (document) => {
-                const state =
-                  uploads[document.type];
+            {documentConfig.map((document) => {
+              const state = uploads[document.type];
 
-                return (
-                  <section
-                    key={document.type}
-                    className="rounded-2xl border border-white/10 bg-white/[0.025] p-6"
-                  >
-                    <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="max-w-2xl">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-xs font-black text-white/45">
-                            {document.number}
-                          </div>
-
-                          <h3 className="text-lg font-black">
-                            {document.title}
-                          </h3>
+              return (
+                <section
+                  key={document.type}
+                  className="rounded-2xl border border-white/10 bg-white/[0.025] p-6"
+                >
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="max-w-2xl">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-xs font-black text-white/45">
+                          {document.number}
                         </div>
 
-                        <p className="mt-4 text-sm leading-6 text-white/50">
-                          {document.description}
-                        </p>
-
-                        <p className="mt-2 text-xs font-semibold text-white/30">
-                          {document.guidance}
-                        </p>
+                        <h3 className="text-lg font-black">{document.title}</h3>
                       </div>
 
-                      {state.uploaded ? (
-                        <div className="shrink-0 rounded-full border border-[#c7ff2f]/25 bg-[#c7ff2f]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
-                          ✓ Uploaded
-                        </div>
-                      ) : null}
+                      <p className="mt-4 text-sm leading-6 text-white/50">
+                        {document.description}
+                      </p>
+
+                      <p className="mt-2 text-xs font-semibold text-white/30">
+                        {document.guidance}
+                      </p>
                     </div>
 
-                    <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 p-5">
-                      <input
-                        type="file"
-                        accept={document.accept}
-                        disabled={
-                          state.uploading
-                        }
-                        onChange={(event) =>
-                          chooseFile(
-                            document.type,
-                            event
-                          )
-                        }
-                        className="block w-full text-sm text-white/55 file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-xs file:font-bold file:text-white"
-                      />
+                    {state.uploaded ? (
+                      <div className="shrink-0 rounded-full border border-[#c7ff2f]/25 bg-[#c7ff2f]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
+                        ✓ Uploaded
+                      </div>
+                    ) : null}
+                  </div>
 
-                      {state.filename ? (
-                        <div className="mt-3 break-all text-xs text-white/45">
-                          {state.filename}
+                  <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 p-5">
+                    <input
+                      type="file"
+                      accept={document.accept}
+                      disabled={state.uploading}
+                      onChange={(event) => chooseFile(document.type, event)}
+                      className="block w-full text-sm text-white/55 file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-xs file:font-bold file:text-white"
+                    />
+
+                    {state.filename ? (
+                      <div className="mt-3 break-all text-xs text-white/45">
+                        {state.filename}
+                      </div>
+                    ) : null}
+
+                    {state.uploading ? (
+                      <div className="mt-4">
+                        <div className="flex items-center justify-between text-xs text-white/45">
+                          <span>Uploading securely...</span>
+
+                          <span>{state.progress}%</span>
                         </div>
-                      ) : null}
 
-                      {state.uploading ? (
-                        <div className="mt-4">
-                          <div className="flex items-center justify-between text-xs text-white/45">
-                            <span>
-                              Uploading securely...
-                            </span>
-
-                            <span>
-                              {state.progress}%
-                            </span>
-                          </div>
-
-                          <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                            <div
-                              className="h-full bg-[#c7ff2f] transition-all"
-                              style={{
-                                width: `${state.progress}%`,
-                              }}
-                            />
-                          </div>
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full bg-[#c7ff2f] transition-all"
+                            style={{
+                              width: `${state.progress}%`,
+                            }}
+                          />
                         </div>
-                      ) : null}
+                      </div>
+                    ) : null}
 
-                      {state.error ? (
-                        <div className="mt-4 rounded-lg border border-red-400/20 bg-red-400/10 p-3 text-xs font-semibold text-red-200">
-                          {state.error}
-                        </div>
-                      ) : null}
+                    {state.error ? (
+                      <div className="mt-4 rounded-lg border border-red-400/20 bg-red-400/10 p-3 text-xs font-semibold text-red-200">
+                        {state.error}
+                      </div>
+                    ) : null}
 
-                      {state.file &&
-                      !state.uploading ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            uploadDocument(
-                              document.type
-                            )
-                          }
-                          className="mt-4 rounded-full bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
-                        >
-                          {state.uploaded
-                            ? "Replace File"
-                            : "Upload File"}
-                        </button>
-                      ) : null}
+                    {state.file && !state.uploading ? (
+                      <button
+                        type="button"
+                        onClick={() => uploadDocument(document.type)}
+                        className="mt-4 rounded-full bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
+                      >
+                        {state.uploaded ? "Replace File" : "Upload File"}
+                      </button>
+                    ) : null}
 
-                      {state.uploaded &&
-                      !state.file ? (
-                        <p className="mt-4 text-xs leading-5 text-white/35">
-                          Select another file above
-                          if you need to replace this
-                          upload before continuing.
-                        </p>
-                      ) : null}
-                    </div>
-                  </section>
-                );
-              }
-            )}
+                    {state.uploaded && !state.file ? (
+                      <p className="mt-4 text-xs leading-5 text-white/35">
+                        Select another file above if you need to replace this
+                        upload before continuing.
+                      </p>
+                    ) : null}
+                  </div>
+                </section>
+              );
+            })}
           </div>
 
           {pageError ? (
@@ -742,21 +598,18 @@ export default function IdentityVerificationPage() {
 
           <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
             <Link
-              href={`/apply/${application.eventSlug}/${application.id}/video`}
+              href={`/apply/${application.eventSlug}/${application.id}/contact`}
               className="text-sm font-bold text-white/45 transition hover:text-white"
             >
-              Back to Video Evidence
+              Back to Contact
             </Link>
 
             <button
               type="button"
-              disabled={
-                !allUploaded ||
-                somethingUploading
-              }
+              disabled={!allUploaded || somethingUploading}
               onClick={() =>
                 router.push(
-                  `/apply/${application.eventSlug}/${application.id}/consent`
+                  `/apply/${application.eventSlug}/${application.id}/football-status`,
                 )
               }
               className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
@@ -780,32 +633,24 @@ export default function IdentityVerificationPage() {
               <div className="mt-5 space-y-4">
                 <ChecklistItem
                   label="International Passport"
-                  complete={
-                    uploads.PASSPORT.uploaded
-                  }
+                  complete={uploads.PASSPORT.uploaded}
                 />
 
                 <ChecklistItem
                   label="NIN Documentation"
-                  complete={
-                    uploads.NIN.uploaded
-                  }
+                  complete={uploads.NIN.uploaded}
                 />
 
                 <ChecklistItem
                   label="Current Headshot"
-                  complete={
-                    uploads.HEADSHOT.uploaded
-                  }
+                  complete={uploads.HEADSHOT.uploaded}
                 />
               </div>
 
               <div className="mt-6 border-t border-white/10 pt-5">
                 <div
                   className={`text-sm font-black ${
-                    allUploaded
-                      ? "text-[#c7ff2f]"
-                      : "text-white/50"
+                    allUploaded ? "text-[#c7ff2f]" : "text-white/50"
                   }`}
                 >
                   {allUploaded
@@ -821,16 +666,13 @@ export default function IdentityVerificationPage() {
               </div>
 
               <p className="mt-3 text-sm leading-6 text-white/55">
-                Passport and NIN documentation
-                are collected solely for identity,
-                age and eligibility verification.
+                Passport and NIN documentation are collected solely for
+                identity, age and eligibility verification.
               </p>
 
               <p className="mt-3 text-sm font-semibold leading-6 text-white/70">
-                Identity documents and the player
-                headshot are not shown to football
-                selectors during anonymous player
-                assessment.
+                Identity documents and the player headshot are not shown to
+                football selectors during anonymous player assessment.
               </p>
             </div>
           </div>
@@ -849,20 +691,14 @@ function ChecklistItem({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-sm text-white/60">
-        {label}
-      </span>
+      <span className="text-sm text-white/60">{label}</span>
 
       <span
         className={`text-xs font-black ${
-          complete
-            ? "text-[#c7ff2f]"
-            : "text-white/25"
+          complete ? "text-[#c7ff2f]" : "text-white/25"
         }`}
       >
-        {complete
-          ? "✓ Uploaded"
-          : "Required"}
+        {complete ? "✓ Uploaded" : "Required"}
       </span>
     </div>
   );
@@ -871,69 +707,39 @@ function ChecklistItem({
 function uploadToR2(
   uploadUrl: string,
   file: File,
-  onProgress: (
-    progress: number
-  ) => void
+  onProgress: (progress: number) => void,
 ) {
-  return new Promise<void>(
-    (resolve, reject) => {
-      const xhr =
-        new XMLHttpRequest();
+  return new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-      xhr.open(
-        "PUT",
-        uploadUrl,
-        true
-      );
+    xhr.open("PUT", uploadUrl, true);
 
-      xhr.setRequestHeader(
-        "Content-Type",
-        file.type
-      );
+    xhr.setRequestHeader("Content-Type", file.type);
 
-      xhr.upload.onprogress = (
-        event
-      ) => {
-        if (!event.lengthComputable) {
-          return;
-        }
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) {
+        return;
+      }
 
-        const progress =
-          Math.round(
-            (event.loaded /
-              event.total) *
-              100
-          );
+      const progress = Math.round((event.loaded / event.total) * 100);
 
-        onProgress(progress);
-      };
+      onProgress(progress);
+    };
 
-      xhr.onload = () => {
-        if (
-          xhr.status >= 200 &&
-          xhr.status < 300
-        ) {
-          onProgress(100);
-          resolve();
-          return;
-        }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress(100);
+        resolve();
+        return;
+      }
 
-        reject(
-          new Error(
-            "Secure file upload failed."
-          )
-        );
-      };
+      reject(new Error("Secure file upload failed."));
+    };
 
-      xhr.onerror = () => {
-        reject(
-          new Error(
-            "Secure file upload failed."
-          )
-        );
-      };
+    xhr.onerror = () => {
+      reject(new Error("Secure file upload failed."));
+    };
 
-      xhr.send(file);
-    }
-  );
+    xhr.send(file);
+  });
 }

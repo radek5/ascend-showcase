@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  FormEvent,
-  useState,
-} from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 const positions = [
   "Goalkeeper",
@@ -20,10 +18,7 @@ const positions = [
   "Striker",
 ];
 
-type PlayerSex =
-  | ""
-  | "MALE"
-  | "FEMALE";
+type PlayerSex = "" | "MALE" | "FEMALE";
 
 type Application = {
   id: string;
@@ -59,27 +54,19 @@ export default function PlayerEditForm({
 }) {
   const router = useRouter();
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setSubmitting(true);
     setError("");
 
-    const formData =
-      new FormData(event.currentTarget);
+    const formData = new FormData(event.currentTarget);
 
-    const payload =
-      Object.fromEntries(
-        formData.entries()
-      );
+    const payload = Object.fromEntries(formData.entries());
 
     try {
       const response = await fetch(
@@ -88,22 +75,17 @@ export default function PlayerEditForm({
           method: "PUT",
 
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
 
           body: JSON.stringify(payload),
-        }
+        },
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.error ||
-            "We could not update your application."
-        );
+        setError(data.error || "We could not update your application.");
 
         setSubmitting(false);
         return;
@@ -112,9 +94,7 @@ export default function PlayerEditForm({
       router.push(data.next);
       router.refresh();
     } catch {
-      setError(
-        "We could not update your application. Please try again."
-      );
+      setError("We could not update your application. Please try again.");
 
       setSubmitting(false);
     }
@@ -124,37 +104,7 @@ export default function PlayerEditForm({
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-4"
-          >
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M27 3 49 46 27 35 5 46 27 3Z"
-                fill="#1685ff"
-              />
-
-              <path
-                d="M27 15 38 37 27 31 16 37 27 15Z"
-                fill="#020812"
-              />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href={`/apply/${application.eventSlug}/${application.id}/review`}
@@ -170,15 +120,11 @@ export default function PlayerEditForm({
           Application Review
         </div>
 
-        <h1 className="mt-3 text-4xl font-black">
-          Edit Player Details
-        </h1>
+        <h1 className="mt-3 text-4xl font-black">Edit Player Details</h1>
 
         <p className="mt-3 text-white/50">
-          Update the information below and
-          return to your application review.
-          Event eligibility will be checked
-          again when you save.
+          Update the information below and return to your application review.
+          Event eligibility will be checked again when you save.
         </p>
 
         <form
@@ -188,25 +134,19 @@ export default function PlayerEditForm({
           <Field
             label="First name"
             name="firstName"
-            defaultValue={
-              application.firstName
-            }
+            defaultValue={application.firstName}
             required
           />
 
           <Field
             label="Last name"
             name="lastName"
-            defaultValue={
-              application.lastName
-            }
+            defaultValue={application.lastName}
             required
           />
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold">
-              Sex
-            </span>
+            <span className="text-sm font-semibold">Sex</span>
 
             <select
               name="sex"
@@ -214,182 +154,123 @@ export default function PlayerEditForm({
               defaultValue={application.sex}
               className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
             >
-              <option value="">
-                Select
-              </option>
+              <option value="">Select</option>
 
-              <option value="MALE">
-                Male
-              </option>
+              <option value="MALE">Male</option>
 
-              <option value="FEMALE">
-                Female
-              </option>
+              <option value="FEMALE">Female</option>
             </select>
 
             <p className="text-xs leading-5 text-white/40">
-              Lagos 2027 is the
-              Men&apos;s Football Showcase.
-              Changing this may affect event
-              eligibility.
+              Lagos 2027 is the Men&apos;s Football Showcase. Changing this may
+              affect event eligibility.
             </p>
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold">
-              Date of birth
-            </span>
+            <span className="text-sm font-semibold">Date of birth</span>
 
             <input
               name="dateOfBirth"
               type="date"
               required
-              defaultValue={
-                application.dateOfBirth
-              }
+              defaultValue={application.dateOfBirth}
               className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
             />
 
             <p className="text-xs leading-5 text-white/40">
-              Lagos 2027 requires players to
-              be aged 18–20 on the first day
-              of the programme.
+              Lagos 2027 requires players to be aged 18–20 on the first day of
+              the programme.
             </p>
           </label>
 
           <Field
             label="Nationality"
             name="nationality"
-            defaultValue={
-              application.nationality ?? ""
-            }
+            defaultValue={application.nationality ?? ""}
             required
           />
 
           <Field
             label="Country of residence"
             name="countryOfResidence"
-            defaultValue={
-              application.countryOfResidence ??
-              ""
-            }
+            defaultValue={application.countryOfResidence ?? ""}
           />
 
           <Field
             label="State / Region"
             name="stateRegion"
-            defaultValue={
-              application.stateRegion ?? ""
-            }
+            defaultValue={application.stateRegion ?? ""}
           />
 
           <Field
             label="City"
             name="city"
-            defaultValue={
-              application.city ?? ""
-            }
+            defaultValue={application.city ?? ""}
           />
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold">
-              Primary position
-            </span>
+            <span className="text-sm font-semibold">Primary position</span>
 
             <select
               name="position"
               required
-              defaultValue={
-                application.position ?? ""
-              }
+              defaultValue={application.position ?? ""}
               className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
             >
-              <option value="">
-                Select position
-              </option>
+              <option value="">Select position</option>
 
-              {positions.map(
-                (position) => (
-                  <option
-                    key={position}
-                    value={position}
-                  >
-                    {position}
-                  </option>
-                )
-              )}
+              {positions.map((position) => (
+                <option key={position} value={position}>
+                  {position}
+                </option>
+              ))}
             </select>
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-semibold">
-              Preferred foot
-            </span>
+            <span className="text-sm font-semibold">Preferred foot</span>
 
             <select
               name="preferredFoot"
               required
-              defaultValue={
-                application.preferredFoot ??
-                ""
-              }
+              defaultValue={application.preferredFoot ?? ""}
               className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
             >
-              <option value="">
-                Select
-              </option>
+              <option value="">Select</option>
 
-              <option value="Right">
-                Right
-              </option>
+              <option value="Right">Right</option>
 
-              <option value="Left">
-                Left
-              </option>
+              <option value="Left">Left</option>
 
-              <option value="Both">
-                Both
-              </option>
+              <option value="Both">Both</option>
             </select>
           </label>
 
           <Field
             label="Secondary position"
             name="secondaryPosition"
-            defaultValue={
-              application.secondaryPosition ??
-              ""
-            }
+            defaultValue={application.secondaryPosition ?? ""}
           />
 
           <Field
             label="Current club"
             name="currentClub"
-            defaultValue={
-              application.currentClub ?? ""
-            }
+            defaultValue={application.currentClub ?? ""}
           />
 
           <Field
             label="Current academy"
             name="currentAcademy"
-            defaultValue={
-              application.currentAcademy ??
-              ""
-            }
+            defaultValue={application.currentAcademy ?? ""}
           />
 
           <label className="space-y-2 sm:col-span-2">
-            <span className="text-sm font-semibold">
-              Football background
-            </span>
+            <span className="text-sm font-semibold">Football background</span>
 
             <textarea
               name="footballBackground"
-              defaultValue={
-                application.footballBackground ??
-                ""
-              }
+              defaultValue={application.footballBackground ?? ""}
               className="min-h-28 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
             />
           </label>
@@ -404,18 +285,14 @@ export default function PlayerEditForm({
                 label="Email address"
                 name="email"
                 type="email"
-                defaultValue={
-                  application.email
-                }
+                defaultValue={application.email}
                 required
               />
 
               <Field
                 label="Phone"
                 name="phone"
-                defaultValue={
-                  application.phone ?? ""
-                }
+                defaultValue={application.phone ?? ""}
               />
             </div>
           </div>
@@ -439,9 +316,7 @@ export default function PlayerEditForm({
               disabled={submitting}
               className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting
-                ? "Saving..."
-                : "Save & Return to Review"}
+              {submitting ? "Saving..." : "Save & Return to Review"}
             </button>
           </div>
         </form>
@@ -465,9 +340,7 @@ function Field({
 }) {
   return (
     <label className="space-y-2">
-      <span className="text-sm font-semibold">
-        {label}
-      </span>
+      <span className="text-sm font-semibold">{label}</span>
 
       <input
         name={name}

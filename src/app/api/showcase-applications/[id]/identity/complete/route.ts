@@ -108,7 +108,7 @@ export async function POST(
 
           /*
            * A replacement must always be
-           * reviewed again by ASCEND.
+           * reviewed again by RevelationX1
            */
           verifiedAt: null,
           verifiedBy: null,

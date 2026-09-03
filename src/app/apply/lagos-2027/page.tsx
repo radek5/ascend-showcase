@@ -5,7 +5,7 @@ export default function Lagos2027ApplicationPage() {
     <main className="min-h-screen bg-[#030817] px-6 py-12 text-white">
       <div className="mx-auto max-w-5xl">
         <p className="text-sm font-black uppercase tracking-[0.28em] text-emerald-300">
-          ASCEND · Lagos 2027
+          REVELATIONX1 · Lagos 2027
         </p>
 
         <h1 className="mt-4 max-w-4xl text-5xl font-black tracking-tight md:text-6xl">
@@ -15,7 +15,6 @@ export default function Lagos2027ApplicationPage() {
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
           Submit your football information and video for
           professional assessment.
-          2027.
         </p>
 
         <section className="mt-10 rounded-[2rem] border border-amber-400/20 bg-amber-400/10 p-7">
@@ -102,7 +101,7 @@ export default function Lagos2027ApplicationPage() {
             href="/"
             className="rounded-full border border-white/10 px-7 py-4 font-bold text-slate-300 transition hover:bg-white/5 hover:text-white"
           >
-            Back to ASCEND
+            Back to REVELATIONX1
           </Link>
         </div>
       </div>

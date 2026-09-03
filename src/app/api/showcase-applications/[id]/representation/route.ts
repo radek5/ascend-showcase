@@ -10,36 +10,31 @@ export async function PUT(
     params,
   }: {
     params: Promise<{ id: string }>;
-  }
+  },
 ) {
   try {
     const { id } = await params;
     const body = await req.json();
 
-    const application =
-      await prisma.showcaseApplication.findUnique({
-        where: { id },
-      });
+    const application = await prisma.showcaseApplication.findUnique({
+      where: { id },
+    });
 
     if (!application) {
       return NextResponse.json(
         { error: "Application not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const hasAgent = body.hasAgent === "yes";
 
-    if (
-      body.hasAgent !== "yes" &&
-      body.hasAgent !== "no"
-    ) {
+    if (body.hasAgent !== "yes" && body.hasAgent !== "no") {
       return NextResponse.json(
         {
-          error:
-            "Please confirm whether you are currently represented.",
+          error: "Please confirm whether you are currently represented.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,11 +42,13 @@ export async function PUT(
       return NextResponse.json(
         {
           error:
-            "Please confirm that the representation information is accurate.",
+            "Please confirm the Full Disclosure Declaration before continuing.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    const declarationAcceptedAt = new Date();
 
     if (!hasAgent) {
       if (
@@ -61,9 +58,9 @@ export async function PUT(
         return NextResponse.json(
           {
             error:
-              "Please tell us whether you would like ASCEND to contact you about representation.",
+              "Please tell us whether you would like RevelationX1 to contact you about representation.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -89,8 +86,12 @@ export async function PUT(
           agentContactConsent: false,
 
           representationDeclarationAccepted: true,
-          representationDeclarationAcceptedAt:
-            new Date(),
+          representationDeclarationAcceptedAt: declarationAcceptedAt,
+
+          footballStatusDeclarationAccepted: true,
+          footballStatusDeclarationAcceptedAt: declarationAcceptedAt,
+          footballStatusLastConfirmedAt: declarationAcceptedAt,
+          footballStatusVerification: "DECLARED",
         },
       });
 
@@ -100,32 +101,24 @@ export async function PUT(
       });
     }
 
-    const agentName = String(
-      body.agentName || ""
-    ).trim();
+    const agentName = String(body.agentName || "").trim();
 
     if (!agentName) {
       return NextResponse.json(
         {
           error: "Agent full name is required.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const representationStart =
-      body.representationStartDate
-        ? new Date(
-            `${body.representationStartDate}T00:00:00.000Z`
-          )
-        : null;
+    const representationStart = body.representationStartDate
+      ? new Date(`${body.representationStartDate}T00:00:00.000Z`)
+      : null;
 
-    const representationEnd =
-      body.representationEndDate
-        ? new Date(
-            `${body.representationEndDate}T00:00:00.000Z`
-          )
-        : null;
+    const representationEnd = body.representationEndDate
+      ? new Date(`${body.representationEndDate}T00:00:00.000Z`)
+      : null;
 
     await prisma.showcaseApplication.update({
       where: { id },
@@ -135,40 +128,30 @@ export async function PUT(
         interestedInAscendRepresentation: null,
 
         agentName,
-        agencyName:
-          String(body.agencyName || "").trim() ||
-          null,
+        agencyName: String(body.agencyName || "").trim() || null,
 
-        agentEmail:
-          String(body.agentEmail || "").trim() ||
-          null,
+        agentEmail: String(body.agentEmail || "").trim() || null,
 
-        agentPhone:
-          String(body.agentPhone || "").trim() ||
-          null,
+        agentPhone: String(body.agentPhone || "").trim() || null,
 
-        agentCountry:
-          String(body.agentCountry || "").trim() ||
-          null,
+        agentCountry: String(body.agentCountry || "").trim() || null,
 
-        fifaLicenceNumber:
-          String(
-            body.fifaLicenceNumber || ""
-          ).trim() || null,
+        fifaLicenceNumber: String(body.fifaLicenceNumber || "").trim() || null,
 
         representationStart,
         representationEnd,
 
-        exclusiveRepresentation:
-          String(body.exclusive || "").trim() ||
-          null,
+        exclusiveRepresentation: String(body.exclusive || "").trim() || null,
 
-        agentContactConsent:
-          Boolean(body.contactAuthorised),
+        agentContactConsent: Boolean(body.contactAuthorised),
 
         representationDeclarationAccepted: true,
-        representationDeclarationAcceptedAt:
-          new Date(),
+        representationDeclarationAcceptedAt: declarationAcceptedAt,
+
+        footballStatusDeclarationAccepted: true,
+        footballStatusDeclarationAcceptedAt: declarationAcceptedAt,
+        footballStatusLastConfirmedAt: declarationAcceptedAt,
+        footballStatusVerification: "DECLARED",
       },
     });
 
@@ -177,17 +160,13 @@ export async function PUT(
       next: `/apply/lagos-2027/${id}/video`,
     });
   } catch (error) {
-    console.error(
-      "UPDATE SHOWCASE REPRESENTATION ERROR",
-      error
-    );
+    console.error("UPDATE SHOWCASE REPRESENTATION ERROR", error);
 
     return NextResponse.json(
       {
-        error:
-          "We could not save the representation information.",
+        error: "We could not save the representation information.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
