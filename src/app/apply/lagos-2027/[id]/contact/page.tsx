@@ -13,6 +13,9 @@ type Application = {
   phone: string | null;
   age: number | null;
 
+  stateRegion: string | null;
+  city: string | null;
+
   emergencyContactName: string | null;
   emergencyContactRelationship: string | null;
   emergencyContactPhone: string | null;
@@ -202,6 +205,30 @@ export default function ContactPage() {
               type="tel"
               required
               defaultValue={application.phone || ""}
+            />
+
+            <div className="sm:col-span-2 border-t border-white/10 pt-8">
+              <div className="text-lg font-black">Location</div>
+
+              <p className="mt-2 text-sm text-white/45">
+                Tell us where you are currently based. This helps us understand
+                where applicants are travelling from and plan Showcase
+                logistics.
+              </p>
+            </div>
+
+            <Field
+              label="State / Region"
+              name="stateRegion"
+              required
+              defaultValue={application.stateRegion || ""}
+            />
+
+            <Field
+              label="City"
+              name="city"
+              required
+              defaultValue={application.city || ""}
             />
 
             <div className="sm:col-span-2 border-t border-white/10 pt-8">

@@ -19,6 +19,9 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
       email: true,
       phone: true,
 
+      stateRegion: true,
+      city: true,
+
       dateOfBirth: true,
       age: true,
       sex: true,
@@ -124,6 +127,14 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
 
   if (!application.phone) {
     missingContactFields.push("phone");
+  }
+
+  if (!application.stateRegion) {
+    missingContactFields.push("stateRegion");
+  }
+
+  if (!application.city) {
+    missingContactFields.push("city");
   }
 
   if (!application.emergencyContactName) {
