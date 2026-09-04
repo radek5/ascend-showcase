@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import { submitShowcaseApplication } from "./actions";
 
 import { prisma } from "@/lib/prisma";
 
@@ -74,8 +75,8 @@ export default async function ReviewPage({ params }: PageProps) {
         </h1>
 
         <p className="mt-3 max-w-3xl text-white/55">
-          Please check your application carefully before proceeding to the
-          Application & Assessment Fee.
+          Please check your application carefully before submitting it for
+          assessment.
         </p>
 
         <div className="mt-10 space-y-6">
@@ -454,29 +455,49 @@ export default async function ReviewPage({ params }: PageProps) {
           </ReviewSection>
         </div>
 
-        {/* IMPORTANT */}
+        {/* SUBMISSION */}
 
-        <div className="mt-10 rounded-2xl border border-amber-400/25 bg-amber-400/[0.07] p-6">
-          <div className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-            Important
+        <div className="mt-10 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-6">
+          <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
+            Lagos 2027 Selection
           </div>
 
-          <p className="mt-3 text-sm leading-7 text-white/65">
-            The Application & Assessment Fee covers the processing and
-            professional assessment of your application and submitted football
-            evidence.
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-black text-white">FREE TO APPLY</div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-black text-white">100 PLACES</div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-black text-white">
+                SELECTION ON ABILITY
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <div className="text-sm font-black text-white">
+                FULL DISCLOSURE REQUIRED
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-5 text-sm leading-7 text-white/65">
+            Submitting an application does not guarantee a place at the Lagos
+            2027 Men&apos;s Football Showcase. Applications will be reviewed for
+            eligibility and football evidence, and the strongest eligible
+            applicants will progress through the assessment process.
           </p>
 
           <p className="mt-3 font-bold leading-7 text-white">
-            Payment of the Application & Assessment Fee does not guarantee
-            selection or an invitation to the Lagos 2027 Men&apos;s Football
-            Showcase camp.
+            The best 100 players will be selected for the final Showcase.
           </p>
 
           <p className="mt-3 text-sm leading-7 text-white/55">
-            Further video evidence may be requested during the assessment
-            process. The strongest eligible applicants will progress, with the
-            best 100 players selected for the final camp.
+            Further video evidence or information may be requested during the
+            assessment process.
           </p>
         </div>
 
@@ -488,12 +509,16 @@ export default async function ReviewPage({ params }: PageProps) {
             ← Back
           </Link>
 
-          <Link
-            href={`/apply/${application.eventSlug}/${application.id}/assessment-fee`}
-            className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
-          >
-            Continue to Assessment Fee
-          </Link>
+          <form action={submitShowcaseApplication}>
+            <input type="hidden" name="applicationId" value={application.id} />
+
+            <button
+              type="submit"
+              className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
+            >
+              Submit Application
+            </button>
+          </form>
         </div>
       </section>
     </main>

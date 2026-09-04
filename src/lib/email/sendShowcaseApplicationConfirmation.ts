@@ -12,64 +12,59 @@ export async function sendShowcaseApplicationConfirmation({
   applicationId,
   force = false,
 }: Args) {
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id: applicationId,
-      },
-    });
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+  });
 
   if (!application) {
+    throw new Error("Showcase application not found.");
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * SUBMISSION REQUIREMENTS
+   * ----------------------------------------------------------
+   *
+   * Confirmation is tied to successful application
+   * submission, not payment.
+   */
+
+  if (!application.submittedAt) {
     throw new Error(
-      "Showcase application not found."
+      "Application must be submitted before sending confirmation.",
     );
   }
 
   if (!application.registrationNumber) {
     throw new Error(
-      "Registration number must exist before sending confirmation."
+      "Registration number must exist before sending confirmation.",
     );
   }
 
   if (!application.checkInToken) {
-    throw new Error(
-      "Check-in token must exist before sending confirmation."
-    );
-  }
-
-  if (!application.assessmentFeePaid) {
-    throw new Error(
-      "Assessment fee must be paid before sending confirmation."
-    );
+    throw new Error("Check-in token must exist before sending confirmation.");
   }
 
   /*
    * Prevent duplicate confirmation emails.
    */
-  if (
-    application.confirmationEmailSentAt &&
-    !force
-  ) {
+
+  if (application.confirmationEmailSentAt && !force) {
     return {
       messageId: null,
-      recipientEmail:
-        application.email,
+      recipientEmail: application.email,
     };
   }
 
-const recipientEmail =
-  application.email;
+  const recipientEmail = application.email;
+  const recipientName = application.firstName;
 
-const recipientName =
-  application.firstName;
-
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   if (!appUrl) {
-    throw new Error(
-      "NEXT_PUBLIC_APP_URL is not configured."
-    );
+    throw new Error("NEXT_PUBLIC_APP_URL is not configured.");
   }
 
   /*
@@ -78,34 +73,43 @@ const recipientName =
    * This QR is NOT replaced if the player
    * is later selected.
    */
-  const qrUrl =
-    `${appUrl}/checkin/${application.checkInToken}`;
 
-  const qrBuffer =
-    await QRCode.toBuffer(
-      qrUrl,
-      {
-        width: 360,
-        margin: 2,
-        errorCorrectionLevel: "H",
-      }
-    );
+  const qrUrl = `${appUrl}/checkin/${application.checkInToken}`;
+
+  const qrBuffer = await QRCode.toBuffer(qrUrl, {
+    width: 360,
+    margin: 2,
+    errorCorrectionLevel: "H",
+  });
+
+  /*
+   * ----------------------------------------------------------
+   * EMAIL CONFIGURATION
+   * ----------------------------------------------------------
+   *
+   * REVELATIONX1-specific environment variables are preferred.
+   *
+   * The existing ASCEND variables remain as temporary
+   * compatibility fallbacks during the controlled rebrand.
+   *
+   * The final production sender/domain will be configured
+   * separately.
+   */
 
   const supportEmail =
+    process.env.REVELATIONX1_SUPPORT_EMAIL ||
     process.env.ASCEND_SUPPORT_EMAIL ||
-    "showcase@ascendfootball.com";
+    "ralph@rznconsulting.com";
 
   const fromEmail =
+    process.env.REVELATIONX1_FROM_EMAIL ||
     process.env.ASCEND_FROM_EMAIL ||
-    "showcase@ascendfootball.com";
+    "ralph@rznconsulting.com";
 
   const fromName =
+    process.env.REVELATIONX1_FROM_NAME ||
     process.env.ASCEND_FROM_NAME ||
-    "ASCEND Football Showcase";
-
-  const paymentReference =
-    application.assessmentPaymentReference ||
-    "Recorded";
+    "REVELATIONX1 Football Showcase";
 
   const intro = `
     <p style="margin:0 0 18px;color:#c8c8c8;">
@@ -127,7 +131,7 @@ const recipientName =
 <tr>
 <td style="padding:0 0 28px;">
   <div style="font-size:23px;font-weight:800;letter-spacing:7px;">
-    ASCEND
+    REVELATIONX1
   </div>
 
   <div style="margin-top:4px;font-size:10px;letter-spacing:4px;color:#8d8d8d;">
@@ -150,9 +154,14 @@ const recipientName =
   ${intro}
 
   <p style="margin:0;color:#a9a9a9;line-height:1.7;">
-    Your ASCEND Lagos 2027 player application,
-    football evidence and Application & Assessment
-    Fee have been successfully received.
+    Your REVELATIONX1 Lagos 2027 player application and
+    football evidence have been successfully received.
+  </p>
+
+  <p style="margin:14px 0 0;color:#ffffff;font-weight:700;line-height:1.7;">
+    Your application will now enter the eligibility and football
+    assessment process. Submission does not mean that you have
+    been selected for the Showcase.
   </p>
 
   <div style="margin-top:28px;padding-top:24px;border-top:1px solid #303030;">
@@ -166,7 +175,7 @@ const recipientName =
     </div>
 
     <p style="margin:10px 0 0;color:#888888;font-size:13px;line-height:1.6;">
-      This is your permanent ASCEND Lagos 2027
+      This is your permanent REVELATIONX1 Lagos 2027
       registration code. Please keep it for your records.
     </p>
 
@@ -174,53 +183,6 @@ const recipientName =
 
 </td>
 </tr>
-
-
-<tr>
-<td style="padding-top:22px;">
-
-<table width="100%" cellspacing="0" cellpadding="0"
-style="border:1px solid #262626;background:#111111;border-radius:18px;">
-
-<tr>
-<td style="padding:28px;">
-
-<h2 style="margin:0 0 20px;font-size:20px;">
-  Application & Assessment Fee
-</h2>
-
-<table width="100%" cellspacing="0" cellpadding="6">
-
-<tr>
-<td style="color:#818181;">
-  Status
-</td>
-
-<td align="right" style="font-weight:700;color:#c7ff2f;">
-  PAID
-</td>
-</tr>
-
-<tr>
-<td style="color:#818181;">
-  Payment reference
-</td>
-
-<td align="right" style="font-weight:700;">
-  ${paymentReference}
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-
 
 <tr>
 <td style="padding-top:22px;">
@@ -237,16 +199,15 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 
 <div style="margin-bottom:22px;">
   <div style="font-weight:800;color:#c7ff2f;">
-    1. Identity, Age & Eligibility Verification
+    1. Identity, Age &amp; Eligibility Verification
   </div>
 
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    ASCEND will review your identity documents, age
+    REVELATIONX1 will review your identity documents, age
     eligibility and the information supplied with your
     application.
   </p>
 </div>
-
 
 <div style="margin-bottom:22px;">
   <div style="font-weight:800;color:#c7ff2f;">
@@ -256,23 +217,21 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
     Once the required eligibility checks have been completed,
     your football evidence may be released for assessment by
-    authorised ASCEND selectors.
+    authorised REVELATIONX1 selectors.
   </p>
 </div>
-
 
 <div style="margin-bottom:22px;">
   <div style="font-weight:800;color:#c7ff2f;">
-    3. Further Video Evidence
+    3. Further Evidence
   </div>
 
   <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    If required, ASCEND may contact you and ask you to provide
-    one or more additional videos before a final assessment
-    decision is made.
+    If required, REVELATIONX1 may contact you and ask for
+    further football evidence or information before a final
+    assessment decision is made.
   </p>
 </div>
-
 
 <div>
   <div style="font-weight:800;color:#c7ff2f;">
@@ -286,60 +245,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 
   <p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.7;">
     The best 100 eligible players will be selected for the
-    ASCEND Lagos 2027 camp.
-  </p>
-</div><div style="margin-bottom:22px;">
-  <div style="font-weight:800;color:#c7ff2f;">
-    1. Identity, Age & Eligibility Verification
-  </div>
-
-  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    ASCEND will review your identity documents, age
-    eligibility and the information supplied with your
-    application.
-  </p>
-</div>
-
-
-<div style="margin-bottom:22px;">
-  <div style="font-weight:800;color:#c7ff2f;">
-    2. Football Assessment
-  </div>
-
-  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    Once the required eligibility checks have been completed,
-    your football evidence may be released for assessment by
-    authorised ASCEND selectors.
-  </p>
-</div>
-
-
-<div style="margin-bottom:22px;">
-  <div style="font-weight:800;color:#c7ff2f;">
-    3. Further Video Evidence
-  </div>
-
-  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    If required, ASCEND may contact you and ask you to provide
-    one or more additional videos before a final assessment
-    decision is made.
-  </p>
-</div>
-
-
-<div>
-  <div style="font-weight:800;color:#c7ff2f;">
-    4. Final Selection
-  </div>
-
-  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
-    Eligible applicants who progress through the football
-    assessment process will continue to final selection.
-  </p>
-
-  <p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.7;">
-    The best 100 eligible players will be selected for the
-    ASCEND Lagos 2027 camp.
+    final REVELATIONX1 Lagos 2027 Men's Football Showcase.
   </p>
 </div>
 
@@ -350,7 +256,6 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 
 </td>
 </tr>
-
 
 <tr>
 <td style="padding-top:22px;">
@@ -365,21 +270,20 @@ style="border:1px solid #3c3210;background:#181507;border-radius:18px;">
   IMPORTANT
 </div>
 
-<p style="margin:14px 0 0;color:#d0d0d0;line-height:1.8;">
-  Payment of the Application & Assessment Fee
-  covers the processing and professional assessment
-  of your application and football evidence.
-</p>
-
-<p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
-  Payment does not guarantee selection or an
-  invitation to the ASCEND Lagos 2027 camp.
+<p style="margin:14px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
+  Submission of an application does not guarantee selection
+  or an invitation to the Lagos 2027 Men's Football Showcase.
 </p>
 
 <p style="margin:12px 0 0;color:#b8b8b8;line-height:1.8;">
-  If you are selected, ASCEND will contact you
-  separately with your official invitation and
-  camp instructions.
+  Places cannot be purchased. Selection is based on
+  eligibility and football assessment.
+</p>
+
+<p style="margin:12px 0 0;color:#b8b8b8;line-height:1.8;">
+  If you are selected, REVELATIONX1 will contact you
+  separately with your official invitation and Showcase
+  instructions.
 </p>
 
 </td>
@@ -389,7 +293,6 @@ style="border:1px solid #3c3210;background:#181507;border-radius:18px;">
 
 </td>
 </tr>
-
 
 <tr>
 <td style="padding-top:22px;">
@@ -401,7 +304,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 <td align="center" style="padding:30px;">
 
 <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#c7ff2f;">
-  YOUR ASCEND REGISTRATION QR
+  YOUR REVELATIONX1 REGISTRATION QR
 </div>
 
 <h2 style="margin:10px 0 20px;">
@@ -409,16 +312,16 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 </h2>
 
 <img
-  src="cid:ascend-showcase-application-qr"
+  src="cid:revelationx1-showcase-application-qr"
   width="230"
   height="230"
-  alt="ASCEND Lagos 2027 registration QR code"
+  alt="REVELATIONX1 Lagos 2027 registration QR code"
   style="display:block;background:white;padding:10px;border-radius:14px;"
 />
 
 <p style="margin:20px auto 0;max-width:470px;color:#969696;line-height:1.7;">
   This QR code is permanently linked to your
-  ASCEND Lagos 2027 registration.
+  REVELATIONX1 Lagos 2027 registration.
 </p>
 
 <p style="margin:10px auto 0;max-width:470px;color:#ffffff;font-weight:700;line-height:1.7;">
@@ -435,7 +338,6 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 </td>
 </tr>
 
-
 <tr>
 <td style="padding:28px 4px;color:#777777;font-size:12px;line-height:1.7;">
 
@@ -451,7 +353,7 @@ ${supportEmail}
 
 <br />
 
-ASCEND Football Showcase · Lagos 2027
+REVELATIONX1 Football Showcase · Lagos 2027
 
 </td>
 </tr>
@@ -466,33 +368,27 @@ ASCEND Football Showcase · Lagos 2027
 </html>
 `;
 
-  const transporter =
-    getMailTransport();
+  const transporter = getMailTransport();
 
-  const info =
-    await transporter.sendMail({
-      from:
-        `"${fromName}" <${fromEmail}>`,
+  const info = await transporter.sendMail({
+    from: `"${fromName}" <${fromEmail}>`,
 
-      to: recipientEmail,
+    to: recipientEmail,
 
-      subject:
-        `${application.registrationNumber} — ASCEND Lagos 2027 Application Received`,
+    subject: `${application.registrationNumber} — REVELATIONX1 Lagos 2027 Application Received`,
 
-      html,
+    html,
 
-      attachments: [
-        {
-          filename:
-            `${application.registrationNumber}-QR.png`,
+    attachments: [
+      {
+        filename: `${application.registrationNumber}-QR.png`,
 
-          content: qrBuffer,
+        content: qrBuffer,
 
-          cid:
-            "ascend-showcase-application-qr",
-        },
-      ],
-    });
+        cid: "revelationx1-showcase-application-qr",
+      },
+    ],
+  });
 
   await prisma.showcaseApplication.update({
     where: {
@@ -500,8 +396,7 @@ ASCEND Football Showcase · Lagos 2027
     },
 
     data: {
-      confirmationEmailSentAt:
-        new Date(),
+      confirmationEmailSentAt: new Date(),
     },
   });
 

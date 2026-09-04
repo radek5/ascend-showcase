@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
 
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = {
@@ -10,40 +11,46 @@ type PageProps = {
   }>;
 };
 
-export default async function ConfirmationPage({
-  params,
-}: PageProps) {
+export default async function ConfirmationPage({ params }: PageProps) {
   const { id } = await params;
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id,
-      },
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id,
+    },
 
-      select: {
-        id: true,
-        eventSlug: true,
+    select: {
+      id: true,
+      eventSlug: true,
 
-        firstName: true,
-        lastName: true,
+      firstName: true,
+      lastName: true,
 
-        status: true,
-        submittedAt: true,
+      status: true,
+      submittedAt: true,
 
-        registrationNumber: true,
-        checkInToken: true,
-
-        assessmentFeePaid: true,
-        assessmentFeePaidAt: true,
-        assessmentFeeCurrency: true,
-        assessmentFeeAmount: true,
-        assessmentPaymentReference: true,
-      },
-    });
+      registrationNumber: true,
+      checkInToken: true,
+    },
+  });
 
   if (!application) {
     notFound();
+  }
+
+  /*
+   * ----------------------------------------------------------
+   * SUBMISSION GUARD
+   * ----------------------------------------------------------
+   *
+   * The confirmation page is only available after the
+   * application has been formally submitted.
+   *
+   * Submission is independent of payment.
+   */
+
+  if (application.status !== "SUBMITTED" || !application.submittedAt) {
+    redirect(`/apply/${application.eventSlug}/${application.id}/review`);
   }
 
   /*
@@ -54,25 +61,22 @@ export default async function ConfirmationPage({
    * The QR is tied to the permanent check-in token.
    *
    * The player's registration number and QR remain unchanged
-   * regardless of later selection status.
+   * regardless of later assessment or selection status.
    */
 
   let qrDataUrl: string | null = null;
 
   if (application.checkInToken) {
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
     if (appUrl) {
-      const qrUrl =
-        `${appUrl}/checkin/${application.checkInToken}`;
+      const qrUrl = `${appUrl}/checkin/${application.checkInToken}`;
 
-      qrDataUrl =
-        await QRCode.toDataURL(qrUrl, {
-          width: 360,
-          margin: 2,
-          errorCorrectionLevel: "H",
-        });
+      qrDataUrl = await QRCode.toDataURL(qrUrl, {
+        width: 360,
+        margin: 2,
+        errorCorrectionLevel: "H",
+      });
     }
   }
 
@@ -80,37 +84,7 @@ export default async function ConfirmationPage({
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-4"
-          >
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M27 3 49 46 27 35 5 46 27 3Z"
-                fill="#1685ff"
-              />
-
-              <path
-                d="M27 15 38 37 27 31 16 37 27 15Z"
-                fill="#020812"
-              />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+          <RevelationX1Logo />
 
           <Link
             href="/"
@@ -123,7 +97,7 @@ export default async function ConfirmationPage({
 
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-          Step 10 of 10
+          Step 8 of 8
         </div>
 
         <div className="mt-6 rounded-[2rem] border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.04] p-8 sm:p-10">
@@ -136,10 +110,22 @@ export default async function ConfirmationPage({
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
-            Thank you, {application.firstName}. Your application for the
-            Lagos 2027 Men&apos;s Football Showcase and your submitted
-            football evidence have been received.
+            Thank you, {application.firstName}. Your application for the Lagos
+            2027 Men&apos;s Football Showcase and your submitted football
+            evidence have been received.
           </p>
+
+          <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-5">
+            <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
+              Application Received
+            </div>
+
+            <p className="mt-2 text-sm leading-6 text-white/60">
+              Your application will now enter the eligibility and football
+              assessment process. Submission does not mean that you have been
+              selected for the Showcase.
+            </p>
+          </div>
 
           {application.registrationNumber && (
             <div className="mt-8 rounded-2xl border border-[#c7ff2f]/25 bg-black/30 p-6">
@@ -167,115 +153,88 @@ export default async function ConfirmationPage({
 
             <SummaryItem
               label="Application Status"
-              value={
-                application.assessmentFeePaid
-                  ? "Submitted — Eligibility Review"
-                  : "Application in progress"
-              }
-            />
-
-            <SummaryItem
-              label="Assessment Fee"
-              value={
-                application.assessmentFeePaid
-                  ? "Paid"
-                  : "Not paid"
-              }
-            />
-
-            <SummaryItem
-              label="Payment Reference"
-              value={
-                application.assessmentPaymentReference ||
-                "Not available"
-              }
+              value="Submitted — Under Assessment"
             />
           </div>
         </div>
 
-        {application.registrationNumber &&
-          qrDataUrl && (
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6 sm:p-8">
-              <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
-                <div>
-                  <div className="text-xs font-black uppercase tracking-[0.16em] text-[#c7ff2f]">
-                    Your ASCEND Registration QR
-                  </div>
-
-                  <h2 className="mt-3 text-2xl font-black">
-                    Keep this QR code
-                  </h2>
-
-                  <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">
-                    This QR code is permanently linked to your ASCEND Lagos
-                    2027 registration.
-                  </p>
-
-                  <div className="mt-5 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-4">
-                    <p className="text-sm font-bold leading-6 text-white/80">
-                      Your registration code and QR code will remain the same
-                      throughout the application and selection process.
-                    </p>
-                  </div>
-
-                  <div className="mt-5 text-sm text-white/40">
-                    Registration Code
-                  </div>
-
-                  <div className="mt-1 font-black tracking-[0.06em] text-[#c7ff2f]">
-                    {application.registrationNumber}
-                  </div>
+        {application.registrationNumber && qrDataUrl && (
+          <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6 sm:p-8">
+            <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.16em] text-[#c7ff2f]">
+                  Your REVELATIONX1 Registration QR
                 </div>
 
-                <div className="flex justify-center md:justify-end">
-                  <div className="rounded-2xl bg-white p-4">
-                    <img
-                      src={qrDataUrl}
-                      width={220}
-                      height={220}
-                      alt={`ASCEND registration QR for ${application.registrationNumber}`}
-                      className="h-[220px] w-[220px]"
-                    />
-                  </div>
+                <h2 className="mt-3 text-2xl font-black">Keep this QR code</h2>
+
+                <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">
+                  This QR code is permanently linked to your REVELATIONX1 Lagos
+                  2027 registration.
+                </p>
+
+                <div className="mt-5 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-4">
+                  <p className="text-sm font-bold leading-6 text-white/80">
+                    Your registration code and QR code will remain the same
+                    throughout the application and selection process.
+                  </p>
+                </div>
+
+                <div className="mt-5 text-sm text-white/40">
+                  Registration Code
+                </div>
+
+                <div className="mt-1 font-black tracking-[0.06em] text-[#c7ff2f]">
+                  {application.registrationNumber}
+                </div>
+              </div>
+
+              <div className="flex justify-center md:justify-end">
+                <div className="rounded-2xl bg-white p-4">
+                  <img
+                    src={qrDataUrl}
+                    width={220}
+                    height={220}
+                    alt={`REVELATIONX1 registration QR for ${application.registrationNumber}`}
+                    className="h-[220px] w-[220px]"
+                  />
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-          <div className="text-lg font-black">
-            What happens next?
-          </div>
+          <div className="text-lg font-black">What happens next?</div>
 
           <div className="mt-5 space-y-5 text-sm leading-7 text-white/55">
             <p>
-              Your application will now enter ASCEND&apos;s identity,
-              age and event eligibility verification process. Lagos 2027
-              is the Men&apos;s Football Showcase for eligible male players
-              aged 18–20 on the first day of the programme.
+              Your application will now enter REVELATIONX1&apos;s identity, age
+              and event eligibility verification process. Lagos 2027 is the
+              Men&apos;s Football Showcase for eligible male players aged 18–20
+              on the first day of the programme.
             </p>
 
             <p>
-              ASCEND will review the identity documents and information
-              submitted with your application before your football
-              evidence is released for assessment.
+              REVELATIONX1 will review the identity documents and information
+              submitted with your application before your football evidence is
+              released for assessment.
             </p>
 
             <p>
-              Once your application has passed the required eligibility
-              checks, your submitted football videos may be reviewed by
-              authorised ASCEND selectors.
+              Once your application has passed the required eligibility checks,
+              your submitted football videos may be reviewed by authorised
+              REVELATIONX1 selectors.
             </p>
 
             <p>
-              If further football evidence is required, ASCEND may
-              contact you and ask you to submit one or more additional
-              videos before a final decision is made.
+              If further football evidence or information is required,
+              REVELATIONX1 may contact you before a final decision is made.
             </p>
 
             <p className="font-bold text-white">
-              The best 100 eligible players will be selected for the
-              final Lagos 2027 Men&apos;s Football Showcase camp.
+              The best 100 eligible players will be selected for the final Lagos
+              2027 Men&apos;s Football Showcase.
             </p>
           </div>
         </div>
@@ -286,9 +245,10 @@ export default async function ConfirmationPage({
           </div>
 
           <p className="mt-3 text-sm leading-7 text-white/60">
-            Submission of an application and payment of the Application &
-            Assessment Fee does not guarantee selection or an invitation to
-            the Lagos 2027 Men&apos;s Football Showcase camp.
+            Submission of an application does not guarantee selection or an
+            invitation to the Lagos 2027 Men&apos;s Football Showcase. Places
+            cannot be purchased and selection is based on eligibility and
+            football assessment.
           </p>
         </div>
 
@@ -297,7 +257,7 @@ export default async function ConfirmationPage({
             href="/"
             className="inline-flex rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
           >
-            Return to ASCEND
+            Return to REVELATIONX1
           </Link>
         </div>
       </section>
@@ -305,13 +265,7 @@ export default async function ConfirmationPage({
   );
 }
 
-function SummaryItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-4">
       <div className="text-xs font-black uppercase tracking-[0.08em] text-white/35">

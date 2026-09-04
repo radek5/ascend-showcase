@@ -9,26 +9,23 @@ type AllocateApplicationIdentityArgs = {
 export async function allocateApplicationIdentity({
   applicationId,
 }: AllocateApplicationIdentityArgs) {
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id: applicationId,
-      },
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
 
-      select: {
-        id: true,
-        eventSlug: true,
+    select: {
+      id: true,
+      eventSlug: true,
 
-        registrationNumber: true,
-        assessmentCode: true,
-        checkInToken: true,
-      },
-    });
+      registrationNumber: true,
+      assessmentCode: true,
+      checkInToken: true,
+    },
+  });
 
   if (!application) {
-    throw new Error(
-      "Showcase application not found."
-    );
+    throw new Error("Showcase application not found.");
   }
 
   /*
@@ -41,134 +38,110 @@ export async function allocateApplicationIdentity({
     application.checkInToken
   ) {
     return {
-      registrationNumber:
-        application.registrationNumber,
+      registrationNumber: application.registrationNumber,
 
-      assessmentCode:
-        application.assessmentCode,
+      assessmentCode: application.assessmentCode,
 
-      checkInToken:
-        application.checkInToken,
+      checkInToken: application.checkInToken,
     };
   }
 
   /*
    * Lagos 2027 identity format:
    *
-   * ASC-LAG27-P-0042
+   * RX1-LAG27-P-0042
    * LAG27-0042
    *
    * Both MUST always share the same suffix.
    */
 
-  const existing =
-    await prisma.showcaseApplication.findMany({
-      where: {
-        eventSlug: application.eventSlug,
+  const existing = await prisma.showcaseApplication.findMany({
+    where: {
+      eventSlug: application.eventSlug,
 
-        OR: [
-          {
-            registrationNumber: {
-              not: null,
-            },
+      OR: [
+        {
+          registrationNumber: {
+            not: null,
           },
-          {
-            assessmentCode: {
-              not: null,
-            },
+        },
+        {
+          assessmentCode: {
+            not: null,
           },
-        ],
-      },
+        },
+      ],
+    },
 
-      select: {
-        registrationNumber: true,
-        assessmentCode: true,
-      },
-    });
+    select: {
+      registrationNumber: true,
+      assessmentCode: true,
+    },
+  });
 
   let highestSequence = 0;
 
   for (const item of existing) {
-    const values = [
-      item.registrationNumber,
-      item.assessmentCode,
-    ];
+    const values = [item.registrationNumber, item.assessmentCode];
 
     for (const value of values) {
       if (!value) {
         continue;
       }
 
-      const match =
-        value.match(/-(\d+)$/);
+      const match = value.match(/-(\d+)$/);
 
       if (!match) {
         continue;
       }
 
-      const sequence =
-        Number(match[1]);
+      const sequence = Number(match[1]);
 
-      if (
-        Number.isFinite(sequence) &&
-        sequence > highestSequence
-      ) {
+      if (Number.isFinite(sequence) && sequence > highestSequence) {
         highestSequence = sequence;
       }
     }
   }
 
-  const nextSequence =
-    highestSequence + 1;
+  const nextSequence = highestSequence + 1;
 
-  const suffix =
-    String(nextSequence).padStart(
-      4,
-      "0"
-    );
+  const suffix = String(nextSequence).padStart(4, "0");
 
-  const registrationNumber =
-    `ASC-LAG27-P-${suffix}`;
+  const registrationNumber = `RX1-LAG27-P-${suffix}`;
 
-  const assessmentCode =
-    `LAG27-${suffix}`;
+  const assessmentCode = `LAG27-${suffix}`;
 
   const checkInToken =
-    application.checkInToken ??
-    crypto.randomBytes(32).toString("hex");
+    application.checkInToken ?? crypto.randomBytes(32).toString("hex");
 
   /*
    * Unique constraints on both codes protect us
    * against accidental duplication.
    */
 
-  const updated =
-    await prisma.showcaseApplication.update({
-      where: {
-        id: application.id,
-      },
+  const updated = await prisma.showcaseApplication.update({
+    where: {
+      id: application.id,
+    },
 
-      data: {
-        registrationNumber,
-        assessmentCode,
-        checkInToken,
-      },
+    data: {
+      registrationNumber,
+      assessmentCode,
+      checkInToken,
+    },
 
-      select: {
-        registrationNumber: true,
-        assessmentCode: true,
-        checkInToken: true,
-      },
-    });
+    select: {
+      registrationNumber: true,
+      assessmentCode: true,
+      checkInToken: true,
+    },
+  });
 
   return {
-    registrationNumber:
-      updated.registrationNumber!,
+    registrationNumber: updated.registrationNumber!,
 
-    assessmentCode:
-      updated.assessmentCode!,
+    assessmentCode: updated.assessmentCode!,
 
-    checkInToken:
-      updated.checkInToken!,
+    checkInToken: updated.checkInToken!,
   };
 }

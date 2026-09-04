@@ -15,66 +15,51 @@ async function createAssessmentCode() {
   for (let attempt = 0; attempt < 20; attempt++) {
     const number = randomInt(1, 100000);
 
-    const code =
-      `LAG27-${number.toString().padStart(5, "0")}`;
+    const code = `LAG27-${number.toString().padStart(5, "0")}`;
 
-    const exists =
-      await prisma.showcaseApplication.findUnique({
-        where: {
-          assessmentCode: code,
-        },
-        select: {
-          id: true,
-        },
-      });
+    const exists = await prisma.showcaseApplication.findUnique({
+      where: {
+        assessmentCode: code,
+      },
+      select: {
+        id: true,
+      },
+    });
 
     if (!exists) {
       return code;
     }
   }
 
-  throw new Error(
-    "Unable to generate a unique assessment code."
-  );
+  throw new Error("Unable to generate a unique assessment code.");
 }
 
-export async function prepareForSelection(
-  formData: FormData
-) {
+export async function prepareForSelection(formData: FormData) {
   await requireStaffUser();
 
-  const applicationId = String(
-    formData.get("applicationId") || ""
-  ).trim();
+  const applicationId = String(formData.get("applicationId") || "").trim();
 
   if (!applicationId) {
-    throw new Error(
-      "Application ID missing."
-    );
+    throw new Error("Application ID missing.");
   }
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id: applicationId,
-      },
-      select: {
-        id: true,
-        assessmentCode: true,
-        status: true,
-        assessmentFeePaid: true,
-      },
-    });
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+    select: {
+      id: true,
+      assessmentCode: true,
+      status: true,
+    },
+  });
 
   if (!application) {
-    throw new Error(
-      "Application not found."
-    );
+    throw new Error("Application not found.");
   }
 
   const assessmentCode =
-    application.assessmentCode ||
-    (await createAssessmentCode());
+    application.assessmentCode || (await createAssessmentCode());
 
   await prisma.showcaseApplication.update({
     where: {
@@ -93,74 +78,58 @@ export async function prepareForSelection(
        */
       status: "VIDEO_REVIEW",
       eligibilityReviewedAt:
-        application.status ===
-        "ELIGIBILITY_REVIEW"
-          ? new Date()
-          : undefined,
+        application.status === "ELIGIBILITY_REVIEW" ? new Date() : undefined,
     },
   });
 
   revalidatePath("/staff/selection");
 }
 
-export async function assignSelector(
-  formData: FormData
-) {
+export async function assignSelector(formData: FormData) {
   await requireStaffUser();
 
-  const applicationId = String(
-    formData.get("applicationId") || ""
-  ).trim();
+  const applicationId = String(formData.get("applicationId") || "").trim();
 
-  const selectorId = String(
-    formData.get("selectorId") || ""
-  ).trim();
+  const selectorId = String(formData.get("selectorId") || "").trim();
 
   if (!applicationId || !selectorId) {
-    throw new Error(
-      "Application and selector are required."
-    );
+    throw new Error("Application and selector are required.");
   }
 
-  const [application, selector] =
-    await Promise.all([
-      prisma.showcaseApplication.findUnique({
-        where: {
-          id: applicationId,
-        },
-        select: {
-          id: true,
-          assessmentCode: true,
-          status: true,
-        },
-      }),
+  const [application, selector] = await Promise.all([
+    prisma.showcaseApplication.findUnique({
+      where: {
+        id: applicationId,
+      },
+      select: {
+        id: true,
+        assessmentCode: true,
+        status: true,
+      },
+    }),
 
-      prisma.selectorAccount.findUnique({
-        where: {
-          id: selectorId,
-        },
-        select: {
-          id: true,
-          active: true,
-        },
-      }),
-    ]);
+    prisma.selectorAccount.findUnique({
+      where: {
+        id: selectorId,
+      },
+      select: {
+        id: true,
+        active: true,
+      },
+    }),
+  ]);
 
   if (!application) {
-    throw new Error(
-      "Application not found."
-    );
+    throw new Error("Application not found.");
   }
 
   if (!selector || !selector.active) {
-    throw new Error(
-      "Selector is not available."
-    );
+    throw new Error("Selector is not available.");
   }
 
   if (!application.assessmentCode) {
     throw new Error(
-      "Generate the anonymous assessment code before assigning a selector."
+      "Generate the anonymous assessment code before assigning a selector.",
     );
   }
 
@@ -170,7 +139,7 @@ export async function assignSelector(
     application.status !== "LONGLISTED"
   ) {
     throw new Error(
-      "Application is not currently available for selector review."
+      "Application is not currently available for selector review.",
     );
   }
 
@@ -178,38 +147,31 @@ export async function assignSelector(
    * Determine which review round this selector
    * assignment belongs to.
    */
-  const existingAssignments =
-    await prisma.selectorAssignment.findMany({
-      where: {
-        applicationId,
-      },
-      select: {
-        round: true,
-      },
-    });
+  const existingAssignments = await prisma.selectorAssignment.findMany({
+    where: {
+      applicationId,
+    },
+    select: {
+      round: true,
+    },
+  });
 
   const currentRound =
     existingAssignments.length > 0
-      ? Math.max(
-          ...existingAssignments.map(
-            (assignment) =>
-              assignment.round
-          )
-        )
+      ? Math.max(...existingAssignments.map((assignment) => assignment.round))
       : 1;
 
-  const duplicate =
-    await prisma.selectorAssignment.findFirst({
-      where: {
-        selectorId,
-        applicationId,
-        round: currentRound,
-      },
-    });
+  const duplicate = await prisma.selectorAssignment.findFirst({
+    where: {
+      selectorId,
+      applicationId,
+      round: currentRound,
+    },
+  });
 
   if (duplicate) {
     throw new Error(
-      "This player is already assigned to that selector for the current review round."
+      "This player is already assigned to that selector for the current review round.",
     );
   }
 
@@ -227,39 +189,27 @@ export async function assignSelector(
   revalidatePath("/selectors/assignments");
 }
 
-export async function sendForSecondReview(
-  formData: FormData
-) {
+export async function sendForSecondReview(formData: FormData) {
   await requireStaffUser();
 
-  const applicationId = String(
-    formData.get("applicationId") || ""
-  ).trim();
+  const applicationId = String(formData.get("applicationId") || "").trim();
 
   if (!applicationId) {
-    throw new Error(
-      "Application ID missing."
-    );
+    throw new Error("Application ID missing.");
   }
 
-  const assignments =
-    await prisma.selectorAssignment.findMany({
-      where: {
-        applicationId,
-      },
-      select: {
-        round: true,
-      },
-    });
+  const assignments = await prisma.selectorAssignment.findMany({
+    where: {
+      applicationId,
+    },
+    select: {
+      round: true,
+    },
+  });
 
   const nextRound =
     assignments.length > 0
-      ? Math.max(
-          ...assignments.map(
-            (assignment) =>
-              assignment.round
-          )
-        ) + 1
+      ? Math.max(...assignments.map((assignment) => assignment.round)) + 1
       : 2;
 
   await prisma.showcaseApplication.update({
