@@ -49,7 +49,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
    * Submission is independent of payment.
    */
 
-  if (application.status !== "SUBMITTED" || !application.submittedAt) {
+  if (!application.submittedAt) {
     redirect(`/apply/${application.eventSlug}/${application.id}/review`);
   }
 

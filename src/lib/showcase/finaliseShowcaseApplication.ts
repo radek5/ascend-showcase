@@ -75,7 +75,7 @@ export async function finaliseShowcaseApplication({
    * backwards or create a new submission date.
    */
 
-  if (application.status !== "SUBMITTED" || !application.submittedAt) {
+  if (!application.submittedAt) {
     await prisma.showcaseApplication.update({
       where: {
         id: application.id,
@@ -83,8 +83,7 @@ export async function finaliseShowcaseApplication({
 
       data: {
         status: "SUBMITTED",
-
-        submittedAt: application.submittedAt ?? new Date(),
+        submittedAt: new Date(),
       },
     });
   }
@@ -129,8 +128,7 @@ export async function finaliseShowcaseApplication({
   return {
     success: true as const,
 
-    alreadySubmitted:
-      application.status === "SUBMITTED" && Boolean(application.submittedAt),
+    alreadySubmitted: Boolean(application.submittedAt),
 
     applicationId: application.id,
     eventSlug: application.eventSlug,
