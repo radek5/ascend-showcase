@@ -49,14 +49,16 @@ export default function FootballStatusPage() {
 
   const [application, setApplication] = useState<Application | null>(null);
 
-  const [currentlyAtClub, setCurrentlyAtClub] = useState(false);
+  const [hasClubHistory, setHasClubHistory] = useState<boolean | null>(null);
+  const [hasAcademyHistory, setHasAcademyHistory] = useState<boolean | null>(
+    null,
+  );
 
+  const [currentlyAtClub, setCurrentlyAtClub] = useState(false);
   const [currentlyAtAcademy, setCurrentlyAtAcademy] = useState(false);
 
   const [loading, setLoading] = useState(true);
-
   const [submitting, setSubmitting] = useState(false);
-
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -68,13 +70,18 @@ export default function FootballStatusPage() {
 
         if (!response.ok) {
           setError(data.error || "Application not found.");
-
           return;
         }
 
         const record = data.application as Application;
 
         setApplication(record);
+
+        const hasExistingClub = Boolean(record.currentClub);
+        const hasExistingAcademy = Boolean(record.currentAcademy);
+
+        setHasClubHistory(hasExistingClub ? true : null);
+        setHasAcademyHistory(hasExistingAcademy ? true : null);
 
         if (
           record.currentClub &&
@@ -104,8 +111,21 @@ export default function FootballStatusPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    setSubmitting(true);
     setError("");
+
+    if (hasClubHistory === null) {
+      setError("Please tell us whether you have a current or previous club.");
+      return;
+    }
+
+    if (hasAcademyHistory === null) {
+      setError(
+        "Please tell us whether you have a current or previous academy.",
+      );
+      return;
+    }
+
+    setSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
 
@@ -113,9 +133,23 @@ export default function FootballStatusPage() {
       formData.entries(),
     ) as Record<string, string>;
 
-    payload.currentlyAtClub = currentlyAtClub;
+    payload.hasClubHistory = hasClubHistory;
+    payload.hasAcademyHistory = hasAcademyHistory;
 
-    payload.currentlyAtAcademy = currentlyAtAcademy;
+    payload.currentlyAtClub = hasClubHistory ? currentlyAtClub : false;
+    payload.currentlyAtAcademy = hasAcademyHistory ? currentlyAtAcademy : false;
+
+    if (!hasClubHistory) {
+      payload.currentClub = "";
+      payload.currentClubStartDate = "";
+      payload.currentClubEndDate = "";
+    }
+
+    if (!hasAcademyHistory) {
+      payload.currentAcademy = "";
+      payload.currentAcademyStartDate = "";
+      payload.currentAcademyEndDate = "";
+    }
 
     try {
       const response = await fetch(
@@ -146,7 +180,6 @@ export default function FootballStatusPage() {
       router.push(data.next);
     } catch {
       setError("We could not save your club and academy information.");
-
       setSubmitting(false);
     }
   }
@@ -252,67 +285,88 @@ export default function FootballStatusPage() {
                   Club
                 </div>
 
-                <h2 className="mt-2 text-xl font-black">
-                  Current or most recent club
-                </h2>
+                <h2 className="mt-2 text-xl font-black">Club history</h2>
 
                 <p className="mt-2 text-sm leading-6 text-white/45">
-                  If you have a current or previous club, enter the details
-                  below. Otherwise, leave this section blank.
+                  Have you ever been registered with or played for a football
+                  club?
                 </p>
               </div>
 
-              <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Field
-                    label="Club name"
-                    name="currentClub"
-                    defaultValue={application.currentClub || ""}
-                  />
-                </div>
-
-                <Field
-                  label="Start date"
-                  name="currentClubStartDate"
-                  type="date"
-                  defaultValue={formatDateForInput(
-                    application.currentClubStartDate,
-                  )}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <ChoiceButton
+                  selected={hasClubHistory === true}
+                  onClick={() => setHasClubHistory(true)}
+                  label="Yes"
+                  description="I have a current or previous club."
                 />
 
-                <Field
-                  label="End date"
-                  name="currentClubEndDate"
-                  type="date"
-                  disabled={currentlyAtClub}
-                  defaultValue={formatDateForInput(
-                    application.currentClubEndDate,
-                  )}
+                <ChoiceButton
+                  selected={hasClubHistory === false}
+                  onClick={() => {
+                    setHasClubHistory(false);
+                    setCurrentlyAtClub(false);
+                  }}
+                  label="No"
+                  description="I do not have a current or previous club."
                 />
-
-                <label className="sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <input
-                    type="checkbox"
-                    name="currentlyAtClub"
-                    checked={currentlyAtClub}
-                    onChange={(event) =>
-                      setCurrentlyAtClub(event.target.checked)
-                    }
-                    className="mt-1 h-4 w-4 accent-[#c7ff2f]"
-                  />
-
-                  <span>
-                    <span className="block text-sm font-bold">
-                      I am currently with this club
-                    </span>
-
-                    <span className="mt-1 block text-xs leading-5 text-white/45">
-                      You do not need to enter an end date if you are still with
-                      this club.
-                    </span>
-                  </span>
-                </label>
               </div>
+
+              {hasClubHistory === true ? (
+                <div className="mt-7 grid gap-6 border-t border-white/10 pt-7 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <Field
+                      label="Current or most recent club"
+                      name="currentClub"
+                      required
+                      defaultValue={application.currentClub || ""}
+                    />
+                  </div>
+
+                  <Field
+                    label="Start date"
+                    name="currentClubStartDate"
+                    type="date"
+                    required
+                    defaultValue={formatDateForInput(
+                      application.currentClubStartDate,
+                    )}
+                  />
+
+                  <Field
+                    label="End date"
+                    name="currentClubEndDate"
+                    type="date"
+                    required={!currentlyAtClub}
+                    disabled={currentlyAtClub}
+                    defaultValue={formatDateForInput(
+                      application.currentClubEndDate,
+                    )}
+                  />
+
+                  <label className="sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <input
+                      type="checkbox"
+                      checked={currentlyAtClub}
+                      onChange={(event) =>
+                        setCurrentlyAtClub(event.target.checked)
+                      }
+                      className="mt-1 h-4 w-4 accent-[#c7ff2f]"
+                    />
+
+                    <span>
+                      <span className="block text-sm font-bold">
+                        I am currently with this club
+                      </span>
+
+                      <span className="mt-1 block text-xs leading-5 text-white/45">
+                        You do not need to enter an end date if you are still
+                        with this club.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              ) : null}
             </section>
 
             <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
@@ -321,67 +375,87 @@ export default function FootballStatusPage() {
                   Academy
                 </div>
 
-                <h2 className="mt-2 text-xl font-black">
-                  Current or most recent academy
-                </h2>
+                <h2 className="mt-2 text-xl font-black">Academy history</h2>
 
                 <p className="mt-2 text-sm leading-6 text-white/45">
-                  If you have a current or previous academy, enter the details
-                  below. Otherwise, leave this section blank.
+                  Have you ever trained or played with a football academy?
                 </p>
               </div>
 
-              <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Field
-                    label="Academy name"
-                    name="currentAcademy"
-                    defaultValue={application.currentAcademy || ""}
-                  />
-                </div>
-
-                <Field
-                  label="Start date"
-                  name="currentAcademyStartDate"
-                  type="date"
-                  defaultValue={formatDateForInput(
-                    application.currentAcademyStartDate,
-                  )}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <ChoiceButton
+                  selected={hasAcademyHistory === true}
+                  onClick={() => setHasAcademyHistory(true)}
+                  label="Yes"
+                  description="I have a current or previous academy."
                 />
 
-                <Field
-                  label="End date"
-                  name="currentAcademyEndDate"
-                  type="date"
-                  disabled={currentlyAtAcademy}
-                  defaultValue={formatDateForInput(
-                    application.currentAcademyEndDate,
-                  )}
+                <ChoiceButton
+                  selected={hasAcademyHistory === false}
+                  onClick={() => {
+                    setHasAcademyHistory(false);
+                    setCurrentlyAtAcademy(false);
+                  }}
+                  label="No"
+                  description="I do not have a current or previous academy."
                 />
-
-                <label className="sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <input
-                    type="checkbox"
-                    name="currentlyAtAcademy"
-                    checked={currentlyAtAcademy}
-                    onChange={(event) =>
-                      setCurrentlyAtAcademy(event.target.checked)
-                    }
-                    className="mt-1 h-4 w-4 accent-[#c7ff2f]"
-                  />
-
-                  <span>
-                    <span className="block text-sm font-bold">
-                      I am currently with this academy
-                    </span>
-
-                    <span className="mt-1 block text-xs leading-5 text-white/45">
-                      You do not need to enter an end date if you are still with
-                      this academy.
-                    </span>
-                  </span>
-                </label>
               </div>
+
+              {hasAcademyHistory === true ? (
+                <div className="mt-7 grid gap-6 border-t border-white/10 pt-7 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <Field
+                      label="Current or most recent academy"
+                      name="currentAcademy"
+                      required
+                      defaultValue={application.currentAcademy || ""}
+                    />
+                  </div>
+
+                  <Field
+                    label="Start date"
+                    name="currentAcademyStartDate"
+                    type="date"
+                    required
+                    defaultValue={formatDateForInput(
+                      application.currentAcademyStartDate,
+                    )}
+                  />
+
+                  <Field
+                    label="End date"
+                    name="currentAcademyEndDate"
+                    type="date"
+                    required={!currentlyAtAcademy}
+                    disabled={currentlyAtAcademy}
+                    defaultValue={formatDateForInput(
+                      application.currentAcademyEndDate,
+                    )}
+                  />
+
+                  <label className="sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <input
+                      type="checkbox"
+                      checked={currentlyAtAcademy}
+                      onChange={(event) =>
+                        setCurrentlyAtAcademy(event.target.checked)
+                      }
+                      className="mt-1 h-4 w-4 accent-[#c7ff2f]"
+                    />
+
+                    <span>
+                      <span className="block text-sm font-bold">
+                        I am currently with this academy
+                      </span>
+
+                      <span className="mt-1 block text-xs leading-5 text-white/45">
+                        You do not need to enter an end date if you are still
+                        with this academy.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              ) : null}
             </section>
 
             {error ? (
@@ -441,6 +515,36 @@ export default function FootballStatusPage() {
   );
 }
 
+type ChoiceButtonProps = {
+  selected: boolean;
+  onClick: () => void;
+  label: string;
+  description: string;
+};
+
+function ChoiceButton({
+  selected,
+  onClick,
+  label,
+  description,
+}: ChoiceButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border p-4 text-left transition ${
+        selected
+          ? "border-[#c7ff2f]/60 bg-[#c7ff2f]/10"
+          : "border-white/10 bg-black/20 hover:border-white/20"
+      }`}
+    >
+      <div className="text-sm font-black">{label}</div>
+
+      <div className="mt-1 text-xs leading-5 text-white/45">{description}</div>
+    </button>
+  );
+}
+
 type FieldProps = {
   label: string;
   name: string;
@@ -462,6 +566,7 @@ function Field({
     <label className="block">
       <span className="mb-2 block text-sm font-bold text-white/75">
         {label}
+
         {required ? <span className="ml-1 text-[#c7ff2f]">*</span> : null}
       </span>
 

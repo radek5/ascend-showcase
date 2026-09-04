@@ -52,6 +52,12 @@ export async function PUT(req: Request, context: RouteContext) {
       );
     }
 
+    const hasClubHistory =
+      body.hasClubHistory === true || body.hasClubHistory === "true";
+
+    const hasAcademyHistory =
+      body.hasAcademyHistory === true || body.hasAcademyHistory === "true";
+
     const currentlyAtClub =
       body.currentlyAtClub === true ||
       body.currentlyAtClub === "true" ||
@@ -62,13 +68,17 @@ export async function PUT(req: Request, context: RouteContext) {
       body.currentlyAtAcademy === "true" ||
       body.currentlyAtAcademy === "on";
 
-    const currentClub = String(body.currentClub || "").trim();
+    const currentClub = hasClubHistory
+      ? String(body.currentClub || "").trim()
+      : "";
 
-    const currentAcademy = String(body.currentAcademy || "").trim();
+    const currentAcademy = hasAcademyHistory
+      ? String(body.currentAcademy || "").trim()
+      : "";
 
-    const hasClubDetails = Boolean(currentClub);
+    const hasClubDetails = hasClubHistory && Boolean(currentClub);
 
-    const hasAcademyDetails = Boolean(currentAcademy);
+    const hasAcademyDetails = hasAcademyHistory && Boolean(currentAcademy);
 
     const clubStartDate = hasClubDetails
       ? parseDate(body.currentClubStartDate)
@@ -87,6 +97,24 @@ export async function PUT(req: Request, context: RouteContext) {
       !hasAcademyDetails || currentlyAtAcademy
         ? null
         : parseDate(body.currentAcademyEndDate);
+
+    if (hasClubHistory && !currentClub) {
+      return NextResponse.json(
+        {
+          error: "Please enter your current or most recent club.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (hasAcademyHistory && !currentAcademy) {
+      return NextResponse.json(
+        {
+          error: "Please enter your current or most recent academy.",
+        },
+        { status: 400 },
+      );
+    }
 
     if (hasClubDetails) {
       if (!clubStartDate) {
