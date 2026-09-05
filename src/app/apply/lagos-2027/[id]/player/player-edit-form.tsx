@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 const positions = [
@@ -54,6 +54,14 @@ export default function PlayerEditForm({
 }) {
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
+  const fromContact = searchParams.get("from") === "contact";
+
+  const returnHref = fromContact
+    ? `/apply/${application.eventSlug}/${application.id}/contact`
+    : `/apply/${application.eventSlug}/${application.id}/review`;
+
   const [submitting, setSubmitting] = useState(false);
 
   const [error, setError] = useState("");
@@ -91,7 +99,7 @@ export default function PlayerEditForm({
         return;
       }
 
-      router.push(data.next);
+      router.push(returnHref);
       router.refresh();
     } catch {
       setError("We could not update your application. Please try again.");
@@ -107,24 +115,27 @@ export default function PlayerEditForm({
           <RevelationX1Logo />
 
           <Link
-            href={`/apply/${application.eventSlug}/${application.id}/review`}
+            href={returnHref}
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
-            Back to review
+            {fromContact ? "Back to contact" : "Back to review"}
           </Link>
         </div>
       </header>
 
       <section className="mx-auto max-w-5xl px-6 py-14 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-          Application Review
+          {fromContact ? "Step 1 of 8" : "Application Review"}
         </div>
 
-        <h1 className="mt-3 text-4xl font-black">Edit Player Details</h1>
+        <h1 className="mt-3 text-4xl font-black">
+          {fromContact ? "Player Information" : "Edit Player Details"}
+        </h1>
 
         <p className="mt-3 text-white/50">
-          Update the information below and return to your application review.
-          Event eligibility will be checked again when you save.
+          {fromContact
+            ? "Review or update your saved player information before continuing."
+            : "Update the information below and return to your application review. Event eligibility will be checked again when you save."}
         </p>
 
         <form
@@ -305,7 +316,7 @@ export default function PlayerEditForm({
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 sm:col-span-2">
             <Link
-              href={`/apply/${application.eventSlug}/${application.id}/review`}
+              href={returnHref}
               className="text-sm font-bold text-white/45 transition hover:text-white"
             >
               Cancel
@@ -316,7 +327,11 @@ export default function PlayerEditForm({
               disabled={submitting}
               className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? "Saving..." : "Save & Return to Review"}
+              {submitting
+                ? "Saving..."
+                : fromContact
+                  ? "Save & Continue"
+                  : "Save & Return to Review"}
             </button>
           </div>
         </form>

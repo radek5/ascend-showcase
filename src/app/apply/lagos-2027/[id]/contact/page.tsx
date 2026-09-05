@@ -269,7 +269,7 @@ export default function ContactPage() {
 
             <div className="mt-4 flex items-center justify-between sm:col-span-2">
               <Link
-                href="/apply/lagos-2027/start"
+                href={`/apply/lagos-2027/${id}/player?from=contact`}
                 className="text-sm font-bold text-white/50 transition hover:text-white"
               >
                 ← Back

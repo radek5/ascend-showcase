@@ -8,13 +8,12 @@ import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 const steps = [
   "Player",
   "Contact",
+  "Identity",
+  "Club & Academy",
   "Representation",
   "Video",
-  "Identity",
   "Consent",
   "Review",
-  "Assessment Fee",
-  "Payment",
   "Confirmation",
 ];
 
@@ -33,27 +32,18 @@ const positions = [
 
 type PlayerSex = "" | "MALE" | "FEMALE";
 
-type AgeResult =
-  | {
-      age: number;
-      eligible: boolean;
-      reason:
-        | "AGE_ELIGIBLE"
-        | "AGE_TOO_YOUNG"
-        | "AGE_TOO_OLD";
-    }
-  | null;
+type AgeResult = {
+  age: number;
+  eligible: boolean;
+  reason: "AGE_ELIGIBLE" | "AGE_TOO_YOUNG" | "AGE_TOO_OLD";
+} | null;
 
-function getAgeResult(
-  dobValue: string
-): AgeResult {
+function getAgeResult(dobValue: string): AgeResult {
   if (!dobValue) {
     return null;
   }
 
-  const dob = new Date(
-    `${dobValue}T00:00:00.000Z`
-  );
+  const dob = new Date(`${dobValue}T00:00:00.000Z`);
 
   if (Number.isNaN(dob.getTime())) {
     return null;
@@ -69,20 +59,14 @@ function getAgeResult(
    * Lagos 2027 currently starts:
    * 11 January 2027.
    */
-  const eventDate =
-    new Date("2027-01-11T08:00:00.000Z");
+  const eventDate = new Date("2027-01-11T08:00:00.000Z");
 
-  let age =
-    eventDate.getUTCFullYear() -
-    dob.getUTCFullYear();
+  let age = eventDate.getUTCFullYear() - dob.getUTCFullYear();
 
   const birthdayPassed =
-    eventDate.getUTCMonth() >
-      dob.getUTCMonth() ||
-    (eventDate.getUTCMonth() ===
-      dob.getUTCMonth() &&
-      eventDate.getUTCDate() >=
-        dob.getUTCDate());
+    eventDate.getUTCMonth() > dob.getUTCMonth() ||
+    (eventDate.getUTCMonth() === dob.getUTCMonth() &&
+      eventDate.getUTCDate() >= dob.getUTCDate());
 
   if (!birthdayPassed) {
     age -= 1;
@@ -114,52 +98,38 @@ function getAgeResult(
 export default function Lagos2027StartApplicationPage() {
   const router = useRouter();
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [dateOfBirth, setDateOfBirth] =
-    useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
 
-  const [sex, setSex] =
-    useState<PlayerSex>("");
+  const [sex, setSex] = useState<PlayerSex>("");
 
-  const ageResult =
-    getAgeResult(dateOfBirth);
+  const ageResult = getAgeResult(dateOfBirth);
 
-  const sexEligible =
-    sex === "MALE";
+  const sexEligible = sex === "MALE";
 
-  const canProceed =
-    Boolean(
-      ageResult?.eligible &&
-      sexEligible
-    );
+  const canProceed = Boolean(ageResult?.eligible && sexEligible);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!sex) {
-      setError(
-        "Please select the player's sex."
-      );
+      setError("Please select the player's sex.");
       return;
     }
 
     if (!sexEligible) {
       setError(
-        "Lagos 2027 is the Men's Football Showcase and is open to eligible male players."
+        "Lagos 2027 is the Men's Football Showcase and is open to eligible male players.",
       );
       return;
     }
 
     if (!ageResult?.eligible) {
       setError(
-        "You must meet the Lagos 2027 age requirement before continuing."
+        "You must meet the Lagos 2027 age requirement before continuing.",
       );
       return;
     }
@@ -167,50 +137,35 @@ export default function Lagos2027StartApplicationPage() {
     setSubmitting(true);
     setError("");
 
-    const formData =
-      new FormData(event.currentTarget);
+    const formData = new FormData(event.currentTarget);
 
-    const payload =
-      Object.fromEntries(
-        formData.entries()
-      );
+    const payload = Object.fromEntries(formData.entries());
 
     try {
-      const response = await fetch(
-        "/api/showcase-applications",
-        {
-          method: "POST",
+      const response = await fetch("/api/showcase-applications", {
+        method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-          body: JSON.stringify(payload),
-        }
-      );
+        body: JSON.stringify(payload),
+      });
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.error ||
-            "We could not create your application."
-        );
+        setError(data.error || "We could not create your application.");
 
         setSubmitting(false);
         return;
       }
 
       router.push(
-        data.next ||
-          `/apply/lagos-2027/${data.application.id}/contact`
+        data.next || `/apply/lagos-2027/${data.application.id}/contact`,
       );
     } catch {
-      setError(
-        "We could not create your application. Please try again."
-      );
+      setError("We could not create your application. Please try again.");
 
       setSubmitting(false);
     }
@@ -242,10 +197,8 @@ export default function Lagos2027StartApplicationPage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            Apply for professional football
-            assessment and selection for the
-            inaugural REVELATIONX1 Lagos 2027
-            Football Showcase.
+            Apply for professional football assessment and selection for the
+            inaugural REVELATIONX1 Lagos 2027 Football Showcase.
           </p>
 
           <div className="mt-5 inline-flex rounded-full border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.06] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#c7ff2f]">
@@ -257,34 +210,30 @@ export default function Lagos2027StartApplicationPage() {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
           <div className="flex min-w-[1180px]">
-            {steps.map(
-              (step, index) => (
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-4 first:pl-0"
+              >
                 <div
-                  key={step}
-                  className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-4 first:pl-0"
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 0
+                      ? "bg-[#c7ff2f] text-black"
+                      : "border border-white/15 text-white/40"
+                  }`}
                 >
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                      index === 0
-                        ? "bg-[#c7ff2f] text-black"
-                        : "border border-white/15 text-white/40"
-                    }`}
-                  >
-                    {index + 1}
-                  </div>
-
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
-                      index === 0
-                        ? "text-white"
-                        : "text-white/35"
-                    }`}
-                  >
-                    {step}
-                  </span>
+                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
                 </div>
-              )
-            )}
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
+                    index === 0 ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -293,79 +242,50 @@ export default function Lagos2027StartApplicationPage() {
         <div>
           <div className="mb-8">
             <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-              Step 1 of 10
+              Step 1 of 8
             </div>
 
-            <h2 className="mt-3 text-3xl font-black">
-              Player Details
-            </h2>
+            <h2 className="mt-3 text-3xl font-black">Player Details</h2>
 
             <p className="mt-2 text-sm text-white/50">
-              Tell us about the player applying
-              for assessment.
+              Tell us about the player applying for assessment.
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="grid gap-6 sm:grid-cols-2"
-          >
-            <Field
-              label="First name"
-              name="firstName"
-              required
-            />
+          <form onSubmit={handleSubmit} className="grid gap-6 sm:grid-cols-2">
+            <Field label="First name" name="firstName" required />
 
-            <Field
-              label="Last name"
-              name="lastName"
-              required
-            />
+            <Field label="Last name" name="lastName" required />
 
             <label className="space-y-2">
-              <span className="text-sm font-semibold">
-                Sex
-              </span>
+              <span className="text-sm font-semibold">Sex</span>
 
               <select
                 name="sex"
                 required
                 value={sex}
                 onChange={(event) => {
-                  setSex(
-                    event.target
-                      .value as PlayerSex
-                  );
+                  setSex(event.target.value as PlayerSex);
 
                   setError("");
                 }}
                 className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
               >
-                <option value="">
-                  Select
-                </option>
+                <option value="">Select</option>
 
-                <option value="MALE">
-                  Male
-                </option>
+                <option value="MALE">Male</option>
 
-                <option value="FEMALE">
-                  Female
-                </option>
+                <option value="FEMALE">Female</option>
               </select>
 
               <p className="text-xs leading-5 text-white/40">
-                Lagos 2027 is the
-                Men&apos;s Football Showcase
-                and is open to eligible male
-                players.
+                Lagos 2027 is the Men&apos;s Football Showcase and is open to
+                eligible male players.
               </p>
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm font-semibold">
-                Date of birth
-              </span>
+              <span className="text-sm font-semibold">Date of birth</span>
 
               <input
                 name="dateOfBirth"
@@ -373,9 +293,7 @@ export default function Lagos2027StartApplicationPage() {
                 required
                 value={dateOfBirth}
                 onChange={(event) => {
-                  setDateOfBirth(
-                    event.target.value
-                  );
+                  setDateOfBirth(event.target.value);
 
                   setError("");
                 }}
@@ -383,9 +301,8 @@ export default function Lagos2027StartApplicationPage() {
               />
 
               <p className="text-xs leading-5 text-white/40">
-                You must be aged 18–20 on the
-                first day of the programme,
-                11 January 2027.
+                You must be aged 18–20 on the first day of the programme, 11
+                January 2027.
               </p>
             </label>
 
@@ -400,35 +317,28 @@ export default function Lagos2027StartApplicationPage() {
                 {sexEligible ? (
                   <>
                     <div className="text-sm font-black text-[#c7ff2f]">
-                      ✓ Men&apos;s Showcase
-                      eligibility
+                      ✓ Men&apos;s Showcase eligibility
                     </div>
 
                     <p className="mt-1 text-xs leading-5 text-white/55">
-                      You meet the competition
-                      category requirement for
-                      Lagos 2027.
+                      You meet the competition category requirement for Lagos
+                      2027.
                     </p>
                   </>
                 ) : (
                   <>
                     <div className="text-sm font-black text-red-300">
-                      ✕ Not eligible for this
-                      event
+                      ✕ Not eligible for this event
                     </div>
 
                     <p className="mt-1 text-xs leading-5 text-red-100/70">
-                      Lagos 2027 is the
-                      Men&apos;s Football
-                      Showcase and is open to
-                      eligible male players.
+                      Lagos 2027 is the Men&apos;s Football Showcase and is open
+                      to eligible male players.
                     </p>
 
                     <p className="mt-2 text-xs font-semibold leading-5 text-white/50">
-                      A dedicated women&apos;s
-                      programme is planned as
-                      part of the Showcase&apos;s
-                      future expansion.
+                      A dedicated women&apos;s programme is planned as part of
+                      the Showcase&apos;s future expansion.
                     </p>
                   </>
                 )}
@@ -440,9 +350,8 @@ export default function Lagos2027StartApplicationPage() {
                 </div>
 
                 <p className="mt-1 text-xs leading-5 text-white/40">
-                  Select the player&apos;s sex
-                  to confirm eligibility for
-                  this event.
+                  Select the player&apos;s sex to confirm eligibility for this
+                  event.
                 </p>
               </div>
             )}
@@ -462,11 +371,8 @@ export default function Lagos2027StartApplicationPage() {
                     </div>
 
                     <p className="mt-1 text-xs leading-5 text-white/55">
-                      You will be{" "}
-                      {ageResult.age} years old
-                      on the first day of the
-                      programme and meet the
-                      18–20 age requirement.
+                      You will be {ageResult.age} years old on the first day of
+                      the programme and meet the 18–20 age requirement.
                     </p>
                   </>
                 ) : (
@@ -476,15 +382,13 @@ export default function Lagos2027StartApplicationPage() {
                     </div>
 
                     <p className="mt-1 text-xs leading-5 text-red-100/70">
-                      {ageResult.reason ===
-                      "AGE_TOO_YOUNG"
+                      {ageResult.reason === "AGE_TOO_YOUNG"
                         ? `You will be ${ageResult.age} years old on the first day of the programme and are below the minimum age of 18.`
                         : `You will be ${ageResult.age} years old on the first day of the programme and are above the maximum age of 20.`}
                     </p>
 
                     <p className="mt-2 text-xs font-semibold leading-5 text-white/50">
-                      This application cannot
-                      proceed.
+                      This application cannot proceed.
                     </p>
                   </>
                 )}
@@ -496,88 +400,56 @@ export default function Lagos2027StartApplicationPage() {
                 </div>
 
                 <p className="mt-1 text-xs leading-5 text-white/40">
-                  Enter the player&apos;s date
-                  of birth to confirm the
-                  18–20 age requirement.
+                  Enter the player&apos;s date of birth to confirm the 18–20 age
+                  requirement.
                 </p>
               </div>
             )}
 
-            <Field
-              label="Nationality"
-              name="nationality"
-              required
-            />
+            <Field label="Nationality" name="nationality" required />
 
             <label className="space-y-2">
-              <span className="text-sm font-semibold">
-                Primary position
-              </span>
+              <span className="text-sm font-semibold">Primary position</span>
 
               <select
                 name="position"
                 required
                 className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
               >
-                <option value="">
-                  Select position
-                </option>
+                <option value="">Select position</option>
 
-                {positions.map(
-                  (position) => (
-                    <option
-                      key={position}
-                      value={position}
-                    >
-                      {position}
-                    </option>
-                  )
-                )}
+                {positions.map((position) => (
+                  <option key={position} value={position}>
+                    {position}
+                  </option>
+                ))}
               </select>
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm font-semibold">
-                Preferred foot
-              </span>
+              <span className="text-sm font-semibold">Preferred foot</span>
 
               <select
                 name="preferredFoot"
                 required
                 className="w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
               >
-                <option value="">
-                  Select
-                </option>
+                <option value="">Select</option>
 
-                <option value="Right">
-                  Right
-                </option>
+                <option value="Right">Right</option>
 
-                <option value="Left">
-                  Left
-                </option>
+                <option value="Left">Left</option>
 
-                <option value="Both">
-                  Both
-                </option>
+                <option value="Both">Both</option>
               </select>
             </label>
 
-            <Field
-              label="Secondary position"
-              name="secondaryPosition"
-            />
+            <Field label="Secondary position" name="secondaryPosition" />
 
-            <Field
-              label="Current club or academy"
-              name="currentClub"
-            />
+            <Field label="Current club or academy" name="currentClub" />
 
             <label className="space-y-2 sm:col-span-2">
-              <span className="text-sm font-semibold">
-                Football background
-              </span>
+              <span className="text-sm font-semibold">Football background</span>
 
               <textarea
                 name="footballBackground"
@@ -607,19 +479,14 @@ export default function Lagos2027StartApplicationPage() {
                   required
                 />
 
-                <Field
-                  label="Phone"
-                  name="phone"
-                />
+                <Field label="Phone" name="phone" />
               </div>
             </div>
 
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-white/55 sm:col-span-2">
-              Next, you&apos;ll provide your
-              contact and representation
-              information before submitting
-              your football video for
-              professional assessment.
+              Next, you&apos;ll provide your contact and representation
+              information before submitting your football video for professional
+              assessment.
             </div>
 
             {error ? (
@@ -631,19 +498,14 @@ export default function Lagos2027StartApplicationPage() {
             <div className="mt-4 flex justify-end sm:col-span-2">
               <button
                 type="submit"
-                disabled={
-                  submitting ||
-                  !canProceed
-                }
+                disabled={submitting || !canProceed}
                 className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting
                   ? "Saving..."
-                  : sex &&
-                      !sexEligible
+                  : sex && !sexEligible
                     ? "Not Eligible"
-                    : ageResult &&
-                        !ageResult.eligible
+                    : ageResult && !ageResult.eligible
                       ? "Not Eligible"
                       : "Continue"}
               </button>
@@ -661,59 +523,37 @@ export default function Lagos2027StartApplicationPage() {
               REVELATIONX1 Football Showcase
             </div>
 
-            <div className="mt-1 text-[#c7ff2f]">
-              Lagos 2027
-            </div>
+            <div className="mt-1 text-[#c7ff2f]">Lagos 2027</div>
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <div className="flex justify-between gap-6">
-                <span className="text-white/40">
-                  Category
-                </span>
+                <span className="text-white/40">Category</span>
 
-                <span className="text-right">
-                  Men&apos;s
-                </span>
+                <span className="text-right">Men&apos;s</span>
               </div>
 
               <div className="flex justify-between gap-6">
-                <span className="text-white/40">
-                  Eligibility
-                </span>
+                <span className="text-white/40">Eligibility</span>
 
-                <span className="text-right">
-                  Male · Ages 18–20
-                </span>
+                <span className="text-right">Male · Ages 18–20</span>
               </div>
 
               <div className="flex justify-between gap-6">
-                <span className="text-white/40">
-                  Assessment
-                </span>
+                <span className="text-white/40">Assessment</span>
 
-                <span className="text-right">
-                  Football profile + video
-                </span>
+                <span className="text-right">Football profile + video</span>
               </div>
 
               <div className="flex justify-between gap-6">
-                <span className="text-white/40">
-                  Selection
-                </span>
+                <span className="text-white/40">Selection</span>
 
-                <span className="text-right">
-                  Best 100 eligible players
-                </span>
+                <span className="text-right">Best 100 eligible players</span>
               </div>
 
               <div className="flex justify-between gap-6">
-                <span className="text-white/40">
-                  Camp
-                </span>
+                <span className="text-white/40">Camp</span>
 
-                <span className="text-right">
-                  Fully funded if selected
-                </span>
+                <span className="text-right">Fully funded if selected</span>
               </div>
             </div>
 
@@ -723,17 +563,13 @@ export default function Lagos2027StartApplicationPage() {
               </div>
 
               <p className="mt-3 text-sm leading-6 text-white/60">
-                The Application &amp;
-                Assessment Fee pays for the
-                processing and professional
-                assessment of your application
-                and submitted video.
+                The Application &amp; Assessment Fee pays for the processing and
+                professional assessment of your application and submitted video.
               </p>
 
               <p className="mt-3 text-sm font-bold leading-6 text-white">
-                Payment does not guarantee
-                selection or an invitation to
-                the Lagos 2027 camp.
+                Payment does not guarantee selection or an invitation to the
+                Lagos 2027 camp.
               </p>
             </div>
           </div>
@@ -756,9 +592,7 @@ function Field({
 }) {
   return (
     <label className="space-y-2">
-      <span className="text-sm font-semibold">
-        {label}
-      </span>
+      <span className="text-sm font-semibold">{label}</span>
 
       <input
         type={type}
