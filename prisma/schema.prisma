@@ -418,6 +418,7 @@ model ShowcaseApplication {
 
   eventSlug String
   userId    String?
+  user      ApplicantUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   firstName String
   lastName  String
@@ -542,6 +543,7 @@ model ShowcaseApplication {
   @@index([email])
   @@index([status])
   @@index([eventSlug, status])
+  @@index([userId])
 }
 
 model ShowcasePayment {
@@ -1299,4 +1301,58 @@ model SelectorAssessment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ApplicantUser {
+  id String @id @default(cuid())
+
+  email        String @unique
+  passwordHash String
+
+  emailVerifiedAt DateTime?
+  lastLoginAt     DateTime?
+
+  applications ShowcaseApplication[]
+
+  verificationTokens  ApplicantVerificationToken[]
+  passwordResetTokens ApplicantPasswordResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([emailVerifiedAt])
+}
+
+model ApplicantVerificationToken {
+  id String @id @default(cuid())
+
+  userId String
+  user   ApplicantUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model ApplicantPasswordResetToken {
+  id String @id @default(cuid())
+
+  userId String
+  user   ApplicantUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
