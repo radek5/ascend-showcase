@@ -35,6 +35,7 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
       emergencyContactRelationship: true,
       emergencyContactPhone: true,
 
+      footballStatusCompletedAt: true,
       footballStatusDeclarationAccepted: true,
       footballStatusVerification: true,
 
@@ -176,6 +177,8 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
    * ----------------------------------------------------------
    */
 
+  const footballStatusComplete = Boolean(application.footballStatusCompletedAt);
+
   const footballDisclosureComplete =
     application.footballStatusDeclarationAccepted === true &&
     application.footballStatusVerification === "DECLARED";
@@ -243,6 +246,7 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
     missingPlayerFields.length === 0 &&
     missingContactFields.length === 0 &&
     missingIdentityTypes.length === 0 &&
+    footballStatusComplete &&
     footballDisclosureComplete &&
     missingVideoTypes.length === 0 &&
     missingConsents.length === 0;
@@ -259,6 +263,8 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
     redirectPath = `/apply/${application.eventSlug}/${application.id}/contact`;
   } else if (missingIdentityTypes.length > 0) {
     redirectPath = `/apply/${application.eventSlug}/${application.id}/identity`;
+  } else if (!footballStatusComplete) {
+    redirectPath = `/apply/${application.eventSlug}/${application.id}/football-status`;
   } else if (!footballDisclosureComplete) {
     redirectPath = `/apply/${application.eventSlug}/${application.id}/representation`;
   } else if (missingVideoTypes.length > 0) {
@@ -276,6 +282,7 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
     missingPlayerFields,
     missingContactFields,
     missingIdentityTypes,
+    footballStatusComplete,
     footballDisclosureComplete,
     missingVideoTypes,
     missingConsents,

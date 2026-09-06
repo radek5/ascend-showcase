@@ -27,6 +27,18 @@ export async function PUT(
       );
     }
 
+    if (!application.footballStatusCompletedAt) {
+      return NextResponse.json(
+        {
+          error:
+            "Please complete your Club & Academy Status before completing Representation.",
+          code: "FOOTBALL_STATUS_INCOMPLETE",
+          next: `/apply/lagos-2027/${id}/football-status`,
+        },
+        { status: 409 },
+      );
+    }
+
     const hasAgent = body.hasAgent === "yes";
 
     if (body.hasAgent !== "yes" && body.hasAgent !== "no") {

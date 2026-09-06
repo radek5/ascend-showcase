@@ -194,6 +194,8 @@ export async function PUT(req: Request, context: RouteContext) {
 
         currentAcademyEndDate: academyEndDate,
 
+        footballStatusCompletedAt: new Date(),
+
         // Club / academy information has been saved or reconfirmed.
         // Require the applicant to complete the combined Full Disclosure
         // declaration again in Step 4B.
