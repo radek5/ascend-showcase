@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 
+import { getCurrentApplicantUser } from "@/lib/applicants/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateAgeOnDate } from "@/lib/showcase/lagos2027AgeEligibility";
 
@@ -29,6 +30,28 @@ function normalisePhone(value: unknown) {
 
 export async function POST(req: Request) {
   try {
+    const applicantUser = await getCurrentApplicantUser();
+
+    if (!applicantUser) {
+      return NextResponse.json(
+        {
+          error: "Please sign in before starting or continuing an application.",
+          code: "APPLICANT_AUTH_REQUIRED",
+        },
+        { status: 401 },
+      );
+    }
+
+    if (!applicantUser.emailVerifiedAt) {
+      return NextResponse.json(
+        {
+          error: "Please verify your email address before continuing.",
+          code: "APPLICANT_EMAIL_VERIFICATION_REQUIRED",
+        },
+        { status: 403 },
+      );
+    }
+
     const body = await req.json();
 
     const {
@@ -68,6 +91,21 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Email is required." },
         { status: 400 },
+      );
+    }
+
+    const submittedEmail = String(email).trim().toLowerCase();
+
+    const accountEmail = applicantUser.email.trim().toLowerCase();
+
+    if (submittedEmail !== accountEmail) {
+      return NextResponse.json(
+        {
+          error:
+            "The application email must match the verified email address on your REVELATIONX1 account.",
+          code: "ACCOUNT_EMAIL_MISMATCH",
+        },
+        { status: 409 },
       );
     }
 
@@ -227,67 +265,63 @@ export async function POST(req: Request) {
     }
 
     /*
-     * Duplicate-registration protection and draft recovery.
+     * Application ownership, duplicate protection and
+     * controlled legacy-draft recovery.
      *
-     * Same event + date of birth + email is treated as a
-     * definite applicant match.
+     * A verified applicant account may have only one
+     * Lagos 2027 application.
      *
-     * Submitted applications remain blocked.
-     * Unfinished applications are reused rather than
-     * creating another database record.
+     * Existing applications already owned by the account
+     * are resumed directly.
      *
-     * Date of birth + phone remains a possible duplicate
-     * and is not automatically resumed.
+     * Legacy applications created before applicant accounts
+     * may only be claimed when they are:
+     *
+     * - for this event;
+     * - still unowned;
+     * - still DRAFT / unsubmitted;
+     * - an exact verified-email match; and
+     * - an exact date-of-birth match.
+     *
+     * Submitted legacy applications are never silently claimed.
      */
-    const normalisedEmail = email.trim().toLowerCase();
+
+    const normalisedEmail = accountEmail;
 
     const normalisedPhone = normalisePhone(phone);
 
-    const possibleExistingApplications =
-      await prisma.showcaseApplication.findMany({
-        where: {
-          eventSlug: EVENT_SLUG,
-          dateOfBirth: parsedDob,
-        },
+    /*
+     * First check whether this applicant account already
+     * owns an application for this event.
+     */
+    const ownedApplication = await prisma.showcaseApplication.findFirst({
+      where: {
+        eventSlug: EVENT_SLUG,
+        userId: applicantUser.id,
+      },
 
-        select: {
-          id: true,
-          email: true,
-          phone: true,
-          submittedAt: true,
-        },
-      });
+      select: {
+        id: true,
+        status: true,
+        submittedAt: true,
+      },
+    });
 
-    const emailDuplicate = possibleExistingApplications.find(
-      (existing) => existing.email.trim().toLowerCase() === normalisedEmail,
-    );
-
-    if (emailDuplicate) {
-      /*
-       * A submitted application must never be replaced
-       * or restarted through the public application form.
-       */
-      if (emailDuplicate.submittedAt) {
+    if (ownedApplication) {
+      if (ownedApplication.submittedAt) {
         return NextResponse.json(
           {
             error:
-              "An application has already been submitted for Lagos 2027 matching this email address and date of birth.",
+              "You have already submitted an application for Lagos 2027. Please use your applicant account to view its status.",
             code: "DUPLICATE_APPLICATION",
           },
           { status: 409 },
         );
       }
 
-      /*
-       * An unfinished application may be resumed.
-       *
-       * Update the existing draft with the Step 1
-       * information the applicant has just supplied,
-       * rather than creating another application.
-       */
       const application = await prisma.showcaseApplication.update({
         where: {
-          id: emailDuplicate.id,
+          id: ownedApplication.id,
         },
 
         data: {
@@ -326,6 +360,168 @@ export async function POST(req: Request) {
       });
     }
 
+    /*
+     * Look for pre-account application records with the
+     * same DOB. Email comparison is normalised in code so
+     * older records with inconsistent casing can still be
+     * detected safely.
+     */
+    const possibleExistingApplications =
+      await prisma.showcaseApplication.findMany({
+        where: {
+          eventSlug: EVENT_SLUG,
+          dateOfBirth: parsedDob,
+        },
+
+        select: {
+          id: true,
+          userId: true,
+          email: true,
+          phone: true,
+          status: true,
+          submittedAt: true,
+        },
+      });
+
+    const emailMatches = possibleExistingApplications.filter(
+      (existing) => existing.email.trim().toLowerCase() === normalisedEmail,
+    );
+
+    /*
+     * Never silently claim a submitted legacy application.
+     */
+    if (emailMatches.some((existing) => Boolean(existing.submittedAt))) {
+      return NextResponse.json(
+        {
+          error:
+            "An application has already been submitted for Lagos 2027 matching this verified email address and date of birth. Please contact REVELATIONX1 if you need help accessing it.",
+          code: "DUPLICATE_APPLICATION",
+        },
+        { status: 409 },
+      );
+    }
+
+    /*
+     * An application already linked to another account must
+     * never be transferred simply because form data matches.
+     */
+    if (
+      emailMatches.some(
+        (existing) =>
+          existing.userId !== null && existing.userId !== applicantUser.id,
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "We found an existing Lagos 2027 application matching these details. Please contact REVELATIONX1 for assistance.",
+          code: "APPLICATION_OWNERSHIP_CONFLICT",
+        },
+        { status: 409 },
+      );
+    }
+
+    const claimableLegacyDrafts = emailMatches.filter(
+      (existing) =>
+        existing.userId === null &&
+        existing.submittedAt === null &&
+        existing.status === "DRAFT",
+    );
+
+    if (claimableLegacyDrafts.length > 1) {
+      return NextResponse.json(
+        {
+          error:
+            "We found more than one unfinished Lagos 2027 application matching your verified account details. Please contact REVELATIONX1 so we can safely resolve them.",
+          code: "MULTIPLE_LEGACY_APPLICATIONS",
+        },
+        { status: 409 },
+      );
+    }
+
+    if (claimableLegacyDrafts.length === 1) {
+      const legacyApplication = claimableLegacyDrafts[0];
+
+      const application = await prisma.$transaction(async (tx) => {
+        /*
+         * Claim only if the record is still unowned and
+         * unsubmitted at the instant of the update.
+         */
+        const claimed = await tx.showcaseApplication.updateMany({
+          where: {
+            id: legacyApplication.id,
+            userId: null,
+            submittedAt: null,
+            status: "DRAFT",
+          },
+
+          data: {
+            userId: applicantUser.id,
+          },
+        });
+
+        if (claimed.count !== 1) {
+          return null;
+        }
+
+        return tx.showcaseApplication.update({
+          where: {
+            id: legacyApplication.id,
+          },
+
+          data: {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: normalisedEmail,
+
+            dateOfBirth: parsedDob,
+            age: calculatedAge,
+            sex,
+
+            nationality: nationality?.trim() || null,
+
+            countryOfResidence: countryOfResidence?.trim() || null,
+
+            position: position.trim(),
+
+            secondaryPosition: secondaryPosition?.trim() || null,
+
+            preferredFoot: preferredFoot?.trim() || null,
+
+            footballBackground: footballBackground?.trim() || null,
+          },
+        });
+      });
+
+      if (!application) {
+        return NextResponse.json(
+          {
+            error:
+              "We could not safely resume the existing application. Please try again or contact REVELATIONX1 for assistance.",
+            code: "APPLICATION_CLAIM_CONFLICT",
+          },
+          { status: 409 },
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        resumed: true,
+        claimed: true,
+
+        application: {
+          id: application.id,
+          status: application.status,
+        },
+
+        next: `/apply/lagos-2027/${application.id}/contact`,
+      });
+    }
+
+    /*
+     * A matching DOB + phone remains a possible duplicate.
+     * We do not use phone possession as proof of ownership.
+     */
     const phoneDuplicate =
       normalisedPhone.length > 0 &&
       possibleExistingApplications.some(
@@ -336,7 +532,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "We found a possible existing Lagos 2027 application matching this date of birth and phone number. Please do not start a second application. If this application belongs to you, please contact REVELATIONX1 for assistance.",
+            "We found a possible existing Lagos 2027 application matching this date of birth and phone number. Please do not start a second application. Contact REVELATIONX1 for assistance.",
           code: "POSSIBLE_DUPLICATE_APPLICATION",
         },
         { status: 409 },
@@ -346,6 +542,7 @@ export async function POST(req: Request) {
     const application = await prisma.showcaseApplication.create({
       data: {
         eventSlug: EVENT_SLUG,
+        userId: applicantUser.id,
 
         assessmentFeeRequired: true,
         assessmentFeeAmount: 5000000,
