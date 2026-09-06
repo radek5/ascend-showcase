@@ -39,7 +39,11 @@ export async function requireVerifiedApplicantUser() {
   const applicantUser = await requireApplicantUser();
 
   if (!applicantUser.emailVerifiedAt) {
-    redirect("/account/verify-email");
+    redirect(
+      `/account/check-email?email=${encodeURIComponent(
+        applicantUser.email,
+      )}&verification=required`,
+    );
   }
 
   return applicantUser;

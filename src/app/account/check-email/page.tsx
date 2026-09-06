@@ -1,12 +1,14 @@
 import Link from "next/link";
 
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import { resendApplicantVerificationEmail } from "./actions";
 
 type CheckEmailPageProps = {
   searchParams: Promise<{
     email?: string;
     delivery?: string;
     verification?: string;
+    resent?: string;
   }>;
 };
 
@@ -17,6 +19,10 @@ export default async function CheckEmailPage({
 
   const deliveryFailed = params.delivery === "failed";
   const verificationInvalid = params.verification === "invalid";
+
+  const verificationRequired = params.verification === "required";
+
+  const resent = params.resent === "1";
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
@@ -93,10 +99,22 @@ export default async function CheckEmailPage({
             ) : (
               <>
                 <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-                  Account Created
+                  {verificationRequired
+                    ? "Email Verification"
+                    : "Account Created"}
                 </div>
 
-                <h1 className="mt-3 text-3xl font-black">Check your email</h1>
+                <h1 className="mt-3 text-3xl font-black">
+                  {verificationRequired
+                    ? "Verify your email"
+                    : "Check your email"}
+                </h1>
+
+                {resent && (
+                  <div className="mt-5 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.06] p-4 text-sm leading-6 text-[#c7ff2f]">
+                    A new verification email has been sent.
+                  </div>
+                )}
 
                 <p className="mt-4 text-sm leading-7 text-white/55">
                   We sent a verification link
@@ -124,6 +142,20 @@ export default async function CheckEmailPage({
                   The verification link expires after 24 hours. If you cannot
                   see the email, check your spam or junk folder.
                 </div>
+
+                {verificationRequired && (
+                  <form
+                    action={resendApplicantVerificationEmail}
+                    className="mt-5"
+                  >
+                    <button
+                      type="submit"
+                      className="w-full rounded-full border border-white/15 px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-white transition hover:border-[#c7ff2f]/50 hover:text-[#c7ff2f]"
+                    >
+                      Send New Verification Email
+                    </button>
+                  </form>
+                )}
               </>
             )}
           </div>
