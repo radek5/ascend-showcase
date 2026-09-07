@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { checkApplicantApplicationAccess } from "@/lib/applicants/applicationOwnership";
 import { prisma } from "@/lib/prisma";
 
 import PlayerEditForm from "./player-edit-form";
@@ -10,44 +11,47 @@ type PageProps = {
   }>;
 };
 
-export default async function PlayerEditPage({
-  params,
-}: PageProps) {
+export default async function PlayerEditPage({ params }: PageProps) {
   const { id } = await params;
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id,
-      },
+  const access = await checkApplicantApplicationAccess(id);
 
-      select: {
-        id: true,
-        eventSlug: true,
+  if (!access.authorised) {
+    notFound();
+  }
 
-        firstName: true,
-        lastName: true,
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: access.applicationId,
+    },
 
-        email: true,
-        phone: true,
+    select: {
+      id: true,
+      eventSlug: true,
 
-        dateOfBirth: true,
-        sex: true,
+      firstName: true,
+      lastName: true,
 
-        nationality: true,
-        countryOfResidence: true,
-        stateRegion: true,
-        city: true,
+      email: true,
+      phone: true,
 
-        position: true,
-        secondaryPosition: true,
-        preferredFoot: true,
+      dateOfBirth: true,
+      sex: true,
 
-        currentClub: true,
-        currentAcademy: true,
-        footballBackground: true,
-      },
-    });
+      nationality: true,
+      countryOfResidence: true,
+      stateRegion: true,
+      city: true,
+
+      position: true,
+      secondaryPosition: true,
+      preferredFoot: true,
+
+      currentClub: true,
+      currentAcademy: true,
+      footballBackground: true,
+    },
+  });
 
   if (!application) {
     notFound();
@@ -59,17 +63,13 @@ export default async function PlayerEditPage({
         ...application,
 
         sex:
-          application.sex === "MALE" ||
-          application.sex === "FEMALE"
+          application.sex === "MALE" || application.sex === "FEMALE"
             ? application.sex
             : "",
 
-        dateOfBirth:
-          application.dateOfBirth
-            ? application.dateOfBirth
-                .toISOString()
-                .slice(0, 10)
-            : "",
+        dateOfBirth: application.dateOfBirth
+          ? application.dateOfBirth.toISOString().slice(0, 10)
+          : "",
       }}
     />
   );

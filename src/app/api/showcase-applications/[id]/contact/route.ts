@@ -3,6 +3,11 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
+
 import { prisma } from "@/lib/prisma";
 
 export async function PUT(
@@ -15,10 +20,27 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+
+    const access = await checkApplicantApplicationAccess(id);
+
+    if (!access.authorised) {
+      const accessError = getApplicantApplicationAccessError(access);
+
+      return NextResponse.json(
+        {
+          error: accessError.error,
+          code: accessError.code,
+        },
+        { status: accessError.status },
+      );
+    }
+
     const body = await req.json();
 
     const application = await prisma.showcaseApplication.findUnique({
-      where: { id },
+      where: {
+        id: access.applicationId,
+      },
     });
 
     if (!application) {
