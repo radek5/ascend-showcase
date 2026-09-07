@@ -2,79 +2,68 @@
 
 import { redirect } from "next/navigation";
 
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
+
 import { prisma } from "@/lib/prisma";
 
-function checked(
-  formData: FormData,
-  name: string
-) {
+function checked(formData: FormData, name: string) {
   return formData.get(name) === "on";
 }
 
-export async function updateShowcaseConsent(
-  formData: FormData
-) {
-  const applicationId = String(
-    formData.get("applicationId") ?? ""
-  );
+export async function updateShowcaseConsent(formData: FormData) {
+  const applicationId = String(formData.get("applicationId") ?? "");
 
   if (!applicationId) {
-    throw new Error(
-      "Application ID is required."
-    );
+    throw new Error("Application ID is required.");
   }
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id: applicationId,
-      },
-      select: {
-        id: true,
-        eventSlug: true,
-      },
-    });
+  const access = await checkApplicantApplicationAccess(applicationId);
+
+  if (!access.authorised) {
+    const accessError = getApplicantApplicationAccessError(access);
+
+    if (accessError.status === 401) {
+      redirect("/apply/lagos-2027/account/login");
+    }
+
+    throw new Error(accessError.error);
+  }
+
+  const authorisedApplicationId = access.applicationId;
+
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: authorisedApplicationId,
+    },
+    select: {
+      id: true,
+      eventSlug: true,
+    },
+  });
 
   if (!application) {
-    throw new Error(
-      "Showcase application not found."
-    );
+    throw new Error("Showcase application not found.");
   }
 
   const medicalNotes =
-    String(
-      formData.get("medicalNotes") ?? ""
-    ).trim() || null;
+    String(formData.get("medicalNotes") ?? "").trim() || null;
 
-  const medicalConsent =
-    checked(formData, "medicalConsent");
+  const medicalConsent = checked(formData, "medicalConsent");
 
-  const eventConsent =
-    checked(formData, "eventConsent");
+  const eventConsent = checked(formData, "eventConsent");
 
-  const declarationConsent =
-    checked(
-      formData,
-      "declarationConsent"
-    );
+  const declarationConsent = checked(formData, "declarationConsent");
 
-  const termsConsent =
-    checked(formData, "termsConsent");
+  const termsConsent = checked(formData, "termsConsent");
 
-  const privacyConsent =
-    checked(formData, "privacyConsent");
+  const privacyConsent = checked(formData, "privacyConsent");
 
-  const playerAgreementConsent =
-    checked(
-      formData,
-      "playerAgreementConsent"
-    );
+  const playerAgreementConsent = checked(formData, "playerAgreementConsent");
 
-  const futureEventConsent =
-    checked(
-      formData,
-      "futureEventConsent"
-    );
+  const futureEventConsent = checked(formData, "futureEventConsent");
 
   /*
    * Required declarations are also
@@ -89,7 +78,7 @@ export async function updateShowcaseConsent(
     !playerAgreementConsent
   ) {
     throw new Error(
-      "All required consent and declaration items must be accepted."
+      "All required consent and declaration items must be accepted.",
     );
   }
 
@@ -109,14 +98,9 @@ export async function updateShowcaseConsent(
 
       futureEventConsent,
 
-      futureEventConsentAt:
-        futureEventConsent
-          ? new Date()
-          : null,
+      futureEventConsentAt: futureEventConsent ? new Date() : null,
     },
   });
 
-  redirect(
-    `/apply/${application.eventSlug}/${application.id}/review`
-  );
+  redirect(`/apply/${application.eventSlug}/${application.id}/review`);
 }
