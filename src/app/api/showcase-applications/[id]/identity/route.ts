@@ -4,46 +4,66 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
+
 export async function GET(
   _request: Request,
   {
     params,
   }: {
     params: Promise<{ id: string }>;
-  }
+  },
 ) {
   try {
     const { id } = await params;
 
-    const application =
-      await prisma.showcaseApplication.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          dateOfBirth: true,
-          age: true,
-          eventSlug: true,
-          status: true,
+    const access = await checkApplicantApplicationAccess(id);
 
-          identityDocuments: {
-            select: {
-              id: true,
-              type: true,
-              status: true,
-              originalFilename: true,
-              sizeBytes: true,
-              uploadedAt: true,
-            },
+    if (!access.authorised) {
+      const accessError = getApplicantApplicationAccessError(access);
+
+      return NextResponse.json(
+        {
+          error: accessError.error,
+          code: accessError.code,
+        },
+        { status: accessError.status },
+      );
+    }
+
+    const application = await prisma.showcaseApplication.findUnique({
+      where: {
+        id: access.applicationId,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        age: true,
+        eventSlug: true,
+        status: true,
+
+        identityDocuments: {
+          select: {
+            id: true,
+            type: true,
+            status: true,
+            originalFilename: true,
+            sizeBytes: true,
+            uploadedAt: true,
           },
         },
-      });
+      },
+    });
 
     if (!application) {
       return NextResponse.json(
         { error: "Application not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -51,29 +71,20 @@ export async function GET(
       application: {
         ...application,
 
-        identityDocuments:
-          application.identityDocuments.map(
-            (document) => ({
-              ...document,
-              sizeBytes:
-                document.sizeBytes?.toString() ??
-                null,
-            })
-          ),
+        identityDocuments: application.identityDocuments.map((document) => ({
+          ...document,
+          sizeBytes: document.sizeBytes?.toString() ?? null,
+        })),
       },
     });
   } catch (error) {
-    console.error(
-      "GET SHOWCASE IDENTITY ERROR",
-      error
-    );
+    console.error("GET SHOWCASE IDENTITY ERROR", error);
 
     return NextResponse.json(
       {
-        error:
-          "Unable to load identity verification information.",
+        error: "Unable to load identity verification information.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

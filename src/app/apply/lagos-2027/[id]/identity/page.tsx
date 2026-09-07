@@ -310,14 +310,7 @@ export default function IdentityVerificationPage() {
 
           body: JSON.stringify({
             documentId: presign.documentId,
-
             storageKey: presign.storageKey,
-
-            originalFilename: state.file.name,
-
-            mimeType: state.file.type,
-
-            size: state.file.size,
           }),
         },
       );

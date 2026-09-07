@@ -4,71 +4,75 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
+
 export async function POST(
   request: Request,
   {
     params,
   }: {
     params: Promise<{ id: string }>;
-  }
+  },
 ) {
   try {
     const { id } = await params;
+
+    const access = await checkApplicantApplicationAccess(id);
+
+    if (!access.authorised) {
+      const accessError = getApplicantApplicationAccessError(access);
+
+      return NextResponse.json(
+        {
+          error: accessError.error,
+          code: accessError.code,
+        },
+        { status: accessError.status },
+      );
+    }
+
+    const applicationId = access.applicationId;
+
     const body = await request.json();
 
-    const documentId = String(
-      body.documentId || ""
-    ).trim();
+    const documentId = String(body.documentId || "").trim();
 
-    const storageKey = String(
-      body.storageKey || ""
-    ).trim();
-
-    const originalFilename = String(
-      body.originalFilename || ""
-    ).trim();
-
-    const mimeType = String(
-      body.mimeType || ""
-    ).trim();
-
-    const size = Number(body.size || 0);
+    const storageKey = String(body.storageKey || "").trim();
 
     if (!documentId || !storageKey) {
       return NextResponse.json(
         {
-          error:
-            "Identity document completion information is incomplete.",
+          error: "Identity document completion information is incomplete.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const expectedPrefix =
-      `showcase-applications/${id}/identity/`;
+    const expectedPrefix = `showcase-applications/${applicationId}/identity/`;
 
     if (!storageKey.startsWith(expectedPrefix)) {
       return NextResponse.json(
         { error: "Invalid storage key." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const document =
-      await prisma.showcaseIdentityDocument.findFirst({
-        where: {
-          id: documentId,
-          applicationId: id,
-        },
-      });
+    const document = await prisma.showcaseIdentityDocument.findFirst({
+      where: {
+        id: documentId,
+        applicationId,
+      },
+    });
 
     if (!document) {
       return NextResponse.json(
         {
-          error:
-            "Identity document record not found.",
+          error: "Identity document record not found.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -79,42 +83,29 @@ export async function POST(
     if (document.storageKey !== storageKey) {
       return NextResponse.json(
         { error: "Storage key mismatch." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const updated =
-      await prisma.showcaseIdentityDocument.update({
-        where: {
-          id: document.id,
-        },
-        data: {
-          status: "UPLOADED",
-          storageProvider: "CLOUDFLARE_R2",
-          storageKey,
+    const updated = await prisma.showcaseIdentityDocument.update({
+      where: {
+        id: document.id,
+      },
+      data: {
+        status: "UPLOADED",
+        storageProvider: "CLOUDFLARE_R2",
+        storageKey,
+        uploadedAt: new Date(),
 
-          originalFilename:
-            originalFilename || null,
-
-          mimeType:
-            mimeType || null,
-
-          sizeBytes:
-            Number.isFinite(size) && size > 0
-              ? BigInt(size)
-              : null,
-
-          uploadedAt: new Date(),
-
-          /*
-           * A replacement must always be
-           * reviewed again by RevelationX1
-           */
-          verifiedAt: null,
-          verifiedBy: null,
-          reviewNotes: null,
-        },
-      });
+        /*
+         * A replacement must always be
+         * reviewed again by RevelationX1
+         */
+        verifiedAt: null,
+        verifiedBy: null,
+        reviewNotes: null,
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -122,22 +113,17 @@ export async function POST(
         id: updated.id,
         type: updated.type,
         status: updated.status,
-        originalFilename:
-          updated.originalFilename,
+        originalFilename: updated.originalFilename,
       },
     });
   } catch (error) {
-    console.error(
-      "COMPLETE SHOWCASE IDENTITY DOCUMENT ERROR",
-      error
-    );
+    console.error("COMPLETE SHOWCASE IDENTITY DOCUMENT ERROR", error);
 
     return NextResponse.json(
       {
-        error:
-          "The document uploaded but its details could not be saved.",
+        error: "The document uploaded but its details could not be saved.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
