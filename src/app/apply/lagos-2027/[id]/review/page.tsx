@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
-import { submitShowcaseApplication } from "./actions";
+import { notFound, redirect } from "next/navigation";
 
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
 import { prisma } from "@/lib/prisma";
+
+import { submitShowcaseApplication } from "./actions";
 
 type PageProps = {
   params: Promise<{
@@ -14,9 +19,23 @@ type PageProps = {
 export default async function ReviewPage({ params }: PageProps) {
   const { id } = await params;
 
+  const access = await checkApplicantApplicationAccess(id);
+
+  if (!access.authorised) {
+    const accessError = getApplicantApplicationAccessError(access);
+
+    if (accessError.status === 401) {
+      redirect("/apply/lagos-2027/account/login");
+    }
+
+    notFound();
+  }
+
+  const applicationId = access.applicationId;
+
   const application = await prisma.showcaseApplication.findUnique({
     where: {
-      id,
+      id: applicationId,
     },
 
     include: {
