@@ -4,6 +4,10 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
 
 type RouteContext = {
   params: Promise<{
@@ -34,10 +38,28 @@ export async function PUT(req: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
 
+    const access = await checkApplicantApplicationAccess(id);
+
+    if (!access.authorised) {
+      const accessError = getApplicantApplicationAccessError(access);
+
+      return NextResponse.json(
+        {
+          error: accessError.error,
+          code: accessError.code,
+        },
+        { status: accessError.status },
+      );
+    }
+
+    const applicationId = access.applicationId;
+
     const body = await req.json();
 
     const application = await prisma.showcaseApplication.findUnique({
-      where: { id },
+      where: {
+        id: applicationId,
+      },
       select: {
         id: true,
       },
@@ -179,7 +201,9 @@ export async function PUT(req: Request, context: RouteContext) {
     }
 
     await prisma.showcaseApplication.update({
-      where: { id },
+      where: {
+        id: applicationId,
+      },
 
       data: {
         currentClub: currentClub || null,
@@ -209,7 +233,7 @@ export async function PUT(req: Request, context: RouteContext) {
     return NextResponse.json({
       success: true,
 
-      next: `/apply/lagos-2027/${id}/representation`,
+      next: `/apply/lagos-2027/${applicationId}/representation`,
     });
   } catch (error) {
     console.error("UPDATE SHOWCASE FOOTBALL STATUS ERROR", error);

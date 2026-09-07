@@ -4,6 +4,34 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+import {
+  checkApplicantApplicationAccess,
+  getApplicantApplicationAccessError,
+} from "@/lib/applicants/applicationOwnership";
+
+function parseOptionalDate(value: unknown): Date | null {
+  const text = String(value || "").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    return null;
+  }
+
+  const date = new Date(`${text}T00:00:00.000Z`);
+
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== text
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
 export async function PUT(
   req: Request,
   {
@@ -14,10 +42,29 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+
+    const access = await checkApplicantApplicationAccess(id);
+
+    if (!access.authorised) {
+      const accessError = getApplicantApplicationAccessError(access);
+
+      return NextResponse.json(
+        {
+          error: accessError.error,
+          code: accessError.code,
+        },
+        { status: accessError.status },
+      );
+    }
+
+    const applicationId = access.applicationId;
+
     const body = await req.json();
 
     const application = await prisma.showcaseApplication.findUnique({
-      where: { id },
+      where: {
+        id: applicationId,
+      },
     });
 
     if (!application) {
@@ -33,7 +80,7 @@ export async function PUT(
           error:
             "Please complete your Club & Academy Status before completing Representation.",
           code: "FOOTBALL_STATUS_INCOMPLETE",
-          next: `/apply/lagos-2027/${id}/football-status`,
+          next: `/apply/lagos-2027/${applicationId}/football-status`,
         },
         { status: 409 },
       );
@@ -77,7 +124,9 @@ export async function PUT(
       }
 
       await prisma.showcaseApplication.update({
-        where: { id },
+        where: {
+          id: applicationId,
+        },
         data: {
           hasAgent: false,
 
@@ -109,7 +158,7 @@ export async function PUT(
 
       return NextResponse.json({
         success: true,
-        next: `/apply/lagos-2027/${id}/video`,
+        next: `/apply/lagos-2027/${applicationId}/video`,
       });
     }
 
@@ -124,16 +173,53 @@ export async function PUT(
       );
     }
 
-    const representationStart = body.representationStartDate
-      ? new Date(`${body.representationStartDate}T00:00:00.000Z`)
-      : null;
+    const representationStartText = String(
+      body.representationStartDate || "",
+    ).trim();
 
-    const representationEnd = body.representationEndDate
-      ? new Date(`${body.representationEndDate}T00:00:00.000Z`)
-      : null;
+    const representationEndText = String(
+      body.representationEndDate || "",
+    ).trim();
+
+    const representationStart = parseOptionalDate(representationStartText);
+    const representationEnd = parseOptionalDate(representationEndText);
+
+    if (representationStartText && !representationStart) {
+      return NextResponse.json(
+        {
+          error: "Please enter a valid representation start date.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (representationEndText && !representationEnd) {
+      return NextResponse.json(
+        {
+          error: "Please enter a valid representation end date.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (
+      representationStart &&
+      representationEnd &&
+      representationEnd < representationStart
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "The representation end date cannot be earlier than the representation start date.",
+        },
+        { status: 400 },
+      );
+    }
 
     await prisma.showcaseApplication.update({
-      where: { id },
+      where: {
+        id: applicationId,
+      },
       data: {
         hasAgent: true,
 
@@ -169,7 +255,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      next: `/apply/lagos-2027/${id}/video`,
+      next: `/apply/lagos-2027/${applicationId}/video`,
     });
   } catch (error) {
     console.error("UPDATE SHOWCASE REPRESENTATION ERROR", error);
