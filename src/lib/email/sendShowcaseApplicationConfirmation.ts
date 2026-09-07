@@ -1,5 +1,3 @@
-import QRCode from "qrcode";
-
 import { prisma } from "@/lib/prisma";
 import { getMailTransport } from "./mailer";
 
@@ -43,10 +41,6 @@ export async function sendShowcaseApplicationConfirmation({
     );
   }
 
-  if (!application.checkInToken) {
-    throw new Error("Check-in token must exist before sending confirmation.");
-  }
-
   /*
    * Prevent duplicate confirmation emails.
    */
@@ -60,27 +54,6 @@ export async function sendShowcaseApplicationConfirmation({
 
   const recipientEmail = application.email;
   const recipientName = application.firstName;
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-  if (!appUrl) {
-    throw new Error("NEXT_PUBLIC_APP_URL is not configured.");
-  }
-
-  /*
-   * Permanent QR identity.
-   *
-   * This QR is NOT replaced if the player
-   * is later selected.
-   */
-
-  const qrUrl = `${appUrl}/checkin/${application.checkInToken}`;
-
-  const qrBuffer = await QRCode.toBuffer(qrUrl, {
-    width: 360,
-    margin: 2,
-    errorCorrectionLevel: "H",
-  });
 
   /*
    * ----------------------------------------------------------
@@ -294,45 +267,6 @@ style="border:1px solid #3c3210;background:#181507;border-radius:18px;">
 </td>
 </tr>
 
-<tr>
-<td style="padding-top:22px;">
-
-<table width="100%" cellspacing="0" cellpadding="0"
-style="border:1px solid #262626;background:#111111;border-radius:18px;">
-
-<tr>
-<td align="center" style="padding:30px;">
-
-<div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#c7ff2f;">
-  YOUR REVELATIONX1 REGISTRATION QR
-</div>
-
-<h2 style="margin:10px 0 20px;">
-  Keep this QR code
-</h2>
-
-<img
-  src="cid:revelationx1-showcase-application-qr"
-  width="230"
-  height="230"
-  alt="REVELATIONX1 Lagos 2027 registration QR code"
-  style="display:block;background:white;padding:10px;border-radius:14px;"
-/>
-
-<p style="margin:20px auto 0;max-width:470px;color:#969696;line-height:1.7;">
-  This QR code is permanently linked to your
-  REVELATIONX1 Lagos 2027 registration.
-</p>
-
-<p style="margin:10px auto 0;max-width:470px;color:#ffffff;font-weight:700;line-height:1.7;">
-  Your registration code and QR code will remain
-  the same throughout the application and selection
-  process.
-</p>
-
-</td>
-</tr>
-
 </table>
 
 </td>
@@ -378,16 +312,6 @@ REVELATIONX1 Football Showcase · Lagos 2027
     subject: `${application.registrationNumber} — REVELATIONX1 Lagos 2027 Application Received`,
 
     html,
-
-    attachments: [
-      {
-        filename: `${application.registrationNumber}-QR.png`,
-
-        content: qrBuffer,
-
-        cid: "revelationx1-showcase-application-qr",
-      },
-    ],
   });
 
   await prisma.showcaseApplication.update({

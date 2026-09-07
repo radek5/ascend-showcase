@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import QRCode from "qrcode";
 
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 import {
@@ -48,7 +47,6 @@ export default async function ConfirmationPage({ params }: PageProps) {
       submittedAt: true,
 
       registrationNumber: true,
-      checkInToken: true,
     },
   });
 
@@ -69,33 +67,6 @@ export default async function ConfirmationPage({ params }: PageProps) {
 
   if (!application.submittedAt) {
     redirect(`/apply/${application.eventSlug}/${application.id}/review`);
-  }
-
-  /*
-   * ----------------------------------------------------------
-   * PERMANENT REGISTRATION QR
-   * ----------------------------------------------------------
-   *
-   * The QR is tied to the permanent check-in token.
-   *
-   * The player's registration number and QR remain unchanged
-   * regardless of later assessment or selection status.
-   */
-
-  let qrDataUrl: string | null = null;
-
-  if (application.checkInToken) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-    if (appUrl) {
-      const qrUrl = `${appUrl}/checkin/${application.checkInToken}`;
-
-      qrDataUrl = await QRCode.toDataURL(qrUrl, {
-        width: 360,
-        margin: 2,
-        errorCorrectionLevel: "H",
-      });
-    }
   }
 
   return (
@@ -175,52 +146,6 @@ export default async function ConfirmationPage({ params }: PageProps) {
             />
           </div>
         </div>
-
-        {application.registrationNumber && qrDataUrl && (
-          <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6 sm:p-8">
-            <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
-              <div>
-                <div className="text-xs font-black uppercase tracking-[0.16em] text-[#c7ff2f]">
-                  Your REVELATIONX1 Registration QR
-                </div>
-
-                <h2 className="mt-3 text-2xl font-black">Keep this QR code</h2>
-
-                <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">
-                  This QR code is permanently linked to your REVELATIONX1 Lagos
-                  2027 registration.
-                </p>
-
-                <div className="mt-5 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-4">
-                  <p className="text-sm font-bold leading-6 text-white/80">
-                    Your registration code and QR code will remain the same
-                    throughout the application and selection process.
-                  </p>
-                </div>
-
-                <div className="mt-5 text-sm text-white/40">
-                  Registration Code
-                </div>
-
-                <div className="mt-1 font-black tracking-[0.06em] text-[#c7ff2f]">
-                  {application.registrationNumber}
-                </div>
-              </div>
-
-              <div className="flex justify-center md:justify-end">
-                <div className="rounded-2xl bg-white p-4">
-                  <img
-                    src={qrDataUrl}
-                    width={220}
-                    height={220}
-                    alt={`REVELATIONX1 registration QR for ${application.registrationNumber}`}
-                    className="h-[220px] w-[220px]"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
           <div className="text-lg font-black">What happens next?</div>
