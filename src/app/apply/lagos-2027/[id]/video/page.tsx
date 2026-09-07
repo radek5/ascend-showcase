@@ -245,9 +245,6 @@ export default function VideoPage() {
           body: JSON.stringify({
             videoId: presign.videoId,
             storageKey: presign.storageKey,
-            originalFilename: state.file.name,
-            mimeType: state.file.type,
-            size: state.file.size,
           }),
         },
       );
