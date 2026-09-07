@@ -7,6 +7,7 @@ import { applicantLogin } from "./actions";
 type ApplicantLoginPageProps = {
   searchParams: Promise<{
     error?: string;
+    reset?: string;
   }>;
 };
 
@@ -47,6 +48,12 @@ export default async function ApplicantLoginPage({
             action={applicantLogin}
             className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6"
           >
+            {params.reset === "success" && (
+              <div className="mb-6 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.06] p-4 text-sm leading-6 text-[#c7ff2f]">
+                Your password has been reset. Sign in with your new password.
+              </div>
+            )}
+
             {params.error && (
               <div className="mb-6 rounded-xl border border-red-400/20 bg-red-400/[0.06] p-4 text-sm text-red-200">
                 {params.error}

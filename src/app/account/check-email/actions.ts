@@ -60,6 +60,6 @@ export async function resendApplicantVerificationEmail() {
   redirect(
     `/account/check-email?email=${encodeURIComponent(
       applicantUser.email,
-    )}&resent=1`,
+    )}&verification=required&resent=1`,
   );
 }
