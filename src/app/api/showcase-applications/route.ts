@@ -544,8 +544,8 @@ export async function POST(req: Request) {
         eventSlug: EVENT_SLUG,
         userId: applicantUser.id,
 
-        assessmentFeeRequired: true,
-        assessmentFeeAmount: 5000000,
+        assessmentFeeRequired: false,
+        assessmentFeeAmount: null,
         assessmentFeeCurrency: "NGN",
 
         firstName: firstName.trim(),
