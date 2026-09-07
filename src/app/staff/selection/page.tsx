@@ -10,6 +10,7 @@ import {
   assignSelector,
   prepareForSelection,
   sendForSecondReview,
+  setFinalSelectionDecision,
 } from "./actions";
 
 import { resendShowcaseConfirmation } from "./resendShowcaseConfirmation";
@@ -391,6 +392,57 @@ export default async function SelectionPage() {
                                 >
                                   Send for another review
                                 </button>
+                              </form>
+                            ) : null}
+
+                            {completed.length > 0 &&
+                            [
+                              "VIDEO_REVIEW",
+                              "LONGLISTED",
+                              "FINAL_REVIEW",
+                            ].includes(application.status) ? (
+                              <form
+                                action={setFinalSelectionDecision}
+                                className="border-t border-white/10 pt-3"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="applicationId"
+                                  value={application.id}
+                                />
+
+                                <div className="text-[10px] font-black uppercase tracking-[0.08em] text-white/30">
+                                  Final Decision
+                                </div>
+
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  <button
+                                    type="submit"
+                                    name="decision"
+                                    value="SELECTED"
+                                    className="rounded-full bg-[#c7ff2f] px-3 py-2 text-[10px] font-black uppercase tracking-[0.05em] text-black"
+                                  >
+                                    Select
+                                  </button>
+
+                                  <button
+                                    type="submit"
+                                    name="decision"
+                                    value="RESERVE"
+                                    className="rounded-full border border-amber-300/30 px-3 py-2 text-[10px] font-black uppercase tracking-[0.05em] text-amber-200"
+                                  >
+                                    Reserve
+                                  </button>
+
+                                  <button
+                                    type="submit"
+                                    name="decision"
+                                    value="NOT_SELECTED"
+                                    className="rounded-full border border-red-300/20 px-3 py-2 text-[10px] font-black uppercase tracking-[0.05em] text-red-200"
+                                  >
+                                    Not Selected
+                                  </button>
+                                </div>
                               </form>
                             ) : null}
                           </div>

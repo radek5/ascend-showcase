@@ -198,9 +198,33 @@ export async function sendForSecondReview(formData: FormData) {
     throw new Error("Application ID missing.");
   }
 
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!application) {
+    throw new Error("Application not found.");
+  }
+
+  if (
+    application.status !== "VIDEO_REVIEW" &&
+    application.status !== "LONGLISTED" &&
+    application.status !== "FINAL_REVIEW"
+  ) {
+    throw new Error(
+      "Application is not currently available for another selector review.",
+    );
+  }
+
   const assignments = await prisma.selectorAssignment.findMany({
     where: {
-      applicationId,
+      applicationId: application.id,
     },
     select: {
       round: true,
@@ -214,7 +238,7 @@ export async function sendForSecondReview(formData: FormData) {
 
   await prisma.showcaseApplication.update({
     where: {
-      id: applicationId,
+      id: application.id,
     },
     data: {
       status: "FINAL_REVIEW",
@@ -229,6 +253,93 @@ export async function sendForSecondReview(formData: FormData) {
    * assignment workflow expansion.
    */
   void nextRound;
+
+  revalidatePath("/staff/selection");
+}
+
+export async function setFinalSelectionDecision(formData: FormData) {
+  await requireStaffUser();
+
+  const applicationId = String(formData.get("applicationId") || "").trim();
+
+  const decision = String(formData.get("decision") || "").trim();
+
+  if (!applicationId) {
+    throw new Error("Application ID missing.");
+  }
+
+  if (
+    decision !== "SELECTED" &&
+    decision !== "RESERVE" &&
+    decision !== "NOT_SELECTED"
+  ) {
+    throw new Error("Invalid selection decision.");
+  }
+
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+
+    select: {
+      id: true,
+      status: true,
+
+      selectorAssignments: {
+        where: {
+          status: "COMPLETED",
+        },
+
+        select: {
+          id: true,
+
+          assessment: {
+            select: {
+              submittedAt: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!application) {
+    throw new Error("Application not found.");
+  }
+
+  if (
+    application.status !== "VIDEO_REVIEW" &&
+    application.status !== "LONGLISTED" &&
+    application.status !== "FINAL_REVIEW"
+  ) {
+    throw new Error(
+      "Application is not currently available for a final selection decision.",
+    );
+  }
+
+  const completedAssessments = application.selectorAssignments.filter(
+    (assignment) => Boolean(assignment.assessment?.submittedAt),
+  );
+
+  if (completedAssessments.length === 0) {
+    throw new Error(
+      "At least one completed selector assessment is required before a final selection decision.",
+    );
+  }
+
+  const decidedAt = new Date();
+
+  await prisma.showcaseApplication.update({
+    where: {
+      id: application.id,
+    },
+
+    data: {
+      status: decision,
+      finalReviewedAt: decidedAt,
+      selectedAt: decision === "SELECTED" ? decidedAt : null,
+    },
+  });
 
   revalidatePath("/staff/selection");
 }
