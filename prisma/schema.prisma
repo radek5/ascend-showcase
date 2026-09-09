@@ -525,6 +525,10 @@ model ShowcaseApplication {
   registrationNumber String? @unique
   checkInToken       String? @unique
 
+  // Event check-in
+  checkedInAt            DateTime?
+  checkedInByStaffUserId String?
+
   // Application confirmation
   confirmationEmailSentAt DateTime?
 
