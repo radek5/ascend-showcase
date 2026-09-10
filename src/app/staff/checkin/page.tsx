@@ -447,7 +447,11 @@ prisma.showcaseApplication.findMany({
                 credential={credential}
                 checkedInAt={player.checkedInAt}
                 viewHref={checkInHref}
-                badgeHref={null}
+                badgeHref={
+                  player.checkedInAt && player.checkInToken
+                  ? `/showcase-checkin/${player.checkInToken}/badge`
+                  : null
+                }
                 checkInForm={
                   !player.checkedInAt &&
                   player.checkInToken ? (
