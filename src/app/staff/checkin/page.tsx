@@ -44,8 +44,11 @@ export default async function StaffCheckInPage({
   const [
     totalPlayers,
     checkedInPlayers,
+    totalShowcasePlayers,
+    checkedInShowcasePlayers,
     totalProfessionals,
     checkedInProfessionals,
+    showcasePlayers,
     players,
     professionals,
   ] = await Promise.all([
@@ -81,6 +84,23 @@ prisma.registration.count({
   },
 }),
 
+prisma.showcaseApplication.count({
+  where: {
+    eventSlug: activeEvent.slug,
+    status: "SELECTED",
+  },
+}),
+
+prisma.showcaseApplication.count({
+  where: {
+    eventSlug: activeEvent.slug,
+    status: "SELECTED",
+    checkedInAt: {
+      not: null,
+    },
+  },
+}),
+
     prisma.professionalRegistration.count({
       where: {
         eventId: activeEvent.id,
@@ -104,6 +124,61 @@ prisma.registration.count({
         },
       },
     }),
+
+prisma.showcaseApplication.findMany({
+  where: {
+    eventSlug: activeEvent.slug,
+    status: "SELECTED",
+
+    ...(q
+      ? {
+          OR: [
+            {
+              firstName: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+            {
+              lastName: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+            {
+              registrationNumber: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+            {
+              assessmentCode: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+            {
+              email: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+          ],
+        }
+      : {}),
+  },
+
+  orderBy: [
+    {
+      checkedInAt: "desc",
+    },
+    {
+      firstName: "asc",
+    },
+  ],
+
+  take: q ? 50 : 0,
+}),
 
     prisma.registration.findMany({
       where: {
@@ -240,7 +315,7 @@ prisma.registration.count({
 
         {/* COUNTERS */}
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-6">
           <Metric
             label="Players"
             value={totalPlayers}
@@ -249,6 +324,17 @@ prisma.registration.count({
           <Metric
             label="Players Checked In"
             value={checkedInPlayers}
+            accent
+          />
+
+          <Metric
+            label="Showcase Selected"
+            value={totalShowcasePlayers}
+          />
+
+          <Metric
+            label="Showcase Checked In"
+            value={checkedInShowcasePlayers}
             accent
           />
 
@@ -276,7 +362,7 @@ prisma.registration.count({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search name, registration number, accreditation number or email"
+            placeholder="Search name, registration number, assessment code, accreditation number or email"
             autoFocus
             className="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
           />
@@ -335,6 +421,47 @@ prisma.registration.count({
               }
             />
           ))}
+        </CheckInSection>
+
+        {/* SHOWCASE SELECTED PLAYERS */}
+
+        <CheckInSection
+          title="Lagos 2027 Selected Players"
+          count={showcasePlayers.length}
+        >
+          {showcasePlayers.map((player) => {
+            const credential =
+              player.registrationNumber ||
+              player.assessmentCode ||
+              "Credential pending";
+
+            const checkInHref = player.checkInToken
+              ? `/showcase-checkin/${player.checkInToken}`
+              : "/staff/selection";
+
+            return (
+              <CheckInRow
+                key={player.id}
+                name={`${player.firstName} ${player.lastName}`.trim()}
+                type="Showcase Player"
+                credential={credential}
+                checkedInAt={player.checkedInAt}
+                viewHref={checkInHref}
+                badgeHref={null}
+                checkInForm={
+                  !player.checkedInAt &&
+                  player.checkInToken ? (
+                    <Link
+                      href={`/showcase-checkin/${player.checkInToken}`}
+                      className="rounded-full bg-[#c7ff2f] px-4 py-2 text-xs font-black uppercase tracking-[0.06em] text-black"
+                    >
+                      Check In
+                    </Link>
+                  ) : null
+                }
+              />
+            );
+          })}
         </CheckInSection>
 
         {/* PROFESSIONALS */}
