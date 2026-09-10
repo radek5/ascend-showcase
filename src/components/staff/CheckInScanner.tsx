@@ -157,6 +157,9 @@ export default function CheckInScanner() {
         ) ||
         url.pathname.startsWith(
           "/professional-checkin/",
+        ) ||
+        url.pathname.startsWith(
+          "/showcase-checkin/",
         )
       ) {
         router.push(
