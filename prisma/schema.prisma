@@ -543,6 +543,9 @@ model ShowcaseApplication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  selectionInvitationSentAt DateTime?
+  selectionInvitationMessageId String?
+
   @@index([eventSlug])
   @@index([email])
   @@index([status])
