@@ -25,17 +25,18 @@ export default async function Lagos2027ApplicationPage() {
         </p>
 
         <h1 className="mt-4 max-w-4xl text-5xl font-black tracking-tight md:text-6xl">
-          Apply for Player Assessment
+          Your Journey to Lagos 2027 Starts Here
         </h1>
 
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-          Submit your football information and video for professional
-          assessment.
+          Show us your game. Share your football story and videos for the chance
+          to earn one of 100 fully funded places at the REVELATIONX1 Lagos 2027
+          Football Showcase.
         </p>
 
         <section className="mt-10 rounded-[2rem] border border-emerald-400/20 bg-emerald-400/10 p-7">
           <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
-            Free to Apply
+            Your Opportunity. No Application Fee.
           </p>
 
           <p className="mt-3 leading-7 text-emerald-100">
@@ -57,20 +58,20 @@ export default async function Lagos2027ApplicationPage() {
         <section className="mt-8 grid gap-5 md:grid-cols-3">
           <InfoCard
             number="01"
-            title="Apply"
-            text="Complete your football application and player information."
+            title="Tell Us About You"
+            text="Complete your player profile and tell us about your football journey."
           />
 
           <InfoCard
             number="02"
-            title="Submit Video"
-            text="Provide the required football video for professional assessment."
+            title="Show Us Your Game"
+            text="Upload your football videos and give our team a chance to see you play."
           />
 
           <InfoCard
             number="03"
-            title="Selection"
-            text="The best 100 players will be selected for the camp."
+            title="Earn Your Place"
+            text="100 players will be selected to join us in Lagos for the fully funded Showcase."
           />
         </section>
 
@@ -113,7 +114,7 @@ export default async function Lagos2027ApplicationPage() {
                 href="/account/register"
                 className="rounded-full bg-emerald-400 px-7 py-4 font-black text-slate-950 transition hover:bg-emerald-300"
               >
-                Create Account &amp; Apply
+                Start Your Journey
               </Link>
             )}
 
