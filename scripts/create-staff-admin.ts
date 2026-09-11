@@ -17,6 +17,19 @@ function ask(question: string): Promise<string> {
 }
 
 async function main() {
+  const databaseUrl =
+    process.env.DATABASE_URL || "";
+
+  const isLocalDatabase =
+    databaseUrl.includes("localhost") ||
+    databaseUrl.includes("127.0.0.1");
+
+  if (!isLocalDatabase) {
+    throw new Error(
+      "Refusing to bootstrap a staff administrator against a non-local database.",
+    );
+  }
+
   const name = (
     await ask("Staff name: ")
   ).trim();
@@ -28,7 +41,7 @@ async function main() {
     .toLowerCase();
 
   const password = await ask(
-    "Password (minimum 8 characters): ",
+    "Password (minimum 12 characters): ",
   );
 
   if (!name || !email || !password) {
@@ -37,29 +50,31 @@ async function main() {
     );
   }
 
-  if (password.length < 8) {
+  if (password.length < 12) {
     throw new Error(
-      "Password must be at least 8 characters.",
+      "Password must be at least 12 characters.",
     );
   }
 
-  const passwordHash = await bcrypt.hash(
-    password,
-    8,
-  );
-
-  const staffUser =
-    await prisma.staffUser.upsert({
+  const existing =
+    await prisma.staffUser.findUnique({
       where: {
         email,
       },
-      update: {
-        name,
-        passwordHash,
-        role: "ADMIN",
-        active: true,
-      },
-      create: {
+    });
+
+  if (existing) {
+    throw new Error(
+      "A staff account already exists for this email.",
+    );
+  }
+
+  const passwordHash =
+    await bcrypt.hash(password, 12);
+
+  const staffUser =
+    await prisma.staffUser.create({
+      data: {
         name,
         email,
         passwordHash,
@@ -75,7 +90,9 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error("\nUnable to create ADMIN:");
+    console.error(
+      "\nUnable to create ADMIN:",
+    );
     console.error(error);
     process.exitCode = 1;
   })
