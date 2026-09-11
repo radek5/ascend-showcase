@@ -159,6 +159,7 @@ export async function POST(req: Request) {
         name: true,
 
         footballStartsAt: true,
+        registrationOpen: true,
 
         showcaseCompetitionCategory: true,
         showcaseMinimumAge: true,
@@ -528,7 +529,7 @@ export async function POST(req: Request) {
         (existing) => normalisePhone(existing.phone) === normalisedPhone,
       );
 
-    if (phoneDuplicate) {
+        if (phoneDuplicate) {
       return NextResponse.json(
         {
           error:
@@ -536,6 +537,23 @@ export async function POST(req: Request) {
           code: "POSSIBLE_DUPLICATE_APPLICATION",
         },
         { status: 409 },
+      );
+    }
+
+    /*
+     * Registration closure blocks only brand-new applications.
+     *
+     * Existing owned drafts and safely claimable legacy drafts
+     * have already been handled above and remain resumable.
+     */
+    if (!event.registrationOpen) {
+      return NextResponse.json(
+        {
+          error:
+            "Applications for REVELATIONX1 Lagos 2027 are currently closed. If you have already started an application, please sign in to continue it.",
+          code: "REGISTRATION_CLOSED",
+        },
+        { status: 403 },
       );
     }
 

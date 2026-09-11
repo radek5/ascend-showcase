@@ -1,6 +1,22 @@
 import Link from "next/link";
 
-export default function Lagos2027ApplicationPage() {
+import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
+
+export default async function Lagos2027ApplicationPage() {
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: "lagos-2027",
+    },
+
+    select: {
+      registrationOpen: true,
+    },
+  });
+
+  const registrationOpen = event?.registrationOpen === true;
+
   return (
     <main className="min-h-screen bg-[#030817] px-6 py-12 text-white">
       <div className="mx-auto max-w-5xl">
@@ -92,12 +108,14 @@ export default function Lagos2027ApplicationPage() {
 
         <div className="mt-8">
           <div className="flex flex-wrap gap-4">
-            <Link
-              href="/account/register"
-              className="rounded-full bg-emerald-400 px-7 py-4 font-black text-slate-950 transition hover:bg-emerald-300"
-            >
-              Create Account &amp; Apply
-            </Link>
+            {registrationOpen && (
+              <Link
+                href="/account/register"
+                className="rounded-full bg-emerald-400 px-7 py-4 font-black text-slate-950 transition hover:bg-emerald-300"
+              >
+                Create Account &amp; Apply
+              </Link>
+            )}
 
             <Link
               href="/account/login"
@@ -107,11 +125,24 @@ export default function Lagos2027ApplicationPage() {
             </Link>
           </div>
 
-          <p className="mt-4 text-sm leading-6 text-slate-500">
-            New applicants must create a secure account and verify their email
-            address. Returning applicants can sign in to continue a saved
-            application or view its status.
-          </p>
+          {registrationOpen ? (
+            <p className="mt-4 text-sm leading-6 text-slate-500">
+              New applicants must create a secure account and verify their email
+              address. Returning applicants can sign in to continue a saved
+              application or view its status.
+            </p>
+          ) : (
+            <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4">
+              <p className="text-sm font-bold text-amber-200">
+                Applications are currently closed.
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-slate-400">
+                Returning applicants who have already started an application can
+                sign in to continue or view their application status.
+              </p>
+            </div>
+          )}
 
           <div className="mt-6">
             <Link
