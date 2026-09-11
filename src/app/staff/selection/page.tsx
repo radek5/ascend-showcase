@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import ShowcaseConfirmationButton from "./ShowcaseConfirmationButton";
+import ShowcaseSelectionInvitationButton from "./ShowcaseSelectionInvitationButton";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
 import { prisma } from "@/lib/prisma";
@@ -12,8 +13,6 @@ import {
   sendForSecondReview,
   setFinalSelectionDecision,
 } from "./actions";
-
-import { resendShowcaseConfirmation } from "./resendShowcaseConfirmation";
 
 export default async function SelectionPage() {
   await requireStaffUser();
@@ -55,6 +54,7 @@ export default async function SelectionPage() {
 
         registrationNumber: true,
         confirmationEmailSentAt: true,
+        selectionInvitationSentAt: true,
 
         videos: {
           where: {
@@ -198,7 +198,9 @@ export default async function SelectionPage() {
 
                   <th className="px-5 py-4">Selector Reviews</th>
 
-                  <th className="px-5 py-4">Email</th>
+                  <th className="px-5 py-4">Application Email</th>
+
+                  <th className="px-5 py-4">Selection Invitation</th>
 
                   <th className="px-5 py-4">Action</th>
                 </tr>
@@ -317,6 +319,43 @@ export default async function SelectionPage() {
                           </span>
                         )}
                       </td>
+
+                      <td className="px-5 py-5">
+                        {application.status !== "SELECTED" ? (
+                         <span className="text-xs text-white/30">—</span>
+                        ) : application.selectionInvitationSentAt ? (
+                          <div>
+                            <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
+                              Sent
+                            </div>
+
+                            <div className="mt-1 text-[11px] text-white/35">
+                              {new Intl.DateTimeFormat("en-GB", {
+                               dateStyle: "medium",
+                               timeStyle: "short",
+                              }).format(
+                                application.selectionInvitationSentAt,
+                              )}
+                           </div>
+
+                           <ShowcaseSelectionInvitationButton
+                             applicationId={application.id}
+                             mode="resend"
+                           />
+                          </div>
+                       ) : (
+                         <div>
+                           <div className="text-xs font-bold text-amber-300">
+                             Not sent
+                           </div>
+
+                           <ShowcaseSelectionInvitationButton
+                              applicationId={application.id}
+                              mode="send"
+                           />
+                        </div>
+                      )}
+                    </td>
 
                       <td className="px-5 py-5">
                         {!application.assessmentCode ? (
