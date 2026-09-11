@@ -15,8 +15,47 @@ export default async function ShowcasePlayerCheckInPage({
 }) {
   const { token } = await params;
 
-  const [application, staffUser] = await Promise.all([
-    prisma.showcaseApplication.findUnique({
+    const staffUser = await getCurrentStaffUser();
+
+  if (!staffUser) {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <RevelationX1Logo
+            href=""
+            size="md"
+            theme="dark"
+            descriptor="Football Showcase"
+          />
+
+          <div className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8">
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-[#c7ff2f]">
+              Staff Authentication Required
+            </div>
+
+            <h1 className="mt-4 text-3xl font-black">
+              Event Credential
+            </h1>
+
+            <p className="mt-4 text-white/55">
+              This credential can only be viewed and processed by authorised
+              REVELATIONX1 staff.
+            </p>
+
+            <Link
+              href="/staff/login"
+              className="mt-6 inline-flex rounded-full border border-white/15 px-6 py-3 text-xs font-black uppercase tracking-[0.1em] text-white transition hover:border-[#c7ff2f]/50"
+            >
+              Staff Login
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const application =
+    await prisma.showcaseApplication.findUnique({
       where: {
         checkInToken: token,
       },
@@ -45,10 +84,7 @@ export default async function ShowcasePlayerCheckInPage({
           take: 1,
         },
       },
-    }),
-
-    getCurrentStaffUser(),
-  ]);
+    });
 
   if (!application) {
     return (
@@ -126,7 +162,7 @@ export default async function ShowcasePlayerCheckInPage({
             </div>
 
             <div className="mt-5 aspect-square overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/30">
-              {hasHeadshot && staffUser ? (
+              {hasHeadshot ? (
                 <img
                   src={`/api/showcase-applications/${application.id}/headshot`}
                   alt={`${application.firstName} ${application.lastName} player headshot`}
@@ -223,7 +259,7 @@ export default async function ShowcasePlayerCheckInPage({
                   entry.
                 </p>
               </div>
-            ) : staffUser ? (
+            ) : (
               <div className="mt-8">
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                   <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
@@ -253,25 +289,7 @@ export default async function ShowcasePlayerCheckInPage({
                   </button>
                 </form>
               </div>
-            ) : (
-              <div className="mt-8 rounded-2xl border border-white/10 bg-black/20 p-6">
-                <div className="text-xs font-black uppercase tracking-[0.18em] text-white/40">
-                  REVELATIONX1 Staff
-                </div>
-
-                <p className="mt-3 text-sm leading-6 text-white/55">
-                  This credential identifies a selected player. Only authorised
-                  REVELATIONX1 staff can complete event check-in.
-                </p>
-
-                <Link
-                  href="/staff/login"
-                  className="mt-5 inline-flex rounded-full border border-white/15 px-6 py-3 text-xs font-black uppercase tracking-[0.1em] text-white transition hover:border-[#c7ff2f]/50"
-                >
-                  Staff Login
-                </Link>
-              </div>
-            )}
+             )}
           </div>
         </div>
       </section>

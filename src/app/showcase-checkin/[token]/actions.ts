@@ -47,9 +47,11 @@ export async function checkInShowcasePlayer(formData: FormData) {
    * must not create a second check-in event.
    */
   if (!application.checkedInAt) {
-    await prisma.showcaseApplication.update({
+    await prisma.showcaseApplication.updateMany({
       where: {
         id: application.id,
+        status: "SELECTED",
+        checkedInAt: null,
       },
 
       data: {
