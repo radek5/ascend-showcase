@@ -7,6 +7,7 @@ import {
   createEvent,
   setActiveEvent,
   toggleRegistrationOpen,
+  updateEvent,
 } from "./actions";
 
 export default async function EventsPage() {
@@ -215,6 +216,193 @@ export default async function EventsPage() {
                   </form>
                 </div>
               </div>
+
+<form
+  action={updateEvent}
+  className="mt-8 grid gap-5 border-t border-white/10 pt-6 md:grid-cols-2"
+>
+  <input
+    type="hidden"
+    name="eventId"
+    value={event.id}
+  />
+
+  <Field
+    label="Event name"
+    name="name"
+    defaultValue={event.name}
+    required
+  />
+
+  <Field
+    label="Edition"
+    name="edition"
+    defaultValue={event.edition}
+    required
+  />
+
+  <Field
+    label="Slug"
+    name="slug"
+    defaultValue={event.slug}
+    required
+  />
+
+  <Field
+    label="City"
+    name="city"
+    defaultValue={event.city}
+    required
+  />
+
+  <Field
+    label="Country"
+    name="country"
+    defaultValue={event.country}
+    required
+  />
+
+  <Field
+    label="Venue"
+    name="venue"
+    defaultValue={event.venue}
+    required
+  />
+
+  <label>
+    <div className="text-sm font-bold">
+      Competition category
+    </div>
+
+    <select
+      name="showcaseCompetitionCategory"
+      defaultValue={
+        event.showcaseCompetitionCategory
+      }
+      className="mt-2 w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4"
+    >
+      <option value="MEN">
+        Men&apos;s
+      </option>
+      <option value="WOMEN">
+        Women&apos;s
+      </option>
+      <option value="OPEN">
+        Open
+      </option>
+    </select>
+  </label>
+
+  <Field
+    label="Minimum age"
+    name="showcaseMinimumAge"
+    type="number"
+    defaultValue={
+      event.showcaseMinimumAge ?? ""
+    }
+  />
+
+  <Field
+    label="Maximum age"
+    name="showcaseMaximumAge"
+    type="number"
+    defaultValue={
+      event.showcaseMaximumAge ?? ""
+    }
+  />
+
+  <Field
+    label="Registration venue"
+    name="registrationVenue"
+    defaultValue={
+      event.registrationVenue ?? ""
+    }
+  />
+
+  <Field
+    label="Capacity"
+    name="capacity"
+    type="number"
+    defaultValue={
+      event.capacity ?? ""
+    }
+  />
+
+  <Field
+    label="Registration opens"
+    name="registrationStartsAt"
+    type="datetime-local"
+    defaultValue={formatDateTimeLocal(
+      event.registrationStartsAt,
+    )}
+  />
+
+  <Field
+    label="Registration closes"
+    name="registrationEndsAt"
+    type="datetime-local"
+    defaultValue={formatDateTimeLocal(
+      event.registrationEndsAt,
+    )}
+  />
+
+  <Field
+    label="Football starts"
+    name="footballStartsAt"
+    type="datetime-local"
+    defaultValue={formatDateTimeLocal(
+      event.footballStartsAt,
+    )}
+  />
+
+  <Field
+    label="Football ends"
+    name="footballEndsAt"
+    type="datetime-local"
+    defaultValue={formatDateTimeLocal(
+      event.footballEndsAt,
+    )}
+  />
+
+  <Field
+    label="Registration fee"
+    name="registrationFeeAmount"
+    type="number"
+    defaultValue={
+      event.registrationFeeAmount !== null
+        ? event.registrationFeeAmount / 100
+        : ""
+    }
+  />
+
+  <label>
+    <div className="text-sm font-bold">
+      Currency
+    </div>
+
+    <select
+      name="registrationFeeCurrency"
+      defaultValue={
+        event.registrationFeeCurrency
+      }
+      className="mt-2 w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4"
+    >
+      <option value="NGN">NGN</option>
+      <option value="GBP">GBP</option>
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+    </select>
+  </label>
+
+  <div className="md:col-span-2">
+    <button
+      type="submit"
+      className="rounded-full border border-[#c7ff2f]/30 px-6 py-3 text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]"
+    >
+      Save Event Changes
+    </button>
+  </div>
+</form>
             </section>
           ))}
 
@@ -408,12 +596,14 @@ function Field({
   type = "text",
   placeholder,
   required = false,
+  defaultValue,
 }: {
   label: string;
   name: string;
   type?: string;
   placeholder?: string;
   required?: boolean;
+  defaultValue?: string | number;
 }) {
   return (
     <label>
@@ -426,6 +616,7 @@ function Field({
         type={type}
         placeholder={placeholder}
         required={required}
+        defaultValue={defaultValue}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-4 outline-none focus:border-[#c7ff2f]/60"
       />
     </label>
@@ -450,6 +641,29 @@ function Info({
       </div>
     </div>
   );
+}
+
+function formatDateTimeLocal(
+  value: Date | null,
+) {
+  if (!value) {
+    return "";
+  }
+
+  const pad = (number: number) =>
+    String(number).padStart(2, "0");
+
+  return [
+    value.getFullYear(),
+    "-",
+    pad(value.getMonth() + 1),
+    "-",
+    pad(value.getDate()),
+    "T",
+    pad(value.getHours()),
+    ":",
+    pad(value.getMinutes()),
+  ].join("");
 }
 
 function formatDate(
