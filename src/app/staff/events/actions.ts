@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { ShowcaseCompetitionCategory } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireStaffAdmin } from "@/lib/staff/auth";
 
@@ -68,6 +69,20 @@ export async function createEvent(formData: FormData) {
     .trim()
     .toUpperCase();
 
+  const showcaseCompetitionCategoryRaw = String(
+    formData.get("showcaseCompetitionCategory") || "OPEN",
+  )
+    .trim()
+    .toUpperCase();
+
+  const showcaseMinimumAgeRaw = String(
+    formData.get("showcaseMinimumAge") || "",
+  ).trim();
+
+  const showcaseMaximumAgeRaw = String(
+    formData.get("showcaseMaximumAge") || "",
+  ).trim();
+
   if (
     !name ||
     !edition ||
@@ -107,6 +122,59 @@ export async function createEvent(formData: FormData) {
     throw new Error("Invalid registration fee.");
   }
 
+  const showcaseMinimumAge =
+    showcaseMinimumAgeRaw
+      ? Number.parseInt(showcaseMinimumAgeRaw, 10)
+      : null;
+
+  const showcaseMaximumAge =
+    showcaseMaximumAgeRaw
+      ? Number.parseInt(showcaseMaximumAgeRaw, 10)
+      : null;
+
+ if (
+  !Object.values(ShowcaseCompetitionCategory).includes(
+    showcaseCompetitionCategoryRaw as ShowcaseCompetitionCategory,
+  )
+) {
+  throw new Error(
+    "Invalid showcase competition category.",
+  );
+}
+
+const showcaseCompetitionCategory =
+  showcaseCompetitionCategoryRaw as ShowcaseCompetitionCategory;
+
+  if (
+    showcaseMinimumAge !== null &&
+    (!Number.isInteger(showcaseMinimumAge) ||
+      showcaseMinimumAge <= 0)
+  ) {
+    throw new Error(
+      "Invalid minimum showcase age.",
+    );
+  }
+
+  if (
+    showcaseMaximumAge !== null &&
+    (!Number.isInteger(showcaseMaximumAge) ||
+      showcaseMaximumAge <= 0)
+  ) {
+    throw new Error(
+      "Invalid maximum showcase age.",
+    );
+  }
+
+  if (
+    showcaseMinimumAge !== null &&
+    showcaseMaximumAge !== null &&
+    showcaseMinimumAge > showcaseMaximumAge
+  ) {
+    throw new Error(
+      "Minimum showcase age cannot exceed maximum showcase age.",
+    );
+  }
+
   const registrationFeeAmount =
     feeMajor !== null
       ? Math.round(feeMajor * 100)
@@ -120,9 +188,12 @@ export async function createEvent(formData: FormData) {
       city,
       country,
       venue,
+      showcaseCompetitionCategory,
 
+      showcaseMinimumAge,
+      showcaseMaximumAge,
       registrationVenue:
-        registrationVenue || null,
+      registrationVenue || null,
 
       registrationStartsAt:
         optionalDate(

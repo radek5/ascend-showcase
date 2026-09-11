@@ -53,7 +53,7 @@ export default async function EventsPage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/50">
-            Create and manage current and future ASCEND Football Showcase events.
+            Create and manage current and future REVELATIONX1 Football Showcase events.
           </p>
         </div>
 
@@ -116,41 +116,56 @@ export default async function EventsPage() {
                   </div>
 
                   <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                    <Info
-                      label="Football starts"
-                      value={formatDate(
-                        event.footballStartsAt,
-                      )}
-                    />
+  <Info
+    label="Category"
+    value={formatCompetitionCategory(
+      event.showcaseCompetitionCategory,
+    )}
+  />
 
-                    <Info
-                      label="Football ends"
-                      value={formatDate(
-                        event.footballEndsAt,
-                      )}
-                    />
+  <Info
+    label="Age band"
+    value={formatAgeBand(
+      event.showcaseMinimumAge,
+      event.showcaseMaximumAge,
+    )}
+  />
 
-                    <Info
-                      label="Capacity"
-                      value={
-                        event.capacity ?? "—"
-                      }
-                    />
+  <Info
+    label="Football starts"
+    value={formatDate(
+      event.footballStartsAt,
+    )}
+  />
 
-                    <Info
-                      label="Fee"
-                      value={
-                        event.registrationFeeAmount !==
-                        null
-                          ? formatMoney(
-                              event.registrationFeeAmount,
-                              event.registrationFeeCurrency,
-                            )
-                          : "—"
-                      }
-                    />
-                  </div>
-                </div>
+  <Info
+    label="Football ends"
+    value={formatDate(
+      event.footballEndsAt,
+    )}
+  />
+
+  <Info
+    label="Capacity"
+    value={
+      event.capacity ?? "—"
+    }
+  />
+
+  <Info
+    label="Fee"
+    value={
+      event.registrationFeeAmount !==
+      null
+        ? formatMoney(
+            event.registrationFeeAmount,
+            event.registrationFeeCurrency,
+          )
+        : "—"
+    }
+  />
+</div>
+</div>
 
                 <div className="flex flex-wrap gap-3">
                   {!event.active && (
@@ -205,7 +220,7 @@ export default async function EventsPage() {
 
           {events.length === 0 && (
             <div className="rounded-2xl border border-white/10 px-6 py-16 text-center text-white/35">
-              No ASCEND events have been created.
+              No REVELATIONX1 events have been created.
             </div>
           )}
         </div>
@@ -216,7 +231,7 @@ export default async function EventsPage() {
           </div>
 
           <h2 className="mt-2 text-2xl font-black">
-            Create ASCEND Event
+            Create REVELATIONX1 Event
           </h2>
 
           <form
@@ -226,7 +241,7 @@ export default async function EventsPage() {
             <Field
               label="Event name"
               name="name"
-              placeholder="ASCEND Football Showcase"
+              placeholder="REVELATIONX1 Football Showcase"
               required
             />
 
@@ -263,6 +278,44 @@ export default async function EventsPage() {
               name="venue"
               placeholder="Venue name"
               required
+            />
+
+            <label>
+              <div className="text-sm font-bold">
+                Competition category
+              </div>
+
+              <select
+                name="showcaseCompetitionCategory"
+                defaultValue="MEN"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-[#111] px-4 py-4"
+              >
+                <option value="MEN">
+                  Men&apos;s
+                </option>
+
+                <option value="WOMEN">
+                  Women&apos;s
+                </option>
+
+                <option value="OPEN">
+                  Open
+                </option>
+              </select>
+            </label>
+
+            <Field
+              label="Minimum age"
+              name="showcaseMinimumAge"
+              type="number"
+              placeholder="18"
+            />
+
+            <Field
+              label="Maximum age"
+              name="showcaseMaximumAge"
+              type="number"
+              placeholder="20"
             />
 
             <Field
@@ -412,6 +465,46 @@ function formatDate(
       dateStyle: "medium",
     },
   ).format(value);
+}
+
+function formatCompetitionCategory(
+  value: string,
+) {
+  if (value === "MEN") {
+    return "Men's";
+  }
+
+  if (value === "WOMEN") {
+    return "Women's";
+  }
+
+  if (value === "OPEN") {
+    return "Open";
+  }
+
+  return value;
+}
+
+function formatAgeBand(
+  minimumAge: number | null,
+  maximumAge: number | null,
+) {
+  if (
+    minimumAge !== null &&
+    maximumAge !== null
+  ) {
+    return `${minimumAge}–${maximumAge}`;
+  }
+
+  if (minimumAge !== null) {
+    return `${minimumAge}+`;
+  }
+
+  if (maximumAge !== null) {
+    return `Up to ${maximumAge}`;
+  }
+
+  return "—";
 }
 
 function formatMoney(
