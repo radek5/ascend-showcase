@@ -17,9 +17,30 @@ import {
 export default async function SelectionPage() {
   await requireStaffUser();
 
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: "lagos-2027",
+    },
+
+    select: {
+      id: true,
+      edition: true,
+      slug: true,
+      capacity: true,
+      reserveCapacity: true,
+      selectionDecisionsReleasedAt: true,
+    },
+  });
+
+  if (!event) {
+    throw new Error("Lagos 2027 showcase event not found.");
+  }
+
   const [applications, selectors] = await Promise.all([
     prisma.showcaseApplication.findMany({
       where: {
+        eventSlug: event.slug,
+
         status: {
           in: [
             "SUBMITTED",
@@ -54,6 +75,8 @@ export default async function SelectionPage() {
 
         registrationNumber: true,
         confirmationEmailSentAt: true,
+
+        selectionDecisionReleasedAt: true,
         selectionInvitationSentAt: true,
 
         videos: {
@@ -126,16 +149,36 @@ export default async function SelectionPage() {
   ]);
 
   const selectedCount = applications.filter(
-    (application) => application.status === "SELECTED",
-  ).length;
+  (application) => application.status === "SELECTED",
+).length;
 
-  const reserveCount = applications.filter(
-    (application) => application.status === "RESERVE",
-  ).length;
+const reserveCount = applications.filter(
+  (application) => application.status === "RESERVE",
+).length;
 
-  const reviewCount = applications.filter((application) =>
-    ["VIDEO_REVIEW", "FINAL_REVIEW", "LONGLISTED"].includes(application.status),
-  ).length;
+const reviewCount = applications.filter((application) =>
+  [
+    "SUBMITTED",
+    "ELIGIBILITY_REVIEW",
+    "VIDEO_REVIEW",
+    "LONGLISTED",
+    "FINAL_REVIEW",
+  ].includes(application.status),
+).length;
+
+const selectedCapacity = event.capacity;
+
+const reserveCapacity = event.reserveCapacity;
+
+const selectedPlacesLeft =
+  selectedCapacity !== null
+    ? Math.max(selectedCapacity - selectedCount, 0)
+    : null;
+
+const reservePlacesLeft =
+  reserveCapacity !== null
+    ? Math.max(reserveCapacity - reserveCount, 0)
+    : null;
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
@@ -175,13 +218,44 @@ export default async function SelectionPage() {
           Selector Portal.
         </p>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-3">
-          <Metric label="Under Review" value={reviewCount} />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+  <Metric
+    label="Under Review"
+    value={reviewCount}
+  />
 
-          <Metric label="Selected" value={selectedCount} />
+  <Metric
+    label="Selected"
+    value={
+      selectedCapacity !== null
+        ? `${selectedCount} / ${selectedCapacity}`
+        : selectedCount
+    }
+  />
 
-          <Metric label="Reserve" value={reserveCount} />
-        </div>
+  <Metric
+    label="Reserve"
+    value={
+      reserveCapacity !== null
+        ? `${reserveCount} / ${reserveCapacity}`
+        : reserveCount
+    }
+  />
+
+  <Metric
+    label="Places Left"
+    value={
+      selectedPlacesLeft ?? "—"
+    }
+  />
+
+  <Metric
+    label="Reserve Left"
+    value={
+      reservePlacesLeft ?? "—"
+    }
+  />
+</div>
 
         <div className="mt-10 overflow-hidden rounded-2xl border border-white/10">
           <div className="overflow-x-auto">
@@ -321,9 +395,20 @@ export default async function SelectionPage() {
                       </td>
 
                       <td className="px-5 py-5">
-                        {application.status !== "SELECTED" ? (
-                         <span className="text-xs text-white/30">—</span>
-                        ) : application.selectionInvitationSentAt ? (
+  {application.status !== "SELECTED" ? (
+    <span className="text-xs text-white/30">—</span>
+  ) : !event.selectionDecisionsReleasedAt ||
+    !application.selectionDecisionReleasedAt ? (
+    <div>
+      <div className="text-xs font-bold text-white/35">
+        Decision not released
+      </div>
+
+      <div className="mt-1 text-[11px] text-white/25">
+        Invitation locked
+      </div>
+    </div>
+  ) : application.selectionInvitationSentAt ? (
                           <div>
                             <div className="text-xs font-black uppercase tracking-[0.06em] text-[#c7ff2f]">
                               Sent
@@ -439,6 +524,9 @@ export default async function SelectionPage() {
                               "VIDEO_REVIEW",
                               "LONGLISTED",
                               "FINAL_REVIEW",
+                              "SELECTED",
+                              "RESERVE",
+                              "NOT_SELECTED",
                             ].includes(application.status) ? (
                               <form
                                 action={setFinalSelectionDecision}
@@ -451,7 +539,11 @@ export default async function SelectionPage() {
                                 />
 
                                 <div className="text-[10px] font-black uppercase tracking-[0.08em] text-white/30">
-                                  Final Decision
+                                  {["SELECTED", "RESERVE", "NOT_SELECTED"].includes(
+                                    application.status,
+                                  )
+                                   ? "Revise Draft Decision"
+                                   : "Draft Decision"}
                                 </div>
 
                                 <div className="mt-2 flex flex-wrap gap-2">
@@ -494,7 +586,7 @@ export default async function SelectionPage() {
                 {applications.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-6 py-14 text-center text-sm text-white/35"
                     >
                       No applications are currently in the selection workflow.
@@ -510,7 +602,7 @@ export default async function SelectionPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">
       <div className="text-xs font-black uppercase tracking-[0.12em] text-white/35">

@@ -385,15 +385,20 @@ export async function setFinalSelectionDecision(formData: FormData) {
       throw new Error("Application does not belong to this showcase event.");
     }
 
-    if (
-      application.status !== "VIDEO_REVIEW" &&
-      application.status !== "LONGLISTED" &&
-      application.status !== "FINAL_REVIEW"
-    ) {
-      throw new Error(
-        "Application is not currently available for a final selection decision.",
-      );
-    }
+    const editableStatuses = [
+  "VIDEO_REVIEW",
+  "LONGLISTED",
+  "FINAL_REVIEW",
+  "SELECTED",
+  "RESERVE",
+  "NOT_SELECTED",
+];
+
+if (!editableStatuses.includes(application.status)) {
+  throw new Error(
+    "Application is not currently available for a selection decision.",
+  );
+}
 
     const completedAssessments = application.selectorAssignments.filter(
       (assignment) => Boolean(assignment.assessment?.submittedAt),
@@ -406,6 +411,10 @@ export async function setFinalSelectionDecision(formData: FormData) {
     }
 
     const decidedAt = new Date();
+
+    if (application.status === decision) {
+  return;
+}
 
     /*
      * SELECTED

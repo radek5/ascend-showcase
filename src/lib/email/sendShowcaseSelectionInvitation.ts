@@ -20,11 +20,13 @@ export async function sendShowcaseSelectionInvitation({
 
       select: {
         id: true,
+        eventSlug: true,
         firstName: true,
         lastName: true,
         email: true,
         status: true,
         selectedAt: true,
+        selectionDecisionReleasedAt: true,
         registrationNumber: true,
         checkInToken: true,
         selectionInvitationSentAt: true,
@@ -36,6 +38,31 @@ export async function sendShowcaseSelectionInvitation({
       "Showcase application not found.",
     );
   }
+
+  const event = await prisma.event.findUnique({
+  where: {
+    slug: application.eventSlug,
+  },
+
+  select: {
+    selectionDecisionsReleasedAt: true,
+  },
+});
+
+if (!event) {
+  throw new Error(
+    "Showcase event not found.",
+  );
+}
+
+if (
+  !event.selectionDecisionsReleasedAt ||
+  !application.selectionDecisionReleasedAt
+) {
+  throw new Error(
+    "Selection decisions must be formally released before a Showcase invitation can be sent.",
+  );
+}
 
   /*
    * ----------------------------------------------------------
