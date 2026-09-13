@@ -3,6 +3,7 @@ import Link from "next/link";
 import ShowcaseConfirmationButton from "./ShowcaseConfirmationButton";
 import ShowcaseSelectionInvitationButton from "./ShowcaseSelectionInvitationButton";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import ReleaseSelectionDecisionsButton from "./ReleaseSelectionDecisionsButton";
 
 import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
@@ -15,7 +16,7 @@ import {
 } from "./actions";
 
 export default async function SelectionPage() {
-  await requireStaffUser();
+  const staffUser = await requireStaffUser();
 
   const event = await prisma.event.findUnique({
     where: {
@@ -180,6 +181,16 @@ const reservePlacesLeft =
     ? Math.max(reserveCapacity - reserveCount, 0)
     : null;
 
+const decisionsReleased =
+  Boolean(event.selectionDecisionsReleasedAt);
+
+const selectionReady =
+  !decisionsReleased &&
+  selectedCapacity !== null &&
+  selectedCapacity > 0 &&
+  selectedCount === selectedCapacity &&
+  reviewCount === 0;
+
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10 bg-[#0b0b0b]">
@@ -255,6 +266,73 @@ const reservePlacesLeft =
       reservePlacesLeft ?? "—"
     }
   />
+</div>
+
+<div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+  {decisionsReleased ? (
+    <div>
+      <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
+        Decisions Released
+      </div>
+
+      <div className="mt-2 text-lg font-black text-white">
+        Lagos 2027 player outcomes are official
+      </div>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-white/45">
+        The selection cut has been released and new applications are closed.
+        Draft selection decisions can no longer be revised through the
+        initial selection workflow.
+      </p>
+    </div>
+  ) : selectionReady ? (
+    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
+          Ready to Release
+        </div>
+
+        <div className="mt-2 text-lg font-black text-white">
+          The Lagos 2027 selection cut is complete
+        </div>
+
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-white/45">
+          {selectedCount} players are selected and there are no unresolved
+          applications in the selection workflow. Releasing decisions will
+          make these outcomes official and close new applications.
+        </p>
+      </div>
+
+      {staffUser.role === "ADMIN" ? (
+  <ReleaseSelectionDecisionsButton
+    eventSlug={event.slug}
+  />
+) : (
+  <div className="text-xs font-bold text-white/35">
+    An administrator must release the decisions.
+  </div>
+)}
+    </div>
+  ) : (
+    <div>
+      <div className="text-xs font-black uppercase tracking-[0.12em] text-white/35">
+        Selection In Progress
+      </div>
+
+      <div className="mt-2 text-lg font-black text-white">
+        Final outcomes are still being prepared
+      </div>
+
+      <p className="mt-2 text-sm leading-6 text-white/45">
+        {selectedCapacity !== null
+          ? `${selectedCount} of ${selectedCapacity} showcase places have been filled.`
+          : "Showcase capacity has not been configured."}
+        {reviewCount > 0
+          ? ` ${reviewCount} application${reviewCount === 1 ? "" : "s"} still require a final outcome.`
+          : ""}
+      </p>
+    </div>
+  )}
 </div>
 
         <div className="mt-10 overflow-hidden rounded-2xl border border-white/10">

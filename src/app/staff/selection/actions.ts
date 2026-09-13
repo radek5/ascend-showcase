@@ -4,7 +4,7 @@ import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin, requireStaffUser } from "@/lib/staff/auth";
 
 async function createAssessmentCode() {
   /*
@@ -558,4 +558,232 @@ if (!editableStatuses.includes(application.status)) {
   });
 
   revalidatePath("/staff/selection");
+}
+
+export async function releaseSelectionDecisions(formData: FormData) {
+  const admin = await requireStaffAdmin();
+
+  const eventSlug = String(
+    formData.get("eventSlug") || "",
+  ).trim();
+
+  if (!eventSlug) {
+    throw new Error(
+      "Showcase event is required.",
+    );
+  }
+
+  await prisma.$transaction(async (tx) => {
+    /*
+     * Lock the Event row.
+     *
+     * This uses the same per-event locking strategy as the
+     * selection-capacity action. While release is taking place,
+     * no competing capacity-changing operation for this event
+     * should be able to cross the release boundary.
+     */
+    const lockedEvents = await tx.$queryRaw<
+      Array<{
+        id: string;
+        slug: string;
+        capacity: number | null;
+        reserveCapacity: number | null;
+        selectionDecisionsReleasedAt: Date | null;
+      }>
+    >`
+      SELECT
+        "id",
+        "slug",
+        "capacity",
+        "reserveCapacity",
+        "selectionDecisionsReleasedAt"
+      FROM "Event"
+      WHERE "slug" = ${eventSlug}
+      FOR UPDATE
+    `;
+
+    const event = lockedEvents[0];
+
+    if (!event) {
+      throw new Error(
+        "Showcase event not found.",
+      );
+    }
+
+    if (event.selectionDecisionsReleasedAt) {
+      throw new Error(
+        "Selection decisions for this event have already been released.",
+      );
+    }
+
+    if (!event.capacity || event.capacity < 1) {
+      throw new Error(
+        "A valid showcase capacity must be configured before decisions can be released.",
+      );
+    }
+
+    /*
+     * The main squad must be complete before release.
+     *
+     * Lagos 2027 currently has capacity 100, therefore release
+     * cannot occur at 99 or less and cannot occur above capacity.
+     */
+    const selectedCount =
+      await tx.showcaseApplication.count({
+        where: {
+          eventSlug: event.slug,
+          status: "SELECTED",
+        },
+      });
+
+    if (selectedCount !== event.capacity) {
+      throw new Error(
+        `Selection decisions cannot be released until exactly ${event.capacity} players are selected. Current selected count: ${selectedCount}.`,
+      );
+    }
+
+    /*
+     * Reserve capacity is a ceiling, rather than a requirement
+     * that every reserve place must necessarily be filled.
+     */
+    const reserveCount =
+      await tx.showcaseApplication.count({
+        where: {
+          eventSlug: event.slug,
+          status: "RESERVE",
+        },
+      });
+
+    if (
+      reserveCount > 0 &&
+      (!event.reserveCapacity ||
+        event.reserveCapacity < 1)
+    ) {
+      throw new Error(
+        "Reserve players exist but no valid reserve capacity is configured.",
+      );
+    }
+
+    if (
+      event.reserveCapacity !== null &&
+      reserveCount > event.reserveCapacity
+    ) {
+      throw new Error(
+        `The reserve list exceeds the configured capacity of ${event.reserveCapacity}.`,
+      );
+    }
+
+    /*
+     * Every application already inside the selection workflow
+     * must have a final internal outcome before release.
+     *
+     * DRAFT applicants are deliberately excluded: registration
+     * closure prevents new applications, but an unfinished draft
+     * is not silently turned into a football-selection outcome.
+     */
+    const unresolvedCount =
+      await tx.showcaseApplication.count({
+        where: {
+          eventSlug: event.slug,
+
+          status: {
+            in: [
+              "SUBMITTED",
+              "ELIGIBILITY_REVIEW",
+              "VIDEO_REVIEW",
+              "LONGLISTED",
+              "FINAL_REVIEW",
+            ],
+          },
+        },
+      });
+
+    if (unresolvedCount > 0) {
+      throw new Error(
+        `Selection decisions cannot be released while ${unresolvedCount} application${unresolvedCount === 1 ? "" : "s"} remain unresolved.`,
+      );
+    }
+
+    const releasedAt = new Date();
+
+    /*
+     * Selected players now have an officially released offer.
+     *
+     * Their response lifecycle begins at PENDING.
+     *
+     * We deliberately do not invent an acceptance deadline here.
+     * selectionResponseDeadline remains null until the operational
+     * deadline policy is defined.
+     */
+    await tx.showcaseApplication.updateMany({
+      where: {
+        eventSlug: event.slug,
+        status: "SELECTED",
+      },
+
+      data: {
+        selectionDecisionReleasedAt:
+          releasedAt,
+
+        selectionResponse: "PENDING",
+        selectionResponseAt: null,
+        selectionResponseDeadline: null,
+      },
+    });
+
+    /*
+     * Reserve and not-selected outcomes are also officially
+     * published at the same release milestone, but they do not
+     * have a selected-player acceptance response.
+     */
+    await tx.showcaseApplication.updateMany({
+      where: {
+        eventSlug: event.slug,
+
+        status: {
+          in: [
+            "RESERVE",
+            "NOT_SELECTED",
+          ],
+        },
+      },
+
+      data: {
+        selectionDecisionReleasedAt:
+          releasedAt,
+
+        selectionResponse: null,
+        selectionResponseAt: null,
+        selectionResponseDeadline: null,
+      },
+    });
+
+    /*
+     * The Event record is the authoritative release milestone.
+     *
+     * Registration is closed in the same transaction so the
+     * public application state and official squad decision cannot
+     * drift apart.
+     */
+    await tx.event.update({
+      where: {
+        id: event.id,
+      },
+
+      data: {
+        selectionDecisionsReleasedAt:
+          releasedAt,
+
+        selectionDecisionsReleasedByStaffUserId:
+          admin.id,
+
+        registrationOpen: false,
+      },
+    });
+  });
+
+  revalidatePath("/staff/selection");
+  revalidatePath("/staff/events");
+  revalidatePath("/staff/dashboard");
+  revalidatePath("/apply/lagos-2027");
 }
