@@ -25,6 +25,8 @@ export default async function ApplicantAccountPage() {
       lastName: true,
       status: true,
       submittedAt: true,
+      selectionDecisionReleasedAt: true,
+      selectionResponse: true,
       registrationNumber: true,
       createdAt: true,
       updatedAt: true,
@@ -49,6 +51,15 @@ export default async function ApplicantAccountPage() {
           id: true,
         },
       });
+
+  const decisionReleased = Boolean(application?.selectionDecisionReleasedAt);
+
+  const releasedOutcome =
+    application &&
+    decisionReleased &&
+    ["SELECTED", "RESERVE", "NOT_SELECTED"].includes(application.status)
+      ? application.status
+      : null;
 
   let applicationHref = "/apply/lagos-2027/start";
   let applicationAction = legacyDraft
@@ -147,12 +158,25 @@ export default async function ApplicantAccountPage() {
               ) : application.submittedAt ? (
                 <>
                   <p className="mt-4 max-w-2xl leading-7 text-white/55">
-                    Your Lagos 2027 application has been submitted and is now
-                    part of the REVELATIONX1 assessment and selection process.
+                    {releasedOutcome === "SELECTED"
+                      ? "Your Lagos 2027 selection decision has been released. You have been selected for the Men's Football Showcase."
+                      : releasedOutcome === "RESERVE"
+                        ? "Your Lagos 2027 selection decision has been released. You have been placed on the reserve list."
+                        : releasedOutcome === "NOT_SELECTED"
+                          ? "Your Lagos 2027 selection decision has been released. You have not been selected on this occasion."
+                          : "Your Lagos 2027 application has been submitted and is now part of the REVELATIONX1 assessment and selection process."}
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3">
-                    <StatusBadge>Submitted</StatusBadge>
+                    <StatusBadge>
+                      {releasedOutcome === "SELECTED"
+                        ? "Selected"
+                        : releasedOutcome === "RESERVE"
+                          ? "Reserve List"
+                          : releasedOutcome === "NOT_SELECTED"
+                            ? "Decision Released"
+                            : "Submitted"}
+                    </StatusBadge>
 
                     {application.registrationNumber ? (
                       <span className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-bold text-white/60">
@@ -199,7 +223,13 @@ export default async function ApplicantAccountPage() {
                 label="Application status"
                 value={
                   application.submittedAt
-                    ? "Submitted — Under Assessment"
+                    ? releasedOutcome === "SELECTED"
+                      ? "Selected for Lagos 2027"
+                      : releasedOutcome === "RESERVE"
+                        ? "Reserve List"
+                        : releasedOutcome === "NOT_SELECTED"
+                          ? "Not Selected on This Occasion"
+                          : "Submitted — Under Assessment"
                     : "Draft — In Progress"
                 }
               />
