@@ -59,6 +59,10 @@ export async function createEvent(formData: FormData) {
     formData.get("capacity") || "",
   ).trim();
 
+  const reserveCapacityRaw = String(
+    formData.get("reserveCapacity") || "",
+  ).trim();
+
   const feeRaw = String(
     formData.get("registrationFeeAmount") || "",
   ).trim();
@@ -101,6 +105,11 @@ export async function createEvent(formData: FormData) {
       ? Number.parseInt(capacityRaw, 10)
       : null;
 
+  const reserveCapacity =
+    reserveCapacityRaw
+      ? Number.parseInt(reserveCapacityRaw, 10)
+      : null;
+
   const feeMajor =
     feeRaw
       ? Number.parseFloat(feeRaw)
@@ -112,6 +121,14 @@ export async function createEvent(formData: FormData) {
       capacity <= 0)
   ) {
     throw new Error("Invalid event capacity.");
+  }
+
+  if (
+    reserveCapacity !== null &&
+    (!Number.isFinite(reserveCapacity) ||
+      reserveCapacity <= 0)
+  ) {
+    throw new Error("Invalid reserve-list capacity.");
   }
 
   if (
@@ -216,6 +233,7 @@ const showcaseCompetitionCategory =
         ),
 
       capacity,
+      reserveCapacity,
 
       registrationFeeAmount,
       registrationFeeCurrency,
@@ -269,6 +287,10 @@ export async function updateEvent(formData: FormData) {
     formData.get("capacity") || "",
   ).trim();
 
+  const reserveCapacityRaw = String(
+    formData.get("reserveCapacity") || "",
+  ).trim();
+
   const feeRaw = String(
     formData.get("registrationFeeAmount") || "",
   ).trim();
@@ -312,6 +334,11 @@ export async function updateEvent(formData: FormData) {
       ? Number.parseInt(capacityRaw, 10)
       : null;
 
+  const reserveCapacity =
+    reserveCapacityRaw
+      ? Number.parseInt(reserveCapacityRaw, 10)
+      : null;
+
   const feeMajor =
     feeRaw
       ? Number.parseFloat(feeRaw)
@@ -323,6 +350,14 @@ export async function updateEvent(formData: FormData) {
       capacity <= 0)
   ) {
     throw new Error("Invalid event capacity.");
+  }
+
+  if (
+    reserveCapacity !== null &&
+    (!Number.isFinite(reserveCapacity) ||
+      reserveCapacity <= 0)
+  ) {
+    throw new Error("Invalid reserve-list capacity.");
   }
 
   if (
@@ -431,6 +466,7 @@ export async function updateEvent(formData: FormData) {
         ),
 
       capacity,
+      reserveCapacity,
 
       registrationFeeAmount,
       registrationFeeCurrency,
@@ -440,6 +476,7 @@ export async function updateEvent(formData: FormData) {
   revalidatePath("/staff/events");
   revalidatePath("/staff/dashboard");
   revalidatePath("/staff/checkin");
+  revalidatePath("/staff/selection");
 }
 
 export async function setActiveEvent(

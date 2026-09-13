@@ -154,6 +154,13 @@ export default async function EventsPage() {
   />
 
   <Info
+    label="Reserve capacity"
+    value={
+      event.reserveCapacity ?? "—"
+    }
+  />
+
+  <Info
     label="Fee"
     value={
       event.registrationFeeAmount !==
@@ -325,6 +332,15 @@ export default async function EventsPage() {
     type="number"
     defaultValue={
       event.capacity ?? ""
+    }
+  />
+
+  <Field
+    label="Reserve capacity"
+    name="reserveCapacity"
+    type="number"
+    defaultValue={
+      event.reserveCapacity ?? ""
     }
   />
 
@@ -516,8 +532,15 @@ export default async function EventsPage() {
               label="Capacity"
               name="capacity"
               type="number"
-              placeholder="500"
+              placeholder="100"
             />
+
+           <Field
+             label="Reserve capacity"
+             name="reserveCapacity"
+             type="number"
+             placeholder="20"
+           />
 
             <Field
               label="Registration opens"

@@ -203,6 +203,13 @@ enum ShowcaseApplicationStatus {
   WITHDRAWN
 }
 
+enum ShowcaseSelectionResponse {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
 enum ShowcaseVideoType {
   MATCH_1
   MATCH_2
@@ -392,7 +399,12 @@ model Event {
   registrationOpen Boolean @default(false)
   active           Boolean @default(false)
 
-  capacity Int?
+  capacity        Int?
+  reserveCapacity Int?
+
+  // Showcase selection release
+  selectionDecisionsReleasedAt            DateTime?
+  selectionDecisionsReleasedByStaffUserId String?
 
   // Registration pricing
   registrationFeeAmount   Int?
@@ -540,12 +552,29 @@ model ShowcaseApplication {
   finalReviewedAt                 DateTime?
   selectedAt                      DateTime?
 
+  // Published selection outcome
+  selectionDecisionReleasedAt DateTime?
+
+  // Outcome notification
+  selectionOutcomeEmailSentAt DateTime?
+  selectionOutcomeMessageId   String?
+
+  // Reserve-list management
+  reserveRank       Int?
+  reservePromotedAt DateTime?
+
+  // Selected-place response
+  selectionResponse         ShowcaseSelectionResponse?
+  selectionResponseAt       DateTime?
+  selectionResponseDeadline DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  selectionInvitationSentAt DateTime?
+  selectionInvitationSentAt    DateTime?
   selectionInvitationMessageId String?
 
+  @@unique([eventSlug, reserveRank])
   @@index([eventSlug])
   @@index([email])
   @@index([status])
