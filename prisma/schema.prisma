@@ -279,6 +279,16 @@ enum PlayerSex {
   FEMALE
 }
 
+enum ShowcaseKitSize {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+  XXXL
+}
+
 model ProfessionalRegistration {
   id String @id @default(cuid())
 
@@ -556,8 +566,8 @@ model ShowcaseApplication {
   selectionDecisionReleasedAt DateTime?
 
   // Outcome notification
-  selectionOutcomeEmailSentAt DateTime?
-  selectionOutcomeMessageId   String?
+  selectionOutcomeEmailSentAt     DateTime?
+  selectionOutcomeMessageId       String?
   selectionOutcomeEmailClaimedAt  DateTime?
   selectionOutcomeEmailClaimToken String?
 
@@ -569,6 +579,8 @@ model ShowcaseApplication {
   selectionResponse         ShowcaseSelectionResponse?
   selectionResponseAt       DateTime?
   selectionResponseDeadline DateTime?
+
+  selectedPlayerConfirmation ShowcaseSelectedPlayerConfirmation?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -582,6 +594,41 @@ model ShowcaseApplication {
   @@index([status])
   @@index([eventSlug, status])
   @@index([userId])
+}
+
+model ShowcaseSelectedPlayerConfirmation {
+  id String @id @default(cuid())
+
+  applicationId String              @unique
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  // Attendance
+  attendanceConfirmed Boolean @default(false)
+
+  // Kit
+  shirtSize  ShowcaseKitSize?
+  shortsSize ShowcaseKitSize?
+  sockSize   String?
+
+  // Emergency contact confirmed for the event
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactPhone        String?
+
+  // Operational requirements
+  dietaryRequirements String?
+  medicalUpdate       String?
+  accessibilityNeeds  String?
+  otherRequirements   String?
+
+  // Player declaration
+  informationConfirmed Boolean   @default(false)
+  confirmedAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([confirmedAt])
 }
 
 model ShowcasePayment {
