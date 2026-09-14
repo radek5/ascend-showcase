@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import OfferResponseButtons from "./OfferResponseButtons";
+
 import {
   checkApplicantApplicationAccess,
   getApplicantApplicationAccessError,
@@ -260,6 +262,52 @@ export default async function ConfirmationPage({ params }: PageProps) {
                     Do not make irreversible travel arrangements until your
                     participation has been confirmed by REVELATIONX1.
                   </p>
+
+                  {application.selectionResponse === "PENDING" ? (
+                    <div className="border-t border-white/10 pt-5">
+                      <div className="mb-4">
+                        <div className="font-black text-white">
+                          Confirm your decision
+                        </div>
+
+                        <p className="mt-1 text-sm leading-6 text-white/50">
+                          Please tell us whether you accept your Lagos 2027
+                          place.
+                        </p>
+                      </div>
+
+                      <OfferResponseButtons applicationId={application.id} />
+                    </div>
+                  ) : application.selectionResponse === "ACCEPTED" ? (
+                    <div className="rounded-2xl border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.05] p-5">
+                      <div className="text-xs font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
+                        Place Accepted
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-white/60">
+                        Your acceptance has been recorded. Your next step will
+                        be to complete your Selected Player Confirmation,
+                        including the information REVELATIONX1 needs to prepare
+                        you for Lagos 2027.
+                      </p>
+
+                      <p className="mt-2 text-xs leading-5 text-white/40">
+                        Your event credential will be issued only after the
+                        required confirmation information has been completed.
+                      </p>
+                    </div>
+                  ) : application.selectionResponse === "DECLINED" ? (
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+                      <div className="text-xs font-black uppercase tracking-[0.1em] text-white/50">
+                        Place Declined
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-white/55">
+                        Your decision to decline the Lagos 2027 place has been
+                        recorded.
+                      </p>
+                    </div>
+                  ) : null}
                 </>
               ) : releasedOutcome === "RESERVE" ? (
                 <>
