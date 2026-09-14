@@ -558,6 +558,8 @@ model ShowcaseApplication {
   // Outcome notification
   selectionOutcomeEmailSentAt DateTime?
   selectionOutcomeMessageId   String?
+  selectionOutcomeEmailClaimedAt  DateTime?
+  selectionOutcomeEmailClaimToken String?
 
   // Reserve-list management
   reserveRank       Int?

@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireStaffAdmin, requireStaffUser } from "@/lib/staff/auth";
 
+import { sendShowcaseSelectionOutcome } from "@/lib/email/sendShowcaseSelectionOutcome";
+
 async function createAssessmentCode() {
   /*
    * Anonymous football-assessment identifier.
@@ -786,4 +788,98 @@ export async function releaseSelectionDecisions(formData: FormData) {
   revalidatePath("/staff/events");
   revalidatePath("/staff/dashboard");
   revalidatePath("/apply/lagos-2027");
+}
+
+  export async function sendReleasedSelectionOutcomes(formData: FormData) {
+  await requireStaffAdmin();
+
+  const eventSlug = String(formData.get("eventSlug") || "").trim();
+
+  if (!eventSlug) {
+    throw new Error("Showcase event is required.");
+  }
+
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: eventSlug,
+    },
+
+    select: {
+      selectionDecisionsReleasedAt: true,
+    },
+  });
+
+  if (!event) {
+    throw new Error("Showcase event not found.");
+  }
+
+  if (!event.selectionDecisionsReleasedAt) {
+    throw new Error(
+      "Selection decisions must be formally released before outcome notifications can be sent.",
+    );
+  }
+
+  const applications = await prisma.showcaseApplication.findMany({
+    where: {
+      eventSlug,
+
+      status: {
+        in: ["SELECTED", "RESERVE", "NOT_SELECTED"],
+      },
+
+      selectionDecisionReleasedAt: {
+        not: null,
+      },
+
+      selectionOutcomeEmailSentAt: null,
+    },
+
+    orderBy: {
+      createdAt: "asc",
+    },
+
+    select: {
+      id: true,
+      registrationNumber: true,
+    },
+  });
+
+  let sent = 0;
+  let skipped = 0;
+
+  const failures: Array<{
+    applicationId: string;
+    registrationNumber: string | null;
+    error: string;
+  }> = [];
+
+  for (const application of applications) {
+    try {
+      const result = await sendShowcaseSelectionOutcome({
+        applicationId: application.id,
+      });
+
+      if (result.skipped) {
+        skipped += 1;
+      } else {
+        sent += 1;
+      }
+    } catch (error) {
+      failures.push({
+        applicationId: application.id,
+        registrationNumber: application.registrationNumber,
+        error: error instanceof Error ? error.message : "Unknown email error.",
+      });
+    }
+  }
+
+  revalidatePath("/staff/selection");
+
+  return {
+    attempted: applications.length,
+    sent,
+    skipped,
+    failed: failures.length,
+    failures,
+  };
 }
