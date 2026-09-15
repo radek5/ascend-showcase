@@ -616,10 +616,15 @@ model ShowcaseSelectedPlayerConfirmation {
   emergencyContactPhone        String?
 
   // Operational requirements
-  dietaryRequirements String?
-  medicalUpdate       String?
-  accessibilityNeeds  String?
-  otherRequirements   String?
+  hasDietaryRequirements Boolean?
+  dietaryRequirements    String?
+
+  hasMedicalUpdate Boolean?
+  medicalUpdate    String?
+
+  hasAccessibilityNeeds Boolean?
+  accessibilityNeeds    String?
+  otherRequirements     String?
 
   // Player declaration
   informationConfirmed Boolean   @default(false)
