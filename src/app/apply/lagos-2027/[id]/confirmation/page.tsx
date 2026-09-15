@@ -51,6 +51,12 @@ export default async function ConfirmationPage({ params }: PageProps) {
       selectionDecisionReleasedAt: true,
       selectionResponse: true,
 
+      selectedPlayerConfirmation: {
+        select: {
+          confirmedAt: true,
+        },
+      },
+
       registrationNumber: true,
     },
   });
@@ -285,16 +291,47 @@ export default async function ConfirmationPage({ params }: PageProps) {
                       </div>
 
                       <p className="mt-2 text-sm leading-6 text-white/60">
-                        Your acceptance has been recorded. Your next step will
-                        be to complete your Selected Player Confirmation,
-                        including the information REVELATIONX1 needs to prepare
-                        you for Lagos 2027.
+                        Your acceptance has been recorded.
+                        {application.selectedPlayerConfirmation?.confirmedAt
+                          ? " Your Selected Player Confirmation is complete."
+                          : " Your next step is to complete your Selected Player Confirmation, including the information REVELATIONX1 needs to prepare you for Lagos 2027."}
                       </p>
 
-                      <p className="mt-2 text-xs leading-5 text-white/40">
-                        Your event credential will be issued only after the
-                        required confirmation information has been completed.
-                      </p>
+                      {application.selectedPlayerConfirmation?.confirmedAt ? (
+                        <>
+                          <div className="mt-4 text-xs font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
+                            Participation Confirmation Complete
+                          </div>
+
+                          <p className="mt-2 text-xs leading-5 text-white/40">
+                            Your required participation information has been
+                            received. You can update it if anything changes
+                            before the Showcase.
+                          </p>
+
+                          <Link
+                            href={`/apply/${application.eventSlug}/${application.id}/selected-player-confirmation`}
+                            className="mt-5 inline-flex rounded-full border border-white/15 px-5 py-3 text-xs font-black uppercase tracking-[0.06em] text-white transition hover:border-white/30"
+                          >
+                            Review / Update Details
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <p className="mt-2 text-xs leading-5 text-white/40">
+                            Your event credential will be issued only after the
+                            required confirmation information has been
+                            completed.
+                          </p>
+
+                          <Link
+                            href={`/apply/${application.eventSlug}/${application.id}/selected-player-confirmation`}
+                            className="mt-5 inline-flex rounded-full bg-[#c7ff2f] px-5 py-3 text-xs font-black uppercase tracking-[0.06em] text-black transition hover:opacity-90"
+                          >
+                            Complete Player Confirmation
+                          </Link>
+                        </>
+                      )}
                     </div>
                   ) : application.selectionResponse === "DECLINED" ? (
                     <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
