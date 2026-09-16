@@ -15,7 +15,7 @@ export default async function ShowcasePlayerCheckInPage({
 }) {
   const { token } = await params;
 
-    const staffUser = await getCurrentStaffUser();
+  const staffUser = await getCurrentStaffUser();
 
   if (!staffUser) {
     return (
@@ -33,9 +33,7 @@ export default async function ShowcasePlayerCheckInPage({
               Staff Authentication Required
             </div>
 
-            <h1 className="mt-4 text-3xl font-black">
-              Event Credential
-            </h1>
+            <h1 className="mt-4 text-3xl font-black">Event Credential</h1>
 
             <p className="mt-4 text-white/55">
               This credential can only be viewed and processed by authorised
@@ -54,37 +52,45 @@ export default async function ShowcasePlayerCheckInPage({
     );
   }
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        checkInToken: token,
-      },
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      checkInToken: token,
+    },
 
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        registrationNumber: true,
-        position: true,
-        status: true,
-        checkedInAt: true,
-        checkedInByStaffUserId: true,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      registrationNumber: true,
+      position: true,
+      status: true,
+      eventSlug: true,
+      selectionDecisionReleasedAt: true,
+      selectionResponse: true,
 
-        identityDocuments: {
-          where: {
-            type: "HEADSHOT",
-          },
-
-          select: {
-            id: true,
-            uploadedAt: true,
-            storageKey: true,
-          },
-
-          take: 1,
+      selectedPlayerConfirmation: {
+        select: {
+          confirmedAt: true,
         },
       },
-    });
+      checkedInAt: true,
+      checkedInByStaffUserId: true,
+
+      identityDocuments: {
+        where: {
+          type: "HEADSHOT",
+        },
+
+        select: {
+          id: true,
+          uploadedAt: true,
+          storageKey: true,
+        },
+
+        take: 1,
+      },
+    },
+  });
 
   if (!application) {
     return (
@@ -108,6 +114,23 @@ export default async function ShowcasePlayerCheckInPage({
       </main>
     );
   }
+
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: application.eventSlug,
+    },
+
+    select: {
+      selectionDecisionsReleasedAt: true,
+    },
+  });
+
+  const credentialEligible =
+    Boolean(event?.selectionDecisionsReleasedAt) &&
+    Boolean(application.selectionDecisionReleasedAt) &&
+    application.status === "SELECTED" &&
+    application.selectionResponse === "ACCEPTED" &&
+    Boolean(application.selectedPlayerConfirmation?.confirmedAt);
 
   const isSelected = application.status === "SELECTED";
 
@@ -248,15 +271,17 @@ export default async function ShowcasePlayerCheckInPage({
                   </div>
                 )}
               </div>
-            ) : !isSelected ? (
+            ) : !credentialEligible ? (
               <div className="mt-8 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6">
                 <div className="text-xs font-black uppercase tracking-[0.18em] text-red-400">
                   Event Access Not Valid
                 </div>
 
                 <p className="mt-2 text-sm leading-6 text-white/55">
-                  This player has not been authorised for Lagos 2027 event
-                  entry.
+                  This player does not currently have a valid Lagos 2027 event
+                  credential. Event entry requires a released selection
+                  decision, an accepted place and completed Selected Player
+                  Confirmation.
                 </p>
               </div>
             ) : (
@@ -289,7 +314,7 @@ export default async function ShowcasePlayerCheckInPage({
                   </button>
                 </form>
               </div>
-             )}
+            )}
           </div>
         </div>
       </section>

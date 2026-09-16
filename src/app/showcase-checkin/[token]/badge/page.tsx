@@ -19,45 +19,68 @@ export default async function ShowcasePlayerBadgePage({
 
   const { token } = await params;
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        checkInToken: token,
-      },
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      checkInToken: token,
+    },
 
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        position: true,
-        status: true,
-        registrationNumber: true,
-        assessmentCode: true,
-        checkedInAt: true,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      position: true,
+      status: true,
+      eventSlug: true,
+      selectionDecisionReleasedAt: true,
+      selectionResponse: true,
 
-        identityDocuments: {
-          where: {
-            type: "HEADSHOT",
-          },
-
-          select: {
-            uploadedAt: true,
-            storageKey: true,
-          },
-
-          take: 1,
+      selectedPlayerConfirmation: {
+        select: {
+          confirmedAt: true,
         },
       },
-    });
+
+      registrationNumber: true,
+      assessmentCode: true,
+      checkedInAt: true,
+
+      identityDocuments: {
+        where: {
+          type: "HEADSHOT",
+        },
+
+        select: {
+          uploadedAt: true,
+          storageKey: true,
+        },
+
+        take: 1,
+      },
+    },
+  });
 
   if (!application) {
     notFound();
   }
 
-  if (
-    application.status !== "SELECTED" ||
-    !application.checkedInAt
-  ) {
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: application.eventSlug,
+    },
+
+    select: {
+      selectionDecisionsReleasedAt: true,
+    },
+  });
+
+  const credentialEligible =
+    Boolean(event?.selectionDecisionsReleasedAt) &&
+    Boolean(application.selectionDecisionReleasedAt) &&
+    application.status === "SELECTED" &&
+    application.selectionResponse === "ACCEPTED" &&
+    Boolean(application.selectedPlayerConfirmation?.confirmedAt);
+
+  if (!credentialEligible || !application.checkedInAt) {
     return (
       <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
         <div className="mx-auto max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.03] p-8">
@@ -72,14 +95,12 @@ export default async function ShowcasePlayerBadgePage({
             Badge Not Available
           </div>
 
-          <h1 className="mt-4 text-3xl font-black">
-            Check-In Required
-          </h1>
+          <h1 className="mt-4 text-3xl font-black">Check-In Required</h1>
 
           <p className="mt-4 leading-7 text-white/50">
-            This player must be selected and complete
-            REVELATIONX1 event check-in before a player
-            credential can be printed.
+            This player must hold a valid Lagos 2027 event credential and
+            complete REVELATIONX1 event check-in before a player badge can be
+            printed.
           </p>
 
           <Link
@@ -93,47 +114,36 @@ export default async function ShowcasePlayerBadgePage({
     );
   }
 
-  const headshot =
-    application.identityDocuments[0];
+  const headshot = application.identityDocuments[0];
 
-  const hasHeadshot = Boolean(
-    headshot?.storageKey &&
-      headshot.uploadedAt,
-  );
+  const hasHeadshot = Boolean(headshot?.storageKey && headshot.uploadedAt);
 
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   if (!appUrl) {
     throw new Error(
       "NEXT_PUBLIC_APP_URL is required to generate event credential QR codes.",
     );
-  } 
+  }
 
-  const credentialUrl =
-    `${appUrl}/showcase-checkin/${token}`;
+  const credentialUrl = `${appUrl}/showcase-checkin/${token}`;
 
-  const qrDataUrl =
-    await QRCode.toDataURL(
-      credentialUrl,
-      {
-        width: 500,
-        margin: 1,
-        errorCorrectionLevel: "H",
-      },
-    );
+  const qrDataUrl = await QRCode.toDataURL(credentialUrl, {
+    width: 500,
+    margin: 1,
+    errorCorrectionLevel: "H",
+  });
 
   const credentialNumber =
     application.registrationNumber ||
     application.assessmentCode ||
     "REVELATIONX1 PLAYER";
 
-  const credentialLabel =
-    application.registrationNumber
-      ? "Registration Number"
-      : application.assessmentCode
-        ? "Assessment Code"
-        : "Player Credential";
+  const credentialLabel = application.registrationNumber
+    ? "Registration Number"
+    : application.assessmentCode
+      ? "Assessment Code"
+      : "Player Credential";
 
   return (
     <>
@@ -224,8 +234,7 @@ export default async function ShowcasePlayerBadgePage({
 
           <div className="px-[7mm] pt-[5mm] text-center">
             <div className="text-[21px] font-black uppercase leading-none">
-              {application.firstName}{" "}
-              {application.lastName}
+              {application.firstName} {application.lastName}
             </div>
 
             <div className="mt-[3mm] bg-black px-[3mm] py-[2.5mm] text-[12px] font-black uppercase tracking-[0.08em] text-white">
@@ -258,8 +267,8 @@ export default async function ShowcasePlayerBadgePage({
               </div>
 
               <p className="mt-[1.5mm] text-[7px] leading-[1.45] text-black/55">
-                This credential must be displayed while
-                inside REVELATIONX1 controlled event areas.
+                This credential must be displayed while inside REVELATIONX1
+                controlled event areas.
               </p>
 
               <div className="mt-[2mm] text-[7px] font-bold uppercase tracking-[0.08em]">

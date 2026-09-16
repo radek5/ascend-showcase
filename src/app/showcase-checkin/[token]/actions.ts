@@ -21,8 +21,17 @@ export async function checkInShowcasePlayer(formData: FormData) {
 
     select: {
       id: true,
+      eventSlug: true,
       status: true,
+      selectionDecisionReleasedAt: true,
+      selectionResponse: true,
       checkedInAt: true,
+
+      selectedPlayerConfirmation: {
+        select: {
+          confirmedAt: true,
+        },
+      },
     },
   });
 
@@ -30,28 +39,54 @@ export async function checkInShowcasePlayer(formData: FormData) {
     throw new Error("Showcase player credential not found.");
   }
 
-  /*
-   * A private check-in token may exist before selection,
-   * but event entry is only valid once the application
-   * has reached the final SELECTED state.
-   */
-  if (application.status !== "SELECTED") {
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: application.eventSlug,
+    },
+
+    select: {
+      selectionDecisionsReleasedAt: true,
+    },
+  });
+
+  if (
+    !event?.selectionDecisionsReleasedAt ||
+    !application.selectionDecisionReleasedAt ||
+    application.status !== "SELECTED" ||
+    application.selectionResponse !== "ACCEPTED" ||
+    !application.selectedPlayerConfirmation?.confirmedAt
+  ) {
     throw new Error(
-      "This player is not currently authorised for showcase event check-in.",
+      "This player does not currently have a valid Lagos 2027 event credential.",
     );
   }
 
   /*
-   * Idempotent:
-   * scanning or confirming the same credential twice
-   * must not create a second check-in event.
+   * The private token may exist before credential eligibility.
+   * Possession of the token alone never authorises event entry.
+   *
+   * The mutation below repeats the mutable eligibility conditions
+   * so a concurrent response/status change cannot check in a player
+   * who is no longer credential-eligible.
    */
   if (!application.checkedInAt) {
-    await prisma.showcaseApplication.updateMany({
+    const result = await prisma.showcaseApplication.updateMany({
       where: {
         id: application.id,
         status: "SELECTED",
+        selectionDecisionReleasedAt: {
+          not: null,
+        },
+        selectionResponse: "ACCEPTED",
         checkedInAt: null,
+
+        selectedPlayerConfirmation: {
+          is: {
+            confirmedAt: {
+              not: null,
+            },
+          },
+        },
       },
 
       data: {
@@ -59,6 +94,12 @@ export async function checkInShowcasePlayer(formData: FormData) {
         checkedInByStaffUserId: staffUser.id,
       },
     });
+
+    if (result.count !== 1) {
+      throw new Error(
+        "This player could not be checked in because their credential eligibility has changed.",
+      );
+    }
   }
 
   revalidatePath(`/showcase-checkin/${token}`);

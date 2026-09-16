@@ -12,57 +12,60 @@ export async function sendShowcaseSelectionInvitation({
   applicationId,
   force = false,
 }: Args) {
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id: applicationId,
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+
+    select: {
+      id: true,
+      eventSlug: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      status: true,
+      selectedAt: true,
+      selectionDecisionReleasedAt: true,
+      selectionResponse: true,
+
+      selectedPlayerConfirmation: {
+        select: {
+          confirmedAt: true,
+        },
       },
 
-      select: {
-        id: true,
-        eventSlug: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        status: true,
-        selectedAt: true,
-        selectionDecisionReleasedAt: true,
-        registrationNumber: true,
-        checkInToken: true,
-        selectionInvitationSentAt: true,
-      },
-    });
+      registrationNumber: true,
+      checkInToken: true,
+      selectionInvitationSentAt: true,
+    },
+  });
 
   if (!application) {
-    throw new Error(
-      "Showcase application not found.",
-    );
+    throw new Error("Showcase application not found.");
   }
 
   const event = await prisma.event.findUnique({
-  where: {
-    slug: application.eventSlug,
-  },
+    where: {
+      slug: application.eventSlug,
+    },
 
-  select: {
-    selectionDecisionsReleasedAt: true,
-  },
-});
+    select: {
+      selectionDecisionsReleasedAt: true,
+    },
+  });
 
-if (!event) {
-  throw new Error(
-    "Showcase event not found.",
-  );
-}
+  if (!event) {
+    throw new Error("Showcase event not found.");
+  }
 
-if (
-  !event.selectionDecisionsReleasedAt ||
-  !application.selectionDecisionReleasedAt
-) {
-  throw new Error(
-    "Selection decisions must be formally released before a Showcase invitation can be sent.",
-  );
-}
+  if (
+    !event.selectionDecisionsReleasedAt ||
+    !application.selectionDecisionReleasedAt
+  ) {
+    throw new Error(
+      "Selection decisions must be formally released before an event credential can be issued.",
+    );
+  }
 
   /*
    * ----------------------------------------------------------
@@ -74,14 +77,24 @@ if (
    */
 
   if (application.status !== "SELECTED") {
-    throw new Error(
-      "Only selected players can receive a Showcase invitation.",
-    );
+    throw new Error("Only selected players can receive a event credential.");
   }
 
   if (!application.selectedAt) {
     throw new Error(
-      "Selected date must exist before sending the Showcase invitation.",
+      "Selected date must exist before an event credential can be issued.",
+    );
+  }
+
+  if (application.selectionResponse !== "ACCEPTED") {
+    throw new Error(
+      "The player must accept their Lagos 2027 place before an event credential can be issued.",
+    );
+  }
+
+  if (!application.selectedPlayerConfirmation?.confirmedAt) {
+    throw new Error(
+      "The player must complete Selected Player Confirmation before an event credential can be issued.",
     );
   }
 
@@ -98,9 +111,7 @@ if (
   }
 
   if (!application.email) {
-    throw new Error(
-      "Player email address is missing.",
-    );
+    throw new Error("Player email address is missing.");
   }
 
   /*
@@ -109,10 +120,7 @@ if (
    * A deliberate resend can be performed by passing force=true.
    */
 
-  if (
-    application.selectionInvitationSentAt &&
-    !force
-  ) {
+  if (application.selectionInvitationSentAt && !force) {
     return {
       messageId: null,
       recipientEmail: application.email,
@@ -125,8 +133,7 @@ if (
    * ----------------------------------------------------------
    */
 
-  const rawAppUrl =
-    process.env.NEXT_PUBLIC_APP_URL;
+  const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   if (!rawAppUrl) {
     throw new Error(
@@ -134,18 +141,15 @@ if (
     );
   }
 
-  const appUrl =
-    rawAppUrl.replace(/\/$/, "");
+  const appUrl = rawAppUrl.replace(/\/$/, "");
 
-  const checkInUrl =
-    `${appUrl}/showcase-checkin/${application.checkInToken}`;
+  const checkInUrl = `${appUrl}/showcase-checkin/${application.checkInToken}`;
 
-  const qrBuffer =
-    await QRCode.toBuffer(checkInUrl, {
-      width: 360,
-      margin: 2,
-      errorCorrectionLevel: "H",
-    });
+  const qrBuffer = await QRCode.toBuffer(checkInUrl, {
+    width: 360,
+    margin: 2,
+    errorCorrectionLevel: "H",
+  });
 
   /*
    * ----------------------------------------------------------
@@ -168,8 +172,7 @@ if (
     process.env.ASCEND_FROM_NAME ||
     "REVELATIONX1 Football Showcase";
 
-  const playerName =
-    `${application.firstName} ${application.lastName}`.trim();
+  const playerName = `${application.firstName} ${application.lastName}`.trim();
 
   const html = `
 <!DOCTYPE html>
@@ -198,11 +201,11 @@ if (
 <td style="border:1px solid #334414;background:#11160b;border-radius:22px;padding:34px;">
 
   <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#c7ff2f;">
-    OFFICIAL SELECTION
+    OFFICIAL EVENT CREDENTIAL
   </div>
 
   <h1 style="margin:14px 0 10px;font-size:34px;">
-    You have been selected
+    Your Lagos 2027 event credential
   </h1>
 
   <p style="margin:0 0 18px;color:#c8c8c8;">
@@ -210,14 +213,14 @@ if (
   </p>
 
   <p style="margin:0;color:#a9a9a9;line-height:1.8;">
-    Congratulations. Following the REVELATIONX1 Lagos 2027
-    eligibility and football assessment process, you have
-    been selected for the final Men's Football Showcase.
+    Your Lagos 2027 place has been accepted and your
+    Selected Player Confirmation has been completed.
+    Your official REVELATIONX1 event credential is below.
   </p>
 
   <p style="margin:16px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
-    Your place has been awarded on football ability and
-    assessment. Places cannot be purchased.
+    Keep this credential secure and present it when reporting
+    for the Lagos 2027 Men's Football Showcase.
   </p>
 
   <div style="margin-top:28px;padding-top:24px;border-top:1px solid #303030;">
@@ -402,31 +405,27 @@ REVELATIONX1 Football Showcase · Lagos 2027
 </html>
 `;
 
-  const transporter =
-    getMailTransport();
+  const transporter = getMailTransport();
 
-  const info =
-    await transporter.sendMail({
-      from: `"${fromName}" <${fromEmail}>`,
+  const info = await transporter.sendMail({
+    from: `"${fromName}" <${fromEmail}>`,
 
-      to: application.email,
+    to: application.email,
 
-      subject:
-        `${application.registrationNumber} — Selected for REVELATIONX1 Lagos 2027`,
+    subject: `${application.registrationNumber} — Your REVELATIONX1 Lagos 2027 Event Credential`,
 
-      html,
+    html,
 
-      attachments: [
-        {
-          filename:
-            `${application.registrationNumber}-Event-Credential.png`,
+    attachments: [
+      {
+        filename: `${application.registrationNumber}-Event-Credential.png`,
 
-          content: qrBuffer,
+        content: qrBuffer,
 
-          cid: "revelationx1-showcase-selection-qr",
-        },
-      ],
-    });
+        cid: "revelationx1-showcase-selection-qr",
+      },
+    ],
+  });
 
   const sentAt = new Date();
 
@@ -437,8 +436,7 @@ REVELATIONX1 Football Showcase · Lagos 2027
 
     data: {
       selectionInvitationSentAt: sentAt,
-      selectionInvitationMessageId:
-        info.messageId || null,
+      selectionInvitationMessageId: info.messageId || null,
     },
   });
 

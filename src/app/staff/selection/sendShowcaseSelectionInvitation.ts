@@ -12,94 +12,103 @@ export async function sendShowcaseSelectionInvitation(
 ) {
   await requireStaffAdmin();
 
-  const application =
-    await prisma.showcaseApplication.findUnique({
-      where: {
-        id: applicationId,
+  const application = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+
+    select: {
+      id: true,
+      eventSlug: true,
+      status: true,
+      selectedAt: true,
+      selectionDecisionReleasedAt: true,
+      selectionResponse: true,
+
+      selectedPlayerConfirmation: {
+        select: {
+          confirmedAt: true,
+        },
       },
 
-      select: {
-        id: true,
-        eventSlug: true,
-        status: true,
-        selectedAt: true,
-        selectionDecisionReleasedAt: true,
-        registrationNumber: true,
-        checkInToken: true,
-        selectionInvitationSentAt: true,
-      },
-    });
+      registrationNumber: true,
+      checkInToken: true,
+      selectionInvitationSentAt: true,
+    },
+  });
 
   if (!application) {
-    throw new Error(
-      "Showcase application not found.",
-    );
+    throw new Error("Showcase application not found.");
   }
 
   const event = await prisma.event.findUnique({
-  where: {
-    slug: application.eventSlug,
-  },
+    where: {
+      slug: application.eventSlug,
+    },
 
-  select: {
-    selectionDecisionsReleasedAt: true,
-  },
-});
+    select: {
+      selectionDecisionsReleasedAt: true,
+    },
+  });
 
-if (!event) {
-  throw new Error(
-    "Showcase event not found.",
-  );
-}
+  if (!event) {
+    throw new Error("Showcase event not found.");
+  }
 
-if (
-  !event.selectionDecisionsReleasedAt ||
-  !application.selectionDecisionReleasedAt
-) {
-  throw new Error(
-    "Selection decisions must be formally released before a selection invitation can be sent.",
-  );
-}
+  if (
+    !event.selectionDecisionsReleasedAt ||
+    !application.selectionDecisionReleasedAt
+  ) {
+    throw new Error(
+      "Selection decisions must be formally released before an event credential can be issued.",
+    );
+  }
 
   if (application.status !== "SELECTED") {
-    throw new Error(
-      "Only selected players can receive a selection invitation.",
-    );
+    throw new Error("Only selected players can receive an event credential.");
   }
 
   if (!application.selectedAt) {
     throw new Error(
-      "Cannot send a selection invitation before the player has been selected.",
+      "Cannot issue an event credential before the player has been selected.",
+    );
+  }
+
+  if (application.selectionResponse !== "ACCEPTED") {
+    throw new Error(
+      "The player must accept their Lagos 2027 place before an event credential can be issued.",
+    );
+  }
+
+  if (!application.selectedPlayerConfirmation?.confirmedAt) {
+    throw new Error(
+      "The player must complete Selected Player Confirmation before an event credential can be issued.",
     );
   }
 
   if (!application.registrationNumber) {
     throw new Error(
-      "Cannot send a selection invitation without a registration number.",
+      "Cannot issue an event credential without a registration number.",
     );
   }
 
   if (!application.checkInToken) {
     throw new Error(
-      "Cannot send a selection invitation without an event credential.",
+      "Cannot issue an event credential without a check-in token.",
     );
   }
 
-  if (
-    application.selectionInvitationSentAt &&
-    !force
-  ) {
+  if (application.selectionInvitationSentAt && !force) {
     return {
       sent: false,
       alreadySent: true,
     };
   }
 
-  const result =
-    await sendSelectionInvitationEmail({
-      applicationId: application.id,
-      force,
-    });
+  const result = await sendSelectionInvitationEmail({
+    applicationId: application.id,
+    force,
+  });
 
   revalidatePath("/staff/selection");
 

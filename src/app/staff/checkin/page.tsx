@@ -5,10 +5,7 @@ import { requireStaffUser } from "@/lib/staff/auth";
 
 import CheckInScanner from "@/components/staff/CheckInScanner";
 
-import {
-  checkInPlayer,
-  checkInProfessional,
-} from "./actions";
+import { checkInPlayer, checkInProfessional } from "./actions";
 
 type CheckInPageProps = {
   searchParams: Promise<{
@@ -24,12 +21,11 @@ export default async function StaffCheckInPage({
   const params = await searchParams;
   const q = (params.q || "").trim();
 
-  const activeEvent =
-    await prisma.event.findFirst({
-      where: {
-        active: true,
-      },
-    });
+  const activeEvent = await prisma.event.findFirst({
+    where: {
+      active: true,
+    },
+  });
 
   if (!activeEvent) {
     return (
@@ -53,64 +49,85 @@ export default async function StaffCheckInPage({
     professionals,
   ] = await Promise.all([
     prisma.registration.count({
-  where: {
-    eventId: activeEvent.id,
-    archivedAt: null,
-    status: "PAID",
-
-    payments: {
-      some: {
+      where: {
+        eventId: activeEvent.id,
+        archivedAt: null,
         status: "PAID",
+
+        payments: {
+          some: {
+            status: "PAID",
+          },
+        },
       },
-    },
-  },
-}),
+    }),
 
-prisma.registration.count({
-  where: {
-    eventId: activeEvent.id,
-    archivedAt: null,
-    status: "PAID",
-
-    payments: {
-      some: {
+    prisma.registration.count({
+      where: {
+        eventId: activeEvent.id,
+        archivedAt: null,
         status: "PAID",
+
+        payments: {
+          some: {
+            status: "PAID",
+          },
+        },
+
+        checkedInAt: {
+          not: null,
+        },
       },
-    },
+    }),
 
-    checkedInAt: {
-      not: null,
-    },
-  },
-}),
+    prisma.showcaseApplication.count({
+      where: {
+        eventSlug: activeEvent.slug,
+        status: "SELECTED",
+        selectionDecisionReleasedAt: {
+          not: null,
+        },
+        selectionResponse: "ACCEPTED",
 
-prisma.showcaseApplication.count({
-  where: {
-    eventSlug: activeEvent.slug,
-    status: "SELECTED",
-  },
-}),
+        selectedPlayerConfirmation: {
+          is: {
+            confirmedAt: {
+              not: null,
+            },
+          },
+        },
+      },
+    }),
 
-prisma.showcaseApplication.count({
-  where: {
-    eventSlug: activeEvent.slug,
-    status: "SELECTED",
-    checkedInAt: {
-      not: null,
-    },
-  },
-}),
+    prisma.showcaseApplication.count({
+      where: {
+        eventSlug: activeEvent.slug,
+        status: "SELECTED",
+        selectionDecisionReleasedAt: {
+          not: null,
+        },
+        selectionResponse: "ACCEPTED",
+
+        selectedPlayerConfirmation: {
+          is: {
+            confirmedAt: {
+              not: null,
+            },
+          },
+        },
+
+        checkedInAt: {
+          not: null,
+        },
+      },
+    }),
 
     prisma.professionalRegistration.count({
       where: {
         eventId: activeEvent.id,
         archivedAt: null,
         status: {
-          in: [
-            "APPROVED",
-            "ACCREDITED",
-            "CHECKED_IN",
-          ],
+          in: ["APPROVED", "ACCREDITED", "CHECKED_IN"],
         },
       },
     }),
@@ -125,60 +142,72 @@ prisma.showcaseApplication.count({
       },
     }),
 
-prisma.showcaseApplication.findMany({
-  where: {
-    eventSlug: activeEvent.slug,
-    status: "SELECTED",
+    prisma.showcaseApplication.findMany({
+      where: {
+        eventSlug: activeEvent.slug,
+        status: "SELECTED",
+        selectionDecisionReleasedAt: {
+          not: null,
+        },
+        selectionResponse: "ACCEPTED",
 
-    ...(q
-      ? {
-          OR: [
-            {
-              firstName: {
-                contains: q,
-                mode: "insensitive",
-              },
+        selectedPlayerConfirmation: {
+          is: {
+            confirmedAt: {
+              not: null,
             },
-            {
-              lastName: {
-                contains: q,
-                mode: "insensitive",
-              },
-            },
-            {
-              registrationNumber: {
-                contains: q,
-                mode: "insensitive",
-              },
-            },
-            {
-              assessmentCode: {
-                contains: q,
-                mode: "insensitive",
-              },
-            },
-            {
-              email: {
-                contains: q,
-                mode: "insensitive",
-              },
-            },
-          ],
-        }
-      : {}),
-  },
+          },
+        },
 
-  orderBy: [
-    {
-      checkedInAt: "desc",
-    },
-    {
-      firstName: "asc",
-    },
-  ],
+        ...(q
+          ? {
+              OR: [
+                {
+                  firstName: {
+                    contains: q,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  lastName: {
+                    contains: q,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  registrationNumber: {
+                    contains: q,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  assessmentCode: {
+                    contains: q,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  email: {
+                    contains: q,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
 
-  take: q ? 50 : 0,
-}),
+      orderBy: [
+        {
+          checkedInAt: "desc",
+        },
+        {
+          firstName: "asc",
+        },
+      ],
+
+      take: q ? 50 : 0,
+    }),
 
     prisma.registration.findMany({
       where: {
@@ -186,11 +215,11 @@ prisma.showcaseApplication.findMany({
         archivedAt: null,
         status: "PAID",
 
-          payments: {
-            some: {
-              status: "PAID",
-      },
-    },
+        payments: {
+          some: {
+            status: "PAID",
+          },
+        },
 
         ...(q
           ? {
@@ -242,11 +271,7 @@ prisma.showcaseApplication.findMany({
         archivedAt: null,
 
         status: {
-          in: [
-            "APPROVED",
-            "ACCREDITED",
-            "CHECKED_IN",
-          ],
+          in: ["APPROVED", "ACCREDITED", "CHECKED_IN"],
         },
 
         ...(q
@@ -303,34 +328,22 @@ prisma.showcaseApplication.findMany({
             Event Operations
           </div>
 
-          <h1 className="mt-3 text-4xl font-black">
-            Event Check-In
-          </h1>
+          <h1 className="mt-3 text-4xl font-black">Event Check-In</h1>
 
           <p className="mt-3 text-white/50">
-            {activeEvent.edition} · Search, verify,
-            check in and issue event credentials.
+            {activeEvent.edition} · Search, verify, check in and issue event
+            credentials.
           </p>
         </div>
 
         {/* COUNTERS */}
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-6">
-          <Metric
-            label="Players"
-            value={totalPlayers}
-          />
+          <Metric label="Players" value={totalPlayers} />
 
-          <Metric
-            label="Players Checked In"
-            value={checkedInPlayers}
-            accent
-          />
+          <Metric label="Players Checked In" value={checkedInPlayers} accent />
 
-          <Metric
-            label="Showcase Selected"
-            value={totalShowcasePlayers}
-          />
+          <Metric label="Showcase Selected" value={totalShowcasePlayers} />
 
           <Metric
             label="Showcase Checked In"
@@ -338,10 +351,7 @@ prisma.showcaseApplication.findMany({
             accent
           />
 
-          <Metric
-            label="Professionals"
-            value={totalProfessionals}
-          />
+          <Metric label="Professionals" value={totalProfessionals} />
 
           <Metric
             label="Professionals Checked In"
@@ -353,7 +363,7 @@ prisma.showcaseApplication.findMany({
         {/* QR SCANNER */}
 
         <div className="mt-8">
-           <CheckInScanner />
+          <CheckInScanner />
         </div>
 
         {/* SEARCH */}
@@ -386,21 +396,13 @@ prisma.showcaseApplication.findMany({
 
         {/* PLAYERS */}
 
-        <CheckInSection
-          title="Players"
-          count={players.length}
-        >
+        <CheckInSection title="Players" count={players.length}>
           {players.map((player) => (
             <CheckInRow
               key={player.id}
-              name={`${player.firstName || ""} ${
-                player.lastName || ""
-              }`.trim()}
+              name={`${player.firstName || ""} ${player.lastName || ""}`.trim()}
               type="Player"
-              credential={
-                player.registrationNumber ||
-                "Registration pending"
-              }
+              credential={player.registrationNumber || "Registration pending"}
               checkedInAt={player.checkedInAt}
               viewHref={`/staff/registrations/${player.id}`}
               badgeHref={
@@ -426,7 +428,7 @@ prisma.showcaseApplication.findMany({
         {/* SHOWCASE SELECTED PLAYERS */}
 
         <CheckInSection
-          title="Lagos 2027 Selected Players"
+          title="Lagos 2027 Credential-Ready Players"
           count={showcasePlayers.length}
         >
           {showcasePlayers.map((player) => {
@@ -449,12 +451,11 @@ prisma.showcaseApplication.findMany({
                 viewHref={checkInHref}
                 badgeHref={
                   player.checkedInAt && player.checkInToken
-                  ? `/showcase-checkin/${player.checkInToken}/badge`
-                  : null
+                    ? `/showcase-checkin/${player.checkInToken}/badge`
+                    : null
                 }
                 checkInForm={
-                  !player.checkedInAt &&
-                  player.checkInToken ? (
+                  !player.checkedInAt && player.checkInToken ? (
                     <Link
                       href={`/showcase-checkin/${player.checkInToken}`}
                       className="rounded-full bg-[#c7ff2f] px-4 py-2 text-xs font-black uppercase tracking-[0.06em] text-black"
@@ -470,49 +471,35 @@ prisma.showcaseApplication.findMany({
 
         {/* PROFESSIONALS */}
 
-        <CheckInSection
-          title="Professionals"
-          count={professionals.length}
-        >
-          {professionals.map(
-            (professional) => (
-              <CheckInRow
-                key={professional.id}
-                name={professional.fullName}
-                type={formatRole(
-                  professional.role,
-                )}
-                credential={
-                  professional.accreditationNumber ||
-                  "Accreditation pending"
-                }
-                checkedInAt={
-                  professional.checkedInAt
-                }
-                viewHref={`/staff/professionals?registration=${professional.id}`}
-                badgeHref={
-                  professional.checkInToken
-                    ? `/professional-checkin/${professional.checkInToken}/badge`
-                    : null
-                }
-                checkInForm={
-                  <form
-                    action={
-                      checkInProfessional
-                    }
-                  >
-                    <input
-                      type="hidden"
-                      name="registrationId"
-                      value={professional.id}
-                    />
+        <CheckInSection title="Professionals" count={professionals.length}>
+          {professionals.map((professional) => (
+            <CheckInRow
+              key={professional.id}
+              name={professional.fullName}
+              type={formatRole(professional.role)}
+              credential={
+                professional.accreditationNumber || "Accreditation pending"
+              }
+              checkedInAt={professional.checkedInAt}
+              viewHref={`/staff/professionals?registration=${professional.id}`}
+              badgeHref={
+                professional.checkInToken
+                  ? `/professional-checkin/${professional.checkInToken}/badge`
+                  : null
+              }
+              checkInForm={
+                <form action={checkInProfessional}>
+                  <input
+                    type="hidden"
+                    name="registrationId"
+                    value={professional.id}
+                  />
 
-                    <CheckInButton />
-                  </form>
-                }
-              />
-            ),
-          )}
+                  <CheckInButton />
+                </form>
+              }
+            />
+          ))}
         </CheckInSection>
       </section>
     </main>
@@ -531,13 +518,9 @@ function CheckInSection({
   return (
     <section className="mt-8 overflow-hidden rounded-2xl border border-white/10">
       <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-6 py-5">
-        <h2 className="text-xl font-black">
-          {title}
-        </h2>
+        <h2 className="text-xl font-black">{title}</h2>
 
-        <div className="text-sm text-white/40">
-          {count} shown
-        </div>
+        <div className="text-sm text-white/40">{count} shown</div>
       </div>
 
       <div>{children}</div>
@@ -565,9 +548,7 @@ function CheckInRow({
   return (
     <div className="grid gap-5 border-b border-white/5 px-6 py-5 last:border-b-0 lg:grid-cols-[1.3fr_0.8fr_1fr_0.8fr_auto] lg:items-center">
       <div>
-        <div className="font-black">
-          {name || "Unnamed attendee"}
-        </div>
+        <div className="font-black">{name || "Unnamed attendee"}</div>
       </div>
 
       <div>
@@ -584,13 +565,9 @@ function CheckInRow({
         <Label>Status</Label>
 
         {checkedInAt ? (
-          <div className="mt-1 font-black text-[#c7ff2f]">
-            Checked In
-          </div>
+          <div className="mt-1 font-black text-[#c7ff2f]">Checked In</div>
         ) : (
-          <div className="mt-1 font-bold text-white/45">
-            Not Checked In
-          </div>
+          <div className="mt-1 font-bold text-white/45">Not Checked In</div>
         )}
       </div>
 
@@ -645,11 +622,7 @@ function Metric({
       </div>
 
       <div
-        className={`mt-3 text-4xl font-black ${
-          accent
-            ? "text-[#c7ff2f]"
-            : ""
-        }`}
+        className={`mt-3 text-4xl font-black ${accent ? "text-[#c7ff2f]" : ""}`}
       >
         {value}
       </div>
@@ -657,11 +630,7 @@ function Metric({
   );
 }
 
-function Label({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function Label({ children }: { children: React.ReactNode }) {
   return (
     <div className="text-xs uppercase tracking-[0.08em] text-white/30">
       {children}
@@ -669,23 +638,13 @@ function Label({
   );
 }
 
-function Value({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mt-1 text-sm text-white/70">
-      {children}
-    </div>
-  );
+function Value({ children }: { children: React.ReactNode }) {
+  return <div className="mt-1 text-sm text-white/70">{children}</div>;
 }
 
 function formatRole(value: string) {
   return value
     .toLowerCase()
     .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase(),
-    );
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
