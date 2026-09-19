@@ -104,7 +104,7 @@ export default async function AssessmentFeePage({
 
             <div>
               <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
+                REVELATIONX1
               </span>
 
               <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
@@ -135,7 +135,7 @@ export default async function AssessmentFeePage({
           Subject to identity, age and eligibility
   verification, your application and submitted
   football evidence will be professionally
-  assessed as part of the ASCEND Lagos 2027
+  assessed as part of the REVELATIONX1 Lagos 2027
   player-selection process.
         </p>
 
@@ -193,7 +193,7 @@ export default async function AssessmentFeePage({
 
           <p className="mt-3 text-sm leading-7 text-white/60">
             Players selected for the final camp
-            will receive the ASCEND funded camp
+            will receive the REVELATIONX1-funded camp
             package, including kit, hydration,
             medical support, insurance, full
             board and local transport between
@@ -204,7 +204,7 @@ export default async function AssessmentFeePage({
           <p className="mt-3 text-sm leading-7 text-white/45">
             Selected players remain responsible
             for their own travel to and from the
-            camp location unless ASCEND confirms
+            camp location unless REVELATIONX1 confirms
             otherwise.
           </p>
         </div>

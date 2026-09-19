@@ -187,7 +187,7 @@ export default async function ShowcasePaymentPage({
 
             <div>
               <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
+                REVELATIONX1
               </span>
 
               <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
@@ -270,7 +270,7 @@ export default async function ShowcasePaymentPage({
                 <p className="mt-3 max-w-xl text-sm leading-7 text-white/50">
                   You will be redirected to
                   Paystack to complete your
-                  payment. ASCEND does not
+                  payment. REVELATIONX1 does not
                   receive or store your card
                   details.
                 </p>
