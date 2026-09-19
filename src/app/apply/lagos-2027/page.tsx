@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -23,8 +24,10 @@ export default async function Lagos2027ApplicationPage() {
   return (
     <main className="min-h-screen bg-[#030817] px-6 py-12 text-white">
       <div className="mx-auto max-w-5xl">
-        <p className="text-sm font-black uppercase tracking-[0.28em] text-emerald-300">
-          REVELATIONX1 · Lagos 2027
+        <RevelationX1Logo />
+
+        <p className="mt-8 text-sm font-black uppercase tracking-[0.28em] text-emerald-300">
+          Lagos 2027
         </p>
 
         <h1 className="mt-4 max-w-4xl text-5xl font-black tracking-tight md:text-6xl">
