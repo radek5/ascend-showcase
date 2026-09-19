@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
 import { staffLogout } from "../actions/logout";
@@ -7,8 +8,7 @@ import { staffLogout } from "../actions/logout";
 export default async function StaffDashboardPage() {
   const staffUser = await requireStaffUser();
 
-  const selectorAccess =
-  await prisma.selectorAccount.findUnique({
+  const selectorAccess = await prisma.selectorAccount.findUnique({
     where: {
       staffUserId: staffUser.id,
     },
@@ -60,53 +60,24 @@ export default async function StaffDashboardPage() {
     }),
   ]);
 
-  const totalPeople =
-    playerCount + professionalCount;
+  const totalPeople = playerCount + professionalCount;
 
-  const totalCheckedIn =
-    playerCheckedInCount +
-    professionalCheckedInCount;
+  const totalCheckedIn = playerCheckedInCount + professionalCheckedInCount;
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10 bg-[#0b0b0b]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link
+          <RevelationX1Logo
             href="/staff/dashboard"
-            className="flex items-center gap-4"
-          >
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M27 3 49 46 27 35 5 46 27 3Z"
-                fill="#1685ff"
-              />
-              <path
-                d="M27 15 38 37 27 31 16 37 27 15Z"
-                fill="#020812"
-              />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.32em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.22em] text-white/40">
-                Back Office
-              </span>
-            </div>
-          </Link>
-
+            variant="lockup"
+            size="md"
+            theme="dark"
+            descriptor="Back Office"
+          />
           <div className="flex items-center gap-5">
             <div className="hidden text-right sm:block">
-              <div className="text-sm font-bold">
-                {staffUser.name}
-              </div>
+              <div className="text-sm font-bold">{staffUser.name}</div>
 
               <div className="text-xs uppercase tracking-[0.1em] text-white/35">
                 {staffUser.role}
@@ -130,13 +101,11 @@ export default async function StaffDashboardPage() {
           Lagos 2027
         </div>
 
-        <h1 className="mt-3 text-4xl font-black sm:text-5xl">
-          Back Office
-        </h1>
+        <h1 className="mt-3 text-4xl font-black sm:text-5xl">Back Office</h1>
 
         <p className="mt-4 max-w-2xl text-white/50">
-          Manage people, accreditation and event operations for the
-          ASCEND Football Showcase.
+          Manage people, accreditation and event operations for the REVELATIONX1
+          Football Showcase.
         </p>
 
         {/* EVENT SNAPSHOT */}
@@ -183,21 +152,15 @@ export default async function StaffDashboardPage() {
             </h2>
 
             <p className="mt-4 max-w-xl leading-7 text-white/50">
-              Manage everyone attending Lagos 2027 — player
-              registrations, club representatives, scouts, football
-              agents, accreditation and check-in.
+              Manage everyone attending Lagos 2027 — player registrations, club
+              representatives, scouts, football agents, accreditation and
+              check-in.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
-              <MiniStat
-                label="Players"
-                value={playerCount}
-              />
+              <MiniStat label="Players" value={playerCount} />
 
-              <MiniStat
-                label="Professionals"
-                value={professionalCount}
-              />
+              <MiniStat label="Professionals" value={professionalCount} />
             </div>
 
             <div className="mt-8 text-sm font-black uppercase tracking-[0.08em] text-[#c7ff2f]">
@@ -213,26 +176,17 @@ export default async function StaffDashboardPage() {
               Workspace 02
             </div>
 
-            <h2 className="mt-4 text-3xl font-black">
-              Event Operations
-            </h2>
+            <h2 className="mt-4 text-3xl font-black">Event Operations</h2>
 
             <p className="mt-4 max-w-xl leading-7 text-white/50">
-              Run the event — payments, airport transfers,
-              accommodation, check-in operations, staff, reporting and
-              event logistics.
+              Run the event — payments, airport transfers, accommodation,
+              check-in operations, staff, reporting and event logistics.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
-              <MiniStat
-                label="Airport Transfers"
-                value={transferCount}
-              />
+              <MiniStat label="Airport Transfers" value={transferCount} />
 
-              <MiniStat
-                label="Checked In"
-                value={totalCheckedIn}
-              />
+              <MiniStat label="Checked In" value={totalCheckedIn} />
             </div>
 
             <div className="mt-8 text-sm font-black uppercase tracking-[0.08em] text-[#1685ff]">
@@ -249,76 +203,42 @@ export default async function StaffDashboardPage() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <QuickLink
-              href="/staff/registrations"
-              label="Players"
-            />
+            <QuickLink href="/staff/registrations" label="Players" />
 
-            <QuickLink
-              href="/staff/professionals"
-              label="Professionals"
-            />
-         
-            <QuickLink
-              href="/staff/mailing-list"
-              label="Contact Network"
-            />
+            <QuickLink href="/staff/professionals" label="Professionals" />
 
-            <QuickLink
-              href="/staff/payments"
-              label="Payments"
-            />
+            <QuickLink href="/staff/mailing-list" label="Contact Network" />
 
-            <QuickLink
-              href="/staff/finance"
-              label="Finance"
-            />
+            <QuickLink href="/staff/payments" label="Payments" />
 
-            <QuickLink
-              href="/staff/commercial"
-              label="Sponsors & Partners"
-            />
+            <QuickLink href="/staff/finance" label="Finance" />
 
-            <QuickLink
-              href="/staff/checkin"
-              label="Check-In"
-            />
+            <QuickLink href="/staff/commercial" label="Sponsors & Partners" />
 
-            <QuickLink
-              href="/staff/selection"
-              label="Selection Control"
-            />
+            <QuickLink href="/staff/checkin" label="Check-In" />
 
-            <QuickLink
-              href="/staff/scout-requests"
-              label="Scout Requests"
-            />
+            <QuickLink href="/staff/selection" label="Selection Control" />
 
-{selectorAccess?.active ? (
-  <Link
-    href="/selectors/enter"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="rounded-full border border-[#c7ff2f]/30 bg-[#c7ff2f]/[0.05] px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f] transition hover:bg-[#c7ff2f]/10"
-  >
-    Selector Portal ↗
-  </Link>
-) : null}
+            <QuickLink href="/staff/scout-requests" label="Scout Requests" />
+
+            {selectorAccess?.active ? (
+              <Link
+                href="/selectors/enter"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-[#c7ff2f]/30 bg-[#c7ff2f]/[0.05] px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f] transition hover:bg-[#c7ff2f]/10"
+              >
+                Selector Portal ↗
+              </Link>
+            ) : null}
 
             {staffUser.role === "ADMIN" && (
-  <>
-    <QuickLink
-      href="/staff/events"
-      label="Events"
-    />
+              <>
+                <QuickLink href="/staff/events" label="Events" />
 
-    <QuickLink
-      href="/staff/users"
-      label="Staff"
-    />
-  </>
-)}
-
+                <QuickLink href="/staff/users" label="Staff" />
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -345,20 +265,12 @@ function MetricCard({
         {value.toLocaleString("en-GB")}
       </div>
 
-      <div className="mt-2 text-sm text-white/45">
-        {description}
-      </div>
+      <div className="mt-2 text-sm text-white/45">{description}</div>
     </div>
   );
 }
 
-function MiniStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function MiniStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-4">
       <div className="text-xs uppercase tracking-[0.1em] text-white/35">
@@ -372,13 +284,7 @@ function MiniStat({
   );
 }
 
-function QuickLink({
-  href,
-  label,
-}: {
-  href: string;
-  label: string;
-}) {
+function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}

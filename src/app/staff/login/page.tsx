@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+
 import { staffLogin } from "./actions";
 
 type StaffLoginPageProps = {
@@ -17,36 +19,13 @@ export default async function StaffLoginPage({
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
-          <Link
+          <RevelationX1Logo
             href="/"
-            className="flex items-center gap-4"
-          >
-            <svg
-              viewBox="0 0 54 54"
-              className="h-10 w-10"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M27 3 49 46 27 35 5 46 27 3Z"
-                fill="#1685ff"
-              />
-              <path
-                d="M27 15 38 37 27 31 16 37 27 15Z"
-                fill="#020812"
-              />
-            </svg>
-
-            <div>
-              <span className="block text-lg font-semibold tracking-[0.36em]">
-                ASCEND
-              </span>
-
-              <span className="block text-[10px] uppercase tracking-[0.28em] text-white/45">
-                Football Showcase
-              </span>
-            </div>
-          </Link>
+            variant="lockup"
+            size="md"
+            theme="dark"
+            descriptor="Back Office"
+          />
 
           <Link
             href="/"
@@ -60,15 +39,13 @@ export default async function StaffLoginPage({
       <section className="mx-auto flex min-h-[calc(100vh-82px)] max-w-7xl items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-            ASCEND Back Office
+            REVELATIONX1 Back Office
           </div>
 
-          <h1 className="mt-3 text-4xl font-black">
-            Staff Login
-          </h1>
+          <h1 className="mt-3 text-4xl font-black">Staff Login</h1>
 
           <p className="mt-3 text-sm leading-6 text-white/50">
-            Authorised ASCEND staff only. Sign in to manage Showcase
+            Authorised REVELATIONX1 staff only. Sign in to manage Showcase
             registrations and operations.
           </p>
 
@@ -83,9 +60,7 @@ export default async function StaffLoginPage({
             )}
 
             <label className="block">
-              <span className="text-sm font-bold">
-                Email address
-              </span>
+              <span className="text-sm font-bold">Email address</span>
 
               <input
                 name="email"
@@ -97,9 +72,7 @@ export default async function StaffLoginPage({
             </label>
 
             <label className="mt-5 block">
-              <span className="text-sm font-bold">
-                Password
-              </span>
+              <span className="text-sm font-bold">Password</span>
 
               <input
                 name="password"
@@ -119,7 +92,7 @@ export default async function StaffLoginPage({
           </form>
 
           <p className="mt-5 text-center text-xs leading-5 text-white/30">
-            Access is restricted to authorised ASCEND personnel.
+            Access is restricted to authorised REVELATIONX1 personnel.
           </p>
         </div>
       </section>
