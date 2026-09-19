@@ -123,7 +123,7 @@ export default async function RegistrationDetailPage({
               </div>
 
               <div className="mt-2 font-black">
-                Interested in ASCEND
+                Interested in REVELATIONX1
               </div>
             </div>
           )}
@@ -272,10 +272,10 @@ export default async function RegistrationDetailPage({
               {registration.representationStatus ===
                 "UNREPRESENTED_OPEN" && (
                 <Info
-                  label="ASCEND representation interest"
+                  label="REVELATIONX1 representation interest"
                   value={
                     representationInterest === true
-                      ? "Interested in being contacted by ASCEND"
+                      ? "Interested in being contacted by REVELATIONX1"
                       : representationInterest ===
                           false
                         ? "Not interested at this time"
@@ -332,7 +332,7 @@ export default async function RegistrationDetailPage({
                   />
 
                   <Info
-                    label="ASCEND contact authorised"
+                    label="REVELATIONX1 contact authorised"
                     value={
                       registration
                         .representationDeclaration

@@ -16,7 +16,7 @@ export default async function CommercialPage() {
     return (
       <main className="min-h-screen bg-[#090909] text-white">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-          No active ASCEND event is configured.
+          No active REVELATIONX1 event is configured.
         </div>
       </main>
     );

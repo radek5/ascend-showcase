@@ -268,7 +268,7 @@ export default async function MailingListPage({
             </Link>
 
             <div className="mt-6 text-xs font-black uppercase tracking-[0.22em] text-[#1685ff]">
-              ASCEND Network
+              REVELATIONX1 Network
             </div>
 
             <h1 className="mt-3 text-4xl font-black">
@@ -277,7 +277,7 @@ export default async function MailingListPage({
 
             <p className="mt-3 max-w-2xl text-white/50">
               Players, parents, guardians and football
-              professionals who have opted in to future ASCEND
+              professionals who have opted in to future REVELATIONX1
               communications.
             </p>
           </div>
@@ -552,7 +552,7 @@ export default async function MailingListPage({
 
           <p className="mt-2 max-w-4xl text-sm leading-6 text-white/50">
             This network contains only registrations where future
-            ASCEND communications were explicitly selected. For
+            REVELATIONX1 communications were explicitly selected. For
             players under 18 at the event, the parent or guardian
             contact is used instead of marketing directly to the
             player.

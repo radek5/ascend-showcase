@@ -18,7 +18,7 @@ export default async function NewFinanceExpensePage() {
     return (
       <main className="min-h-screen bg-[#090909] text-white">
         <div className="mx-auto max-w-5xl px-6 py-12 lg:px-8">
-          No active ASCEND event is configured.
+          No active REVELATIONX1 event is configured.
         </div>
       </main>
     );
@@ -191,7 +191,7 @@ export default async function NewFinanceExpensePage() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-white/45">
-              Enter normal currency amounts. ASCEND stores them internally in
+              Enter normal currency amounts. REVELATIONX1 stores them internally in
               minor currency units.
             </p>
 

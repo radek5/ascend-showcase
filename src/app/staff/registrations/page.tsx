@@ -176,7 +176,7 @@ export default async function RegistrationsPage({
             </h1>
 
             <p className="mt-3 text-white/50">
-              Search, filter and manage ASCEND Football Showcase players.
+              Search, filter and manage REVELATIONX1 Football Showcase players.
             </p>
           </div>
 
@@ -276,7 +276,7 @@ export default async function RegistrationsPage({
                 <th className="px-5 py-4">Registration</th>
                 <th className="px-5 py-4">Position</th>
                 <th className="px-5 py-4">Representation</th>
-                <th className="px-5 py-4">ASCEND Interest</th>
+                <th className="px-5 py-4">REVELATIONX1 Interest</th>
                 <th className="px-5 py-4">Payment</th>
                 <th className="px-5 py-4">Video</th>
                 <th className="px-5 py-4">Check-in</th>

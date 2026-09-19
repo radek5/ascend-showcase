@@ -68,7 +68,7 @@ export default async function OperationsPage() {
         </h1>
 
         <p className="mt-4 max-w-2xl text-white/50">
-          Manage the operational delivery of ASCEND Lagos 2027.
+          Manage the operational delivery of REVELATIONX1 Lagos 2027.
         </p>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-3">
@@ -122,7 +122,7 @@ export default async function OperationsPage() {
           {staffUser.role === "ADMIN" && (
             <OperationCard
               title="Staff Management"
-              text="Manage authorised ASCEND event staff."
+              text="Manage authorised REVELATIONX1 event staff."
               href="/staff/users"
             />
           )}

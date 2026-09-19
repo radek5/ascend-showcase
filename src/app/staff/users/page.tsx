@@ -31,7 +31,7 @@ export default async function StaffUsersPage() {
             </h1>
 
             <p className="mt-3 text-white/50">
-              Create and manage authorised ASCEND Back Office users.
+              Create and manage authorised REVELATIONX1 Back Office users.
             </p>
           </div>
 

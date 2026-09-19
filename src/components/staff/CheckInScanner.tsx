@@ -170,11 +170,11 @@ export default function CheckInScanner() {
       }
 
       throw new Error(
-        "This QR code is not an ASCEND event credential.",
+        "This QR code is not a REVELATIONX1 event credential.",
       );
     } catch {
       setError(
-        "This QR code is not a valid ASCEND event credential.",
+        "This QR code is not a valid REVELATIONX1 event credential.",
       );
     }
   }

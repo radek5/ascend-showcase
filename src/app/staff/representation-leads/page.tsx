@@ -143,7 +143,7 @@ export default async function RepresentationLeadsPage({
             </h1>
 
             <p className="mt-3 max-w-2xl text-white/50">
-              Players who have asked ASCEND to
+              Players who have asked REVELATIONX1 to
               contact them about football
               representation.
             </p>

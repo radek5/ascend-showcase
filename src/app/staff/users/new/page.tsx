@@ -26,7 +26,7 @@ export default async function NewStaffUserPage() {
           </h1>
 
           <p className="mt-3 text-white/50">
-            Create an authorised ASCEND Back Office account.
+            Create an authorised REVELATIONX1 Back Office account.
           </p>
         </div>
 

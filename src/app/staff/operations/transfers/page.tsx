@@ -222,7 +222,7 @@ export default async function AirportTransfersPage({
 
             <p className="mt-3 max-w-2xl text-white/50">
               Arrival and departure transport manifest
-              for ASCEND Lagos 2027.
+              for REVELATIONX1 Lagos 2027.
             </p>
           </div>
 

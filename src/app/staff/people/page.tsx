@@ -58,7 +58,7 @@ export default async function PeoplePage() {
         </h1>
 
         <p className="mt-4 max-w-2xl text-white/50">
-          Manage the people attending the ASCEND Football Showcase.
+          Manage the people attending the REVELATIONX1 Football Showcase.
         </p>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
