@@ -447,6 +447,10 @@ model ShowcaseApplication {
   email     String
   phone     String?
 
+  addressLine1 String?
+  addressLine2 String?
+  postalCode   String?
+
   guardianName         String?
   guardianRelationship String?
   guardianEmail        String?

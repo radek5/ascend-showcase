@@ -18,6 +18,18 @@ const positions = [
   "Striker",
 ];
 
+const steps = [
+  "Player",
+  "Contact",
+  "Identity",
+  "Club & Academy",
+  "Representation",
+  "Video",
+  "Consent",
+  "Review",
+  "Confirmation",
+];
+
 type PlayerSex = "" | "MALE" | "FEMALE";
 
 type Application = {
@@ -34,9 +46,12 @@ type Application = {
   sex: PlayerSex;
 
   nationality: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
   countryOfResidence: string | null;
   stateRegion: string | null;
   city: string | null;
+  postalCode: string | null;
 
   position: string | null;
   secondaryPosition: string | null;
@@ -123,6 +138,37 @@ export default function PlayerEditForm({
         </div>
       </header>
 
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
+          <div className="flex min-w-[1050px]">
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-3"
+              >
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 0
+                      ? "bg-[#c7ff2f] text-black"
+                      : "border border-white/15 text-white/40"
+                  }`}
+                >
+                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
+                </div>
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
+                    index === 0 ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-5xl px-6 py-14 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
           {fromContact ? "Step 1 of 8" : "Application Review"}
@@ -202,23 +248,61 @@ export default function PlayerEditForm({
             required
           />
 
+          <div className="sm:col-span-2 border-t border-white/10 pt-8">
+            <div className="text-lg font-black">Residential Address</div>
+
+            <p className="mt-2 text-sm text-white/45">
+              Provide the player&apos;s current residential address.
+            </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <Field
+              label="Address line 1"
+              name="addressLine1"
+              defaultValue={application.addressLine1 ?? ""}
+              required
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <Field
+              label="Address line 2"
+              name="addressLine2"
+              defaultValue={application.addressLine2 ?? ""}
+            />
+          </div>
+
           <Field
-            label="Country of residence"
-            name="countryOfResidence"
-            defaultValue={application.countryOfResidence ?? ""}
+            label="City / Town"
+            name="city"
+            defaultValue={application.city ?? ""}
+            required
           />
 
           <Field
             label="State / Region"
             name="stateRegion"
             defaultValue={application.stateRegion ?? ""}
+            required
           />
 
-          <Field
-            label="City"
-            name="city"
-            defaultValue={application.city ?? ""}
-          />
+          <div>
+            <Field
+              label="Country of residence"
+              name="countryOfResidence"
+              defaultValue={application.countryOfResidence ?? ""}
+              required
+            />
+          </div>
+
+          <div className="sm:col-span-2 border-t border-white/10 pt-8">
+            <div className="text-lg font-black">Football Information</div>
+
+            <p className="mt-2 text-sm text-white/45">
+              Tell us about the player&apos;s football profile and experience.
+            </p>
+          </div>
 
           <label className="space-y-2">
             <span className="text-sm font-semibold">Primary position</span>

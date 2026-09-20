@@ -56,9 +56,6 @@ export async function PUT(
 
     const phone = String(body.phone || "").trim();
 
-    const stateRegion = String(body.stateRegion || "").trim();
-    const city = String(body.city || "").trim();
-
     const emergencyContactName = String(body.emergencyContactName || "").trim();
 
     const emergencyContactRelationship = String(
@@ -73,15 +70,6 @@ export async function PUT(
       return NextResponse.json(
         {
           error: "Email and phone / WhatsApp are required.",
-        },
-        { status: 400 },
-      );
-    }
-
-    if (!stateRegion || !city) {
-      return NextResponse.json(
-        {
-          error: "State / Region and City are required.",
         },
         { status: 400 },
       );
@@ -106,9 +94,6 @@ export async function PUT(
       data: {
         email,
         phone,
-
-        stateRegion,
-        city,
 
         emergencyContactName,
         emergencyContactRelationship,

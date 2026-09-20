@@ -19,6 +19,7 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
       email: true,
       phone: true,
 
+      addressLine1: true,
       stateRegion: true,
       city: true,
 
@@ -106,6 +107,18 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
     missingPlayerFields.push("countryOfResidence");
   }
 
+  if (!application.addressLine1) {
+    missingPlayerFields.push("addressLine1");
+  }
+
+  if (!application.stateRegion) {
+    missingPlayerFields.push("stateRegion");
+  }
+
+  if (!application.city) {
+    missingPlayerFields.push("city");
+  }
+
   if (!application.position) {
     missingPlayerFields.push("position");
   }
@@ -128,14 +141,6 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
 
   if (!application.phone) {
     missingContactFields.push("phone");
-  }
-
-  if (!application.stateRegion) {
-    missingContactFields.push("stateRegion");
-  }
-
-  if (!application.city) {
-    missingContactFields.push("city");
   }
 
   if (!application.emergencyContactName) {

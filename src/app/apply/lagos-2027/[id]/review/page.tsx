@@ -146,18 +146,6 @@ export default async function ReviewPage({ params }: PageProps) {
               />
 
               <Item
-                label="Country of residence"
-                value={application.countryOfResidence || "Not provided"}
-              />
-
-              <Item
-                label="State / Region"
-                value={application.stateRegion || "Not provided"}
-              />
-
-              <Item label="City" value={application.city || "Not provided"} />
-
-              <Item
                 label="Primary position"
                 value={application.position || "Not provided"}
               />
@@ -198,6 +186,36 @@ export default async function ReviewPage({ params }: PageProps) {
               <Item
                 label="Phone / WhatsApp"
                 value={application.phone || "Not provided"}
+              />
+
+              <Item
+                label="Address line 1"
+                value={application.addressLine1 || "Not provided"}
+              />
+
+              <Item
+                label="Address line 2"
+                value={application.addressLine2 || "Not provided"}
+              />
+
+              <Item
+                label="City / Town"
+                value={application.city || "Not provided"}
+              />
+
+              <Item
+                label="State / Region"
+                value={application.stateRegion || "Not provided"}
+              />
+
+              <Item
+                label="Country of residence"
+                value={application.countryOfResidence || "Not provided"}
+              />
+
+              <Item
+                label="Postcode / ZIP"
+                value={application.postalCode || "Not provided"}
               />
 
               <Item

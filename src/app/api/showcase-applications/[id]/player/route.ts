@@ -51,9 +51,12 @@ export async function PUT(req: Request, context: RouteContext) {
       dateOfBirth,
       sex,
       nationality,
+      addressLine1,
+      addressLine2,
       countryOfResidence,
       stateRegion,
       city,
+      postalCode,
       position,
       secondaryPosition,
       preferredFoot,
@@ -84,6 +87,21 @@ export async function PUT(req: Request, context: RouteContext) {
       return NextResponse.json(
         {
           error: "Email is required.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (
+      !addressLine1?.trim() ||
+      !city?.trim() ||
+      !stateRegion?.trim() ||
+      !countryOfResidence?.trim()
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Residential address, City / Town, State / Region and Country of residence are required.",
         },
         { status: 400 },
       );
@@ -282,11 +300,17 @@ export async function PUT(req: Request, context: RouteContext) {
 
         nationality: nationality?.trim() || null,
 
-        countryOfResidence: countryOfResidence?.trim() || null,
+        addressLine1: addressLine1.trim(),
 
-        stateRegion: stateRegion?.trim() || null,
+        addressLine2: addressLine2?.trim() || null,
 
-        city: city?.trim() || null,
+        countryOfResidence: countryOfResidence.trim(),
+
+        stateRegion: stateRegion.trim(),
+
+        city: city.trim(),
+
+        postalCode: postalCode?.trim() || null,
 
         position: position.trim(),
 

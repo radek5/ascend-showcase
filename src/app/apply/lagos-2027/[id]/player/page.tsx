@@ -39,9 +39,12 @@ export default async function PlayerEditPage({ params }: PageProps) {
       sex: true,
 
       nationality: true,
+      addressLine1: true,
+      addressLine2: true,
       countryOfResidence: true,
       stateRegion: true,
       city: true,
+      postalCode: true,
 
       position: true,
       secondaryPosition: true,
