@@ -247,7 +247,7 @@ export default async function ReviewPage({ params }: PageProps) {
           {/* CONTACT */}
 
           <ReviewSection
-            title="Contact & Emergency Information"
+            title="Contact, Address & Emergency Information"
             editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/contact`}
           >
             <ReviewGrid>
@@ -283,10 +283,12 @@ export default async function ReviewPage({ params }: PageProps) {
                 value={application.countryOfResidence || "Not provided"}
               />
 
-              <Item
-                label="Postcode / ZIP"
-                value={application.postalCode || "Not provided"}
-              />
+              {application.postalCode ? (
+                <Item
+                  label="Postcode / ZIP"
+                  value={application.postalCode}
+                />
+              ) : null}
 
               <Item
                 label="Emergency contact"
