@@ -203,6 +203,23 @@ export async function POST(
       }
     }
 
+    /*
+     * Once the main application has been submitted, its original
+     * three evidence videos are immutable.
+     *
+     * A submitted applicant may upload video only through a valid
+     * formal additional-video request validated above.
+     */
+    if (access.submittedAt && !videoRequest) {
+      return NextResponse.json(
+        {
+          error: "This application has already been submitted and its original videos can no longer be changed.",
+          code: "APPLICATION_ALREADY_SUBMITTED",
+        },
+        { status: 409 },
+      );
+    }
+
     if (video && ["MATCH_1", "MATCH_2", "HIGHLIGHTS"].includes(videoType)) {
       video = await prisma.showcaseApplicationVideo.update({
         where: {

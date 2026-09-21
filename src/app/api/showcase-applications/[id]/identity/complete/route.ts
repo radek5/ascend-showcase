@@ -34,6 +34,16 @@ export async function POST(
       );
     }
 
+    if (access.submittedAt) {
+      return NextResponse.json(
+        {
+          error: "This application has already been submitted and identity documents can no longer be changed.",
+          code: "APPLICATION_ALREADY_SUBMITTED",
+        },
+        { status: 409 },
+      );
+    }
+
     const applicationId = access.applicationId;
 
     const body = await request.json();

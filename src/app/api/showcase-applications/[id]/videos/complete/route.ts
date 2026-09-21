@@ -80,6 +80,56 @@ export async function POST(
       );
     }
 
+    /*
+     * Submission may occur between presigning and completion.
+     *
+     * After submission, only a video belonging to a formal
+     * additional-video request may be completed. Initial evidence
+     * videos are therefore protected even across that race.
+     */
+    if (access.submittedAt) {
+      if (!video.requestId) {
+        return NextResponse.json(
+          {
+            error: "This application has already been submitted and its original videos can no longer be changed.",
+            code: "APPLICATION_ALREADY_SUBMITTED",
+          },
+          { status: 409 },
+        );
+      }
+
+      const videoRequest = await prisma.showcaseVideoRequest.findFirst({
+        where: {
+          id: video.requestId,
+          applicationId,
+        },
+
+        select: {
+          id: true,
+          requestedVideoType: true,
+          deadline: true,
+        },
+      });
+
+      if (!videoRequest || videoRequest.requestedVideoType !== video.type) {
+        return NextResponse.json(
+          {
+            error: "This video is not linked to a valid additional-video request.",
+          },
+          { status: 403 },
+        );
+      }
+
+      if (videoRequest.deadline && new Date() > videoRequest.deadline) {
+        return NextResponse.json(
+          {
+            error: "The deadline for this additional video request has passed.",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const updated = await prisma.showcaseApplicationVideo.update({
       where: {
         id: video.id,

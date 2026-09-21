@@ -54,6 +54,16 @@ export async function PUT(req: Request, context: RouteContext) {
 
     const applicationId = access.applicationId;
 
+    if (access.submittedAt) {
+      return NextResponse.json(
+        {
+          error: "This application has already been submitted and can no longer be edited.",
+          code: "APPLICATION_ALREADY_SUBMITTED",
+        },
+        { status: 409 },
+      );
+    }
+
     const body = await req.json();
 
     const application = await prisma.showcaseApplication.findUnique({

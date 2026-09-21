@@ -9,6 +9,7 @@ export type ApplicantApplicationAccessResult =
       authorised: true;
       applicantUserId: string;
       applicationId: string;
+      submittedAt: Date | null;
     }
   | {
       authorised: false;
@@ -43,6 +44,7 @@ export async function checkApplicantApplicationAccess(
 
     select: {
       id: true,
+      submittedAt: true,
     },
   });
 
@@ -57,6 +59,7 @@ export async function checkApplicantApplicationAccess(
     authorised: true,
     applicantUserId: applicantUser.id,
     applicationId: application.id,
+    submittedAt: application.submittedAt,
   };
 }
 

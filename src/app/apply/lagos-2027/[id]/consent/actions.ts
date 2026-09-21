@@ -32,6 +32,12 @@ export async function updateShowcaseConsent(formData: FormData) {
     throw new Error(accessError.error);
   }
 
+  if (access.submittedAt) {
+    throw new Error(
+      "This application has already been submitted and can no longer be edited.",
+    );
+  }
+
   const authorisedApplicationId = access.applicationId;
 
   const application = await prisma.showcaseApplication.findUnique({
