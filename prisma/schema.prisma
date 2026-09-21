@@ -235,6 +235,11 @@ enum ShowcaseIdentityDocumentType {
   HEADSHOT
 }
 
+enum ShowcaseGovernmentIdType {
+  PASSPORT
+  DRIVERS_LICENCE
+}
+
 enum ShowcaseIdentityDocumentStatus {
   UPLOADED
   VERIFIED
@@ -679,8 +684,9 @@ model ShowcaseIdentityDocument {
   applicationId String
   application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
-  type   ShowcaseIdentityDocumentType
-  status ShowcaseIdentityDocumentStatus @default(UPLOADED)
+  type             ShowcaseIdentityDocumentType
+  governmentIdType ShowcaseGovernmentIdType?
+  status           ShowcaseIdentityDocumentStatus @default(UPLOADED)
 
   originalFilename String?
   mimeType         String?

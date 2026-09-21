@@ -490,7 +490,7 @@ export default function RepresentationPage() {
 
               <div className="flex justify-between gap-6">
                 <span className="text-white/40">Selection</span>
-                <span>Best 100</span>
+                <span>Best 50</span>
               </div>
 
               <div className="flex justify-between gap-6">

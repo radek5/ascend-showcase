@@ -10,6 +10,18 @@ import { prisma } from "@/lib/prisma";
 
 import { submitShowcaseApplication } from "./actions";
 
+const steps = [
+  "Player",
+  "Contact",
+  "Identity",
+  "Club & Academy",
+  "Representation",
+  "Video",
+  "Consent",
+  "Review",
+  "Confirmation",
+];
+
 type PageProps = {
   params: Promise<{
     id: string;
@@ -39,6 +51,16 @@ export default async function ReviewPage({ params }: PageProps) {
     },
 
     include: {
+      identityDocuments: {
+        where: {
+          type: "PASSPORT",
+        },
+        select: {
+          governmentIdType: true,
+          uploadedAt: true,
+        },
+      },
+
       videos: {
         where: {
           status: {
@@ -56,6 +78,17 @@ export default async function ReviewPage({ params }: PageProps) {
   if (!application) {
     notFound();
   }
+
+  const isSubmitted = Boolean(application.submittedAt);
+
+  const governmentIdDocument = application.identityDocuments[0];
+
+  const governmentIdLabel =
+    governmentIdDocument?.governmentIdType === "DRIVERS_LICENCE"
+      ? "Driver's Licence"
+      : governmentIdDocument
+        ? "Passport"
+        : "Not provided";
 
   const requiredVideos = {
     MATCH_1: application.videos.find((video) => video.type === "MATCH_1"),
@@ -76,13 +109,50 @@ export default async function ReviewPage({ params }: PageProps) {
           <RevelationX1Logo />
 
           <Link
-            href={`/apply/${application.eventSlug}/${application.id}/consent`}
+            href={
+              isSubmitted
+                ? `/apply/${application.eventSlug}/${application.id}/confirmation`
+                : `/apply/${application.eventSlug}/${application.id}/consent`
+            }
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
-            Back
+            {isSubmitted ? "Return to Confirmation" : "Back"}
           </Link>
         </div>
       </header>
+
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
+          <div className="flex min-w-[1050px]">
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-3"
+              >
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 7
+                      ? "bg-[#c7ff2f] text-black"
+                      : index < 7
+                        ? "bg-white/10 text-white"
+                        : "border border-white/15 text-white/40"
+                  }`}
+                >
+                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
+                </div>
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
+                    index === 7 ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-6xl px-6 py-14 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
@@ -103,7 +173,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Player Information"
-            editHref={`/apply/${application.eventSlug}/${application.id}/player`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/player`}
           >
             <ReviewGrid>
               <Item
@@ -178,7 +248,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Contact & Emergency Information"
-            editHref={`/apply/${application.eventSlug}/${application.id}/contact`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/contact`}
           >
             <ReviewGrid>
               <Item label="Email" value={application.email} />
@@ -241,12 +311,16 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Identity & Age Verification"
-            editHref={`/apply/${application.eventSlug}/${application.id}/identity`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/identity`}
           >
             <ReviewGrid>
               <Item
-                label="International Passport"
-                value="Submitted for verification"
+                label="Government-issued Photo ID"
+                value={
+                  governmentIdDocument?.uploadedAt
+                    ? `${governmentIdLabel} — Submitted for verification`
+                    : "Not provided"
+                }
               />
 
               <Item
@@ -277,7 +351,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Club & Academy Status"
-            editHref={`/apply/${application.eventSlug}/${application.id}/football-status`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/football-status`}
           >
             <ReviewGrid>
               <Item
@@ -348,7 +422,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Representation"
-            editHref={`/apply/${application.eventSlug}/${application.id}/representation`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/representation`}
           >
             <ReviewGrid>
               <Item
@@ -405,7 +479,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Video Evidence"
-            editHref={`/apply/${application.eventSlug}/${application.id}/video`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/video`}
           >
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <VideoItem
@@ -440,7 +514,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Medical & Consent"
-            editHref={`/apply/${application.eventSlug}/${application.id}/consent`}
+            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/consent`}
           >
             <ReviewGrid>
               <Item
@@ -505,7 +579,7 @@ export default async function ReviewPage({ params }: PageProps) {
             </div>
 
             <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-black text-white">100 PLACES</div>
+              <div className="text-sm font-black text-white">50 PLACES</div>
             </div>
 
             <div className="rounded-xl border border-white/10 bg-black/20 p-4">
@@ -529,7 +603,7 @@ export default async function ReviewPage({ params }: PageProps) {
           </p>
 
           <p className="mt-3 font-bold leading-7 text-white">
-            The best 100 players will be selected for the final Showcase.
+            The best 50 players will be selected for the final Showcase.
           </p>
 
           <p className="mt-3 text-sm leading-7 text-white/55">
@@ -539,23 +613,44 @@ export default async function ReviewPage({ params }: PageProps) {
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href={`/apply/${application.eventSlug}/${application.id}/consent`}
-            className="text-sm font-bold text-white/45 transition hover:text-white"
-          >
-            ← Back
-          </Link>
+          {isSubmitted ? (
+            <>
+              <div className="text-sm font-bold text-white/45">
+                Application submitted — review is read-only.
+              </div>
 
-          <form action={submitShowcaseApplication}>
-            <input type="hidden" name="applicationId" value={application.id} />
+              <Link
+                href={`/apply/${application.eventSlug}/${application.id}/confirmation`}
+                className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
+              >
+                Return to Confirmation
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href={`/apply/${application.eventSlug}/${application.id}/consent`}
+                className="text-sm font-bold text-white/45 transition hover:text-white"
+              >
+                ← Back
+              </Link>
 
-            <button
-              type="submit"
-              className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
-            >
-              Submit Application
-            </button>
-          </form>
+              <form action={submitShowcaseApplication}>
+                <input
+                  type="hidden"
+                  name="applicationId"
+                  value={application.id}
+                />
+
+                <button
+                  type="submit"
+                  className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
+                >
+                  Submit Application
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </section>
     </main>
@@ -568,7 +663,7 @@ function ReviewSection({
   children,
 }: {
   title: string;
-  editHref: string;
+  editHref?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -576,12 +671,14 @@ function ReviewSection({
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-black">{title}</h2>
 
-        <Link
-          href={editHref}
-          className="text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f]"
-        >
-          Edit
-        </Link>
+        {editHref ? (
+          <Link
+            href={editHref}
+            className="text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f]"
+          >
+            Edit
+          </Link>
+        ) : null}
       </div>
 
       <div className="mt-6">{children}</div>

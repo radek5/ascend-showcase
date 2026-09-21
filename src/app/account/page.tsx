@@ -146,7 +146,7 @@ export default async function ApplicantAccountPage() {
                   <>
                     <p className="mt-4 max-w-2xl leading-7 text-white/55">
                       You have not started your Lagos 2027 application yet.
-                      Applications are free and 100 players will be selected on
+                      Applications are free and 50 players will be selected on
                       ability following the application and screening process.
                     </p>
 

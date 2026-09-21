@@ -10,6 +10,18 @@ import {
 } from "@/lib/applicants/applicationOwnership";
 import { prisma } from "@/lib/prisma";
 
+const steps = [
+  "Player",
+  "Contact",
+  "Identity",
+  "Club & Academy",
+  "Representation",
+  "Video",
+  "Consent",
+  "Review",
+  "Confirmation",
+];
+
 type PageProps = {
   params: Promise<{
     id: string;
@@ -117,7 +129,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
               tone: "not-selected" as const,
               message:
                 "Your Lagos 2027 application has completed the REVELATIONX1 eligibility and football assessment process. You have not been selected for the final Showcase on this occasion.",
-              next: "Lagos 2027 was a competitive selection process with only 100 available places. Thank you for the time and effort you invested in your application.",
+              next: "Lagos 2027 was a competitive selection process with only 50 available places. Thank you for the time and effort you invested in your application.",
             }
           : null;
 
@@ -128,13 +140,46 @@ export default async function ConfirmationPage({ params }: PageProps) {
           <RevelationX1Logo />
 
           <Link
-            href="/"
+            href={`/apply/${application.eventSlug}/${application.id}/review`}
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
-            Back to Event
+            ← Back
           </Link>
         </div>
       </header>
+
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
+          <div className="flex min-w-[1050px]">
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-3"
+              >
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 8
+                      ? "bg-[#c7ff2f] text-black"
+                      : index < 8
+                        ? "bg-white/10 text-white"
+                        : "border border-white/15 text-white/40"
+                  }`}
+                >
+                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
+                </div>
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
+                    index === 8 ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
@@ -249,7 +294,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
               {releasedOutcome === "SELECTED" ? (
                 <>
                   <p>
-                    You have earned one of the 100 available places for the
+                    You have earned one of the 50 available places for the
                     Lagos 2027 Men&apos;s Football Showcase.
                   </p>
 
@@ -377,7 +422,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
                   </p>
 
                   <p>
-                    Selection was highly competitive, with only 100 places
+                    Selection was highly competitive, with only 50 places
                     available for the final Men&apos;s Football Showcase.
                   </p>
 
@@ -425,7 +470,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
               </p>
 
               <p className="font-bold text-white">
-                The best 100 eligible players will be selected for the final
+                The best 50 eligible players will be selected for the final
                 Lagos 2027 Men&apos;s Football Showcase.
               </p>
             </div>

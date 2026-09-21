@@ -15,6 +15,11 @@ import {
 
 const ALLOWED_DOCUMENT_TYPES = new Set(["PASSPORT", "NIN", "HEADSHOT"]);
 
+const ALLOWED_GOVERNMENT_ID_TYPES = new Set([
+  "PASSPORT",
+  "DRIVERS_LICENCE",
+]);
+
 const ALLOWED_DOCUMENT_MIME_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -61,6 +66,8 @@ export async function POST(
 
     const documentType = String(body.documentType || "").trim();
 
+    const governmentIdType = String(body.governmentIdType || "").trim();
+
     const size = Number(body.size || 0);
 
     if (!filename) {
@@ -70,6 +77,16 @@ export async function POST(
     if (!ALLOWED_DOCUMENT_TYPES.has(documentType)) {
       return NextResponse.json(
         { error: "Invalid identity document type." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      documentType === "PASSPORT" &&
+      !ALLOWED_GOVERNMENT_ID_TYPES.has(governmentIdType)
+    ) {
+      return NextResponse.json(
+        { error: "Select a valid government-issued photo ID type." },
         { status: 400 },
       );
     }
@@ -163,6 +180,10 @@ export async function POST(
         },
         data: {
           status: "UPLOADED",
+          governmentIdType:
+            documentType === "PASSPORT"
+              ? (governmentIdType as "PASSPORT" | "DRIVERS_LICENCE")
+              : null,
           storageProvider: "CLOUDFLARE_R2",
           storageKey,
           originalFilename: filename,
@@ -180,6 +201,10 @@ export async function POST(
           applicationId,
           type: documentType as "PASSPORT" | "NIN" | "HEADSHOT",
           status: "UPLOADED",
+          governmentIdType:
+            documentType === "PASSPORT"
+              ? (governmentIdType as "PASSPORT" | "DRIVERS_LICENCE")
+              : null,
           storageProvider: "CLOUDFLARE_R2",
           storageKey,
           originalFilename: filename,

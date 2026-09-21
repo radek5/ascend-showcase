@@ -39,7 +39,7 @@ export default async function Lagos2027ApplicationPage() {
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
           {squadComplete
             ? "The Lagos 2027 selection process has been completed and selection decisions have now been released to applicants."
-            : "Show us your game. Share your football story and videos for the chance to earn one of 100 fully funded places at the REVELATIONX1 Lagos 2027 Football Showcase."}
+            : "Show us your game. Share your football story and videos for the chance to earn one of 50 fully funded places at the REVELATIONX1 Lagos 2027 Football Showcase."}
         </p>
 
         {squadComplete ? (
@@ -49,7 +49,7 @@ export default async function Lagos2027ApplicationPage() {
             </p>
 
             <p className="mt-3 text-xl font-black leading-8 text-white">
-              Selection decisions for the 100 Lagos 2027 places have now been
+              Selection decisions for the 50 Lagos 2027 places have now been
               released.
             </p>
 
@@ -75,7 +75,7 @@ export default async function Lagos2027ApplicationPage() {
             </p>
 
             <p className="mt-3 font-bold leading-7 text-white">
-              100 players will be selected on ability following the application
+              50 players will be selected on ability following the application
               and screening process.
             </p>
 
@@ -104,7 +104,7 @@ export default async function Lagos2027ApplicationPage() {
               <InfoCard
                 number="03"
                 title="Earn Your Place"
-                text="100 players will be selected to join us in Lagos for the fully funded Showcase."
+                text="50 players will be selected to join us in Lagos for the fully funded Showcase."
               />
             </section>
 

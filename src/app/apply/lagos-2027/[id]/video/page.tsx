@@ -190,14 +190,14 @@ export default function VideoPage() {
     }));
   }
 
-  async function uploadVideo(type: InitialVideoType) {
+  async function uploadVideo(type: InitialVideoType): Promise<boolean> {
     const state = uploads[type];
 
     if (!state.file) {
       updateUpload(type, {
         error: "Please select a video first.",
       });
-      return;
+      return false;
     }
 
     updateUpload(type, {
@@ -266,11 +266,49 @@ export default function VideoPage() {
       });
 
       await loadApplication();
+
+      return true;
     } catch (error) {
       updateUpload(type, {
         uploading: false,
         error: error instanceof Error ? error.message : "Video upload failed.",
       });
+
+      return false;
+    }
+  }
+
+  async function uploadAllRequiredVideos() {
+    setPageError("");
+
+    const requiredTypes = [
+      "MATCH_1",
+      "MATCH_2",
+      "HIGHLIGHTS",
+    ] as InitialVideoType[];
+
+    const missingFile = requiredTypes.find(
+      (type) => !uploads[type].uploaded && !uploads[type].file,
+    );
+
+    if (missingFile) {
+      updateUpload(missingFile, {
+        error: "Please select a video first.",
+      });
+
+      return;
+    }
+
+    for (const type of requiredTypes) {
+      if (uploads[type].uploaded) {
+        continue;
+      }
+
+      const uploaded = await uploadVideo(type);
+
+      if (!uploaded) {
+        return;
+      }
     }
   }
 
@@ -278,6 +316,16 @@ export default function VideoPage() {
     uploads.MATCH_1.uploaded &&
     uploads.MATCH_2.uploaded &&
     uploads.HIGHLIGHTS.uploaded;
+
+  const somethingUploading =
+    uploads.MATCH_1.uploading ||
+    uploads.MATCH_2.uploading ||
+    uploads.HIGHLIGHTS.uploading;
+
+  const allOutstandingRequiredFilesSelected =
+    (uploads.MATCH_1.uploaded || Boolean(uploads.MATCH_1.file)) &&
+    (uploads.MATCH_2.uploaded || Boolean(uploads.MATCH_2.file)) &&
+    (uploads.HIGHLIGHTS.uploaded || Boolean(uploads.HIGHLIGHTS.file));
 
   if (loading) {
     return (
@@ -554,11 +602,26 @@ export default function VideoPage() {
 
             <button
               type="button"
-              disabled={!allRequiredUploaded}
-              onClick={() => router.push(`/apply/lagos-2027/${id}/consent`)}
+              disabled={
+                somethingUploading ||
+                (!allRequiredUploaded &&
+                  !allOutstandingRequiredFilesSelected)
+              }
+              onClick={() => {
+                if (allRequiredUploaded) {
+                  router.push(`/apply/lagos-2027/${id}/consent`);
+                  return;
+                }
+
+                void uploadAllRequiredVideos();
+              }}
               className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Continue
+              {somethingUploading
+                ? "Uploading..."
+                : allRequiredUploaded
+                  ? "Continue"
+                  : "Upload All 3 Videos"}
             </button>
           </div>
 
@@ -610,7 +673,7 @@ export default function VideoPage() {
 
               <div className="flex justify-between gap-6">
                 <span className="text-white/40">Selection</span>
-                <span>Best 100</span>
+                <span>Best 50</span>
               </div>
             </div>
 
@@ -643,7 +706,7 @@ function VideoUploadCard({
     event: ChangeEvent<HTMLInputElement>,
   ) => void;
 
-  onUpload: (type: InitialVideoType) => Promise<void>;
+  onUpload: (type: InitialVideoType) => Promise<boolean>;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-6">

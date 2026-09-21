@@ -21,9 +21,12 @@ const steps = [
 
 type DocumentType = "PASSPORT" | "NIN" | "HEADSHOT";
 
+type GovernmentIdType = "PASSPORT" | "DRIVERS_LICENCE";
+
 type IdentityDocument = {
   id: string;
   type: DocumentType;
+  governmentIdType: GovernmentIdType | null;
   status: "UPLOADED" | "VERIFIED" | "MORE_INFO_REQUIRED" | "REJECTED";
 
   originalFilename: string | null;
@@ -71,9 +74,9 @@ const documentConfig: Array<{
   {
     type: "PASSPORT",
     number: "01",
-    title: "International Passport",
+    title: "Government-issued Photo ID",
     description:
-      "Upload the identity/photo page of the player's international passport.",
+      "Select and upload the player's passport or driver's licence.",
     accept: "application/pdf,image/jpeg,image/png",
     guidance: "PDF, JPG or PNG · Maximum 10 MB",
   },
@@ -114,6 +117,9 @@ export default function IdentityVerificationPage() {
 
   const [pageError, setPageError] = useState("");
 
+  const [governmentIdType, setGovernmentIdType] =
+    useState<GovernmentIdType | null>(null);
+
   const [uploads, setUploads] = useState<Record<DocumentType, UploadState>>({
     PASSPORT: {
       ...initialUploadState,
@@ -147,6 +153,15 @@ export default function IdentityVerificationPage() {
       const record = data.application as Application;
 
       setApplication(record);
+
+      const existingGovernmentId = record.identityDocuments.find(
+        (document) =>
+          document.type === "PASSPORT" && Boolean(document.uploadedAt),
+      );
+
+      if (existingGovernmentId) {
+        setGovernmentIdType(existingGovernmentId.governmentIdType || "PASSPORT");
+      }
 
       setUploads((current) => {
         const next = {
@@ -248,15 +263,23 @@ export default function IdentityVerificationPage() {
     });
   }
 
-  async function uploadDocument(type: DocumentType) {
+  async function uploadDocument(type: DocumentType): Promise<boolean> {
     const state = uploads[type];
+
+    if (type === "PASSPORT" && !governmentIdType) {
+      updateUpload(type, {
+        error: "Select Passport or Driver's Licence before uploading.",
+      });
+
+      return false;
+    }
 
     if (!state.file) {
       updateUpload(type, {
         error: "Please select a file first.",
       });
 
-      return;
+      return false;
     }
 
     try {
@@ -283,6 +306,8 @@ export default function IdentityVerificationPage() {
             size: state.file.size,
 
             documentType: type,
+
+            governmentIdType: type === "PASSPORT" ? governmentIdType : null,
           }),
         },
       );
@@ -333,6 +358,8 @@ export default function IdentityVerificationPage() {
       });
 
       await loadApplication();
+
+      return true;
     } catch (error) {
       updateUpload(type, {
         uploading: false,
@@ -343,6 +370,50 @@ export default function IdentityVerificationPage() {
             ? error.message
             : "Upload failed. Please try again.",
       });
+
+      return false;
+    }
+  }
+
+  async function uploadAllDocuments() {
+    setPageError("");
+
+    const documentTypes = [
+      "PASSPORT",
+      "NIN",
+      "HEADSHOT",
+    ] as DocumentType[];
+
+    if (!governmentIdType) {
+      updateUpload("PASSPORT", {
+        error: "Select Passport or Driver's Licence before uploading.",
+      });
+
+      return;
+    }
+
+    const missingFile = documentTypes.find(
+      (type) => !uploads[type].uploaded && !uploads[type].file,
+    );
+
+    if (missingFile) {
+      updateUpload(missingFile, {
+        error: "Please select a file first.",
+      });
+
+      return;
+    }
+
+    for (const type of documentTypes) {
+      if (uploads[type].uploaded) {
+        continue;
+      }
+
+      const uploaded = await uploadDocument(type);
+
+      if (!uploaded) {
+        return;
+      }
     }
   }
 
@@ -355,6 +426,12 @@ export default function IdentityVerificationPage() {
     uploads.PASSPORT.uploading ||
     uploads.NIN.uploading ||
     uploads.HEADSHOT.uploading;
+
+  const allOutstandingFilesSelected =
+    (uploads.PASSPORT.uploaded || Boolean(uploads.PASSPORT.file)) &&
+    (uploads.NIN.uploaded || Boolean(uploads.NIN.file)) &&
+    (uploads.HEADSHOT.uploaded || Boolean(uploads.HEADSHOT.file)) &&
+    Boolean(governmentIdType);
 
   if (loading) {
     return (
@@ -521,6 +598,43 @@ export default function IdentityVerificationPage() {
                     ) : null}
                   </div>
 
+                  {document.type === "PASSPORT" ? (
+                    <div className="mt-6">
+                      <label className="text-xs font-bold uppercase tracking-[0.12em] text-white/45">
+                        ID type
+                      </label>
+
+                      <select
+                        value={governmentIdType || ""}
+                        disabled={state.uploading}
+                        onChange={(event) => {
+                          const value = event.target.value as
+                            | GovernmentIdType
+                            | "";
+
+                          const nextType = value || null;
+
+                          if (nextType !== governmentIdType) {
+                            setGovernmentIdType(nextType);
+
+                            updateUpload("PASSPORT", {
+                              uploaded: false,
+                              progress: 0,
+                              error: "",
+                            });
+                          }
+                        }}
+                        className="mt-3 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-[#c7ff2f]/50"
+                      >
+                        <option value="">Select government-issued photo ID</option>
+                        <option value="PASSPORT">Passport</option>
+                        <option value="DRIVERS_LICENCE">
+                          Driver&apos;s Licence
+                        </option>
+                      </select>
+                    </div>
+                  ) : null}
+
                   <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-black/20 p-5">
                     <input
                       type="file"
@@ -599,12 +713,21 @@ export default function IdentityVerificationPage() {
 
             <button
               type="button"
-              disabled={!allUploaded || somethingUploading}
-              onClick={() =>
-                router.push(
-                  `/apply/${application.eventSlug}/${application.id}/football-status`,
-                )
+              disabled={
+                somethingUploading ||
+                (!allUploaded && !allOutstandingFilesSelected)
               }
+              onClick={() => {
+                if (allUploaded) {
+                  router.push(
+                    `/apply/${application.eventSlug}/${application.id}/football-status`,
+                  );
+
+                  return;
+                }
+
+                void uploadAllDocuments();
+              }}
               className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
             >
               {somethingUploading
@@ -625,7 +748,7 @@ export default function IdentityVerificationPage() {
 
               <div className="mt-5 space-y-4">
                 <ChecklistItem
-                  label="International Passport"
+                  label="Government-issued Photo ID"
                   complete={uploads.PASSPORT.uploaded}
                 />
 
@@ -659,8 +782,8 @@ export default function IdentityVerificationPage() {
               </div>
 
               <p className="mt-3 text-sm leading-6 text-white/55">
-                Passport and NIN documentation are collected solely for
-                identity, age and eligibility verification.
+                Government-issued photo ID and NIN documentation are collected
+                solely for identity, age and eligibility verification.
               </p>
 
               <p className="mt-3 text-sm font-semibold leading-6 text-white/70">

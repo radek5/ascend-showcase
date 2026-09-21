@@ -562,7 +562,7 @@ export default function Lagos2027StartApplicationForm({
               <div className="flex justify-between gap-6">
                 <span className="text-white/40">Selection</span>
 
-                <span className="text-right">Best 100 eligible players</span>
+                <span className="text-right">Best 50 eligible players</span>
               </div>
 
               <div className="flex justify-between gap-6">
@@ -583,7 +583,7 @@ export default function Lagos2027StartApplicationForm({
               </p>
 
               <p className="mt-3 text-sm font-bold leading-6 text-white">
-                100 players will be selected on ability following the
+                50 players will be selected on ability following the
                 application and screening process.
               </p>
 

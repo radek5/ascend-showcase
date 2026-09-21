@@ -217,7 +217,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
   </p>
 
   <p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.7;">
-    The best 100 eligible players will be selected for the
+    The best 50 eligible players will be selected for the
     final REVELATIONX1 Lagos 2027 Men's Football Showcase.
   </p>
 </div>

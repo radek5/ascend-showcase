@@ -51,6 +51,7 @@ export async function GET(
           select: {
             id: true,
             type: true,
+            governmentIdType: true,
             status: true,
             originalFilename: true,
             sizeBytes: true,

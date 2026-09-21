@@ -180,7 +180,7 @@ export default async function AssessmentFeePage({
           <p className="mt-4 text-sm leading-7 text-white/60">
             <p className="mt-4 text-sm leading-7 text-white/60">
   Following the assessment and selection
-  process, the best 100 eligible players
+  process, the best 50 eligible players
   will be selected for the Lagos 2027 camp.
 </p>
           </p>

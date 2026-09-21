@@ -10,6 +10,18 @@ import { prisma } from "@/lib/prisma";
 
 import { updateShowcaseConsent } from "./actions";
 
+const steps = [
+  "Player",
+  "Contact",
+  "Identity",
+  "Club & Academy",
+  "Representation",
+  "Video",
+  "Consent",
+  "Review",
+  "Confirmation",
+];
+
 type PageProps = {
   params: Promise<{
     id: string;
@@ -57,6 +69,39 @@ export default async function ConsentPage({ params }: PageProps) {
           </Link>
         </div>
       </header>
+
+      <section className="border-b border-white/10">
+        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
+          <div className="flex min-w-[1050px]">
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-3"
+              >
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 6
+                      ? "bg-[#c7ff2f] text-black"
+                      : index < 6
+                        ? "bg-white/10 text-white"
+                        : "border border-white/15 text-white/40"
+                  }`}
+                >
+                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
+                </div>
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
+                    index === 6 ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {step}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[1fr_340px] lg:px-8">
         <div>

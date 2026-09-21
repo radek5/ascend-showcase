@@ -120,7 +120,7 @@ export async function sendShowcaseSelectionOutcome({
           accent: "#c7ff2f",
           message:
             "Congratulations. Following the REVELATIONX1 Lagos 2027 eligibility and football assessment process, you have been selected and offered a place at the Men's Football Showcase.",
-          next: "Your selection is an offer of one of the 100 available places. You will need to confirm whether you accept your place before your participation is finalised.",
+          next: "Your selection is an offer of one of the 50 available places. You will need to confirm whether you accept your place before your participation is finalised.",
           action: "View Your Selection",
         }
       : application.status === "RESERVE"
@@ -141,7 +141,7 @@ export async function sendShowcaseSelectionOutcome({
             accent: "#b8b8b8",
             message:
               "Your application has completed the REVELATIONX1 Lagos 2027 eligibility and football assessment process. You have not been selected for the final Showcase on this occasion.",
-            next: "Selection was highly competitive, with only 100 places available. Thank you for the time, effort and football evidence you committed to your application.",
+            next: "Selection was highly competitive, with only 50 places available. Thank you for the time, effort and football evidence you committed to your application.",
             action: "View Your Application",
           };
 
