@@ -127,7 +127,7 @@ export default async function StaffCheckInPage({
         eventId: activeEvent.id,
         archivedAt: null,
         status: {
-          in: ["APPROVED", "ACCREDITED", "CHECKED_IN"],
+          in: ["ACCREDITED", "CHECKED_IN"],
         },
       },
     }),
@@ -271,7 +271,7 @@ export default async function StaffCheckInPage({
         archivedAt: null,
 
         status: {
-          in: ["APPROVED", "ACCREDITED", "CHECKED_IN"],
+          in: ["ACCREDITED", "CHECKED_IN"],
         },
 
         ...(q

@@ -8,6 +8,8 @@ import {
   approveProfessional,
   rejectProfessional,
 } from "./actions/decideProfessionalReview";
+import { issueProfessionalAccreditation } from "./actions/issueProfessionalAccreditation";
+import { resendProfessionalAccreditation } from "./actions/resendProfessionalAccreditation";
 import { startProfessionalReview } from "./actions/startProfessionalReview";
 
 function formatDate(value: Date | null) {
@@ -530,6 +532,68 @@ export default async function ProfessionalReviewPage({
                     because the professional edit-and-resubmit
                     workflow has not been enabled.
                   </p>
+                </>
+              ) : registration.status === "APPROVED" ? (
+                <>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
+                    This professional has been approved for attendance.
+                    Accreditation has not yet been issued. Issuing
+                    accreditation creates the event credential and
+                    check-in token, then attempts to email the QR
+                    credential to the professional.
+                  </p>
+
+                  <form
+                    action={issueProfessionalAccreditation}
+                    className="mt-6"
+                  >
+                    <input
+                      type="hidden"
+                      name="registrationId"
+                      value={registration.id}
+                    />
+
+                    <button
+                      type="submit"
+                      className="rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition hover:brightness-110"
+                    >
+                      Issue Accreditation
+                    </button>
+                  </form>
+
+                  <p className="mt-5 max-w-3xl text-xs leading-5 text-white/35">
+                    This action creates the professional&apos;s event
+                    credential. Once issued, the registration moves to
+                    ACCREDITED and becomes eligible for event check-in.
+                  </p>
+                </>
+              ) : registration.status === "ACCREDITED" &&
+                !registration.approvalEmailSentAt ? (
+                <>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
+                    Accreditation has been issued, but the accreditation
+                    email has not been recorded as sent. The existing
+                    credential can be emailed again without creating a
+                    new accreditation number or check-in token.
+                  </p>
+
+                  <form
+                    action={resendProfessionalAccreditation}
+                    className="mt-6"
+                  >
+                    <input
+                      type="hidden"
+                      name="registrationId"
+                      value={registration.id}
+                    />
+
+                    <button
+                      type="submit"
+                      className="rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition hover:brightness-110"
+                    >
+                      Send Accreditation Email
+                    </button>
+                  </form>
                 </>
               ) : (
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">

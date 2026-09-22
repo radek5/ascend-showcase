@@ -100,13 +100,12 @@ export async function checkInProfessional(
 
   if (
     ![
-      "APPROVED",
       "ACCREDITED",
       "CHECKED_IN",
     ].includes(registration.status)
   ) {
     throw new Error(
-      "This professional registration is not approved for event check-in.",
+      "This professional registration is not accredited for event check-in.",
     );
   }
 
