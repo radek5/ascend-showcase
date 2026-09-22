@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
 
+import {
+  approveProfessional,
+  rejectProfessional,
+} from "./actions/decideProfessionalReview";
 import { startProfessionalReview } from "./actions/startProfessionalReview";
 
 function formatDate(value: Date | null) {
@@ -479,6 +483,53 @@ export default async function ProfessionalReviewPage({
                       Start Review
                     </button>
                   </form>
+                </>
+              ) : registration.status === "UNDER_REVIEW" ? (
+                <>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
+                    This registration is under staff review. Approval
+                    confirms that the professional may proceed to the
+                    accreditation stage. It does not issue an
+                    accreditation credential or permit event check-in.
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <form action={approveProfessional}>
+                      <input
+                        type="hidden"
+                        name="registrationId"
+                        value={registration.id}
+                      />
+
+                      <button
+                        type="submit"
+                        className="rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition hover:brightness-110"
+                      >
+                        Approve Professional
+                      </button>
+                    </form>
+
+                    <form action={rejectProfessional}>
+                      <input
+                        type="hidden"
+                        name="registrationId"
+                        value={registration.id}
+                      />
+
+                      <button
+                        type="submit"
+                        className="rounded-full border border-red-400/40 bg-red-500/10 px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-red-200 transition hover:bg-red-500/20"
+                      >
+                        Reject Professional
+                      </button>
+                    </form>
+                  </div>
+
+                  <p className="mt-5 max-w-3xl text-xs leading-5 text-white/35">
+                    Request More Information is not yet available
+                    because the professional edit-and-resubmit
+                    workflow has not been enabled.
+                  </p>
                 </>
               ) : (
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
