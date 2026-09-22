@@ -51,6 +51,17 @@ export async function POST(
     );
   }
 
+  if (registration.status !== "DRAFT") {
+    return NextResponse.json(
+      {
+        error: "This professional registration has already been submitted.",
+      },
+      {
+        status: 409,
+      },
+    );
+  }
+
   //
   // Submission is the boundary between applicant editing
   // and the REVELATIONX1 professional accreditation review.
@@ -58,27 +69,40 @@ export async function POST(
   // Accreditation, approval and event credentials are issued
   // separately by authorised staff after review.
   //
-  await prisma.professionalRegistration.update({
-    where: {
-      id,
-    },
+  const submission =
+    await prisma.professionalRegistration.updateMany({
+      where: {
+        id,
+        status: "DRAFT",
+      },
 
-    data: {
-      safeguardingConsent: true,
-      privacyConsent: true,
+      data: {
+        safeguardingConsent: true,
+        privacyConsent: true,
 
-      futureEventConsent,
-      futureEventConsentAt: futureEventConsent
-        ? registration.futureEventConsentAt || new Date()
-        : null,
+        futureEventConsent,
+        futureEventConsentAt: futureEventConsent
+          ? registration.futureEventConsentAt || new Date()
+          : null,
 
-      status: "SUBMITTED",
+        status: "SUBMITTED",
 
-      submittedAt:
-        registration.submittedAt ||
-        new Date(),
-    },
-  });
+        submittedAt:
+          registration.submittedAt ||
+          new Date(),
+      },
+    });
+
+  if (submission.count !== 1) {
+    return NextResponse.json(
+      {
+        error: "This professional registration has already been submitted.",
+      },
+      {
+        status: 409,
+      },
+    );
+  }
 
   const host =
     request.headers.get("x-forwarded-host") ||
