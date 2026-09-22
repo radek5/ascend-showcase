@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
 
+import { startProfessionalReview } from "./actions/startProfessionalReview";
+
 function formatDate(value: Date | null) {
   if (!value) return "Not provided";
 
@@ -451,11 +453,43 @@ export default async function ProfessionalReviewPage({
                 Staff Review
               </div>
 
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
-                This record is currently read-only. Professional
-                approval, accreditation issuance and other lifecycle
-                decisions will be added as controlled staff actions.
-              </p>
+              {registration.status === "SUBMITTED" ? (
+                <>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
+                    This registration has been submitted and is ready
+                    for staff review. Starting review moves the
+                    registration to UNDER REVIEW. It does not approve
+                    the professional or issue accreditation.
+                  </p>
+
+                  <form
+                    action={startProfessionalReview}
+                    className="mt-6"
+                  >
+                    <input
+                      type="hidden"
+                      name="registrationId"
+                      value={registration.id}
+                    />
+
+                    <button
+                      type="submit"
+                      className="rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition hover:brightness-110"
+                    >
+                      Start Review
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
+                  Current review status:{" "}
+                  <span className="font-bold text-white">
+                    {displayStatus(registration.status)}
+                  </span>
+                  . Available lifecycle actions will depend on the
+                  current review stage.
+                </p>
+              )}
             </div>
           </div>
         </div>
