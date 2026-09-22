@@ -56,9 +56,11 @@ export default async function ConfirmationPage({ params }: PageProps) {
 
       firstName: true,
       lastName: true,
+      email: true,
 
       status: true,
       submittedAt: true,
+      confirmationEmailSentAt: true,
 
       selectionDecisionReleasedAt: true,
       selectionResponse: true,
@@ -244,6 +246,22 @@ export default async function ConfirmationPage({ params }: PageProps) {
               </p>
             </div>
           )}
+
+          {!outcomePresentation && application.confirmationEmailSentAt ? (
+            <div className="mt-6 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-5">
+              <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
+                Confirmation Email Sent
+              </div>
+
+              <p className="mt-2 text-sm leading-6 text-white/60">
+                A confirmation email has been sent to{" "}
+                <span className="font-bold text-white">{application.email}</span>.
+                It includes your permanent registration code and confirmation
+                that your application has been received. Please keep it for your
+                records.
+              </p>
+            </div>
+          ) : null}
 
           {application.registrationNumber && (
             <div className="mt-8 rounded-2xl border border-[#c7ff2f]/25 bg-black/30 p-6">
