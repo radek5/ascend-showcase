@@ -1,13 +1,6 @@
-import crypto from "node:crypto";
-
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { sendProfessionalAccreditation } from "@/lib/email/sendProfessionalAccreditation";
-
-function buildAccreditationNumber(sequence: number) {
-  return `ASC-LAG27-PR-${String(sequence).padStart(4, "0")}`;
-}
 
 export async function POST(
   request: Request,
@@ -59,34 +52,12 @@ export async function POST(
   }
 
   //
-  // Generate accreditation only once.
+  // Submission is the boundary between applicant editing
+  // and the REVELATIONX1 professional accreditation review.
   //
-  let accreditationNumber =
-    registration.accreditationNumber;
-
-  let checkInToken =
-    registration.checkInToken;
-
-  if (!accreditationNumber) {
-    const count =
-      await prisma.professionalRegistration.count({
-        where: {
-          eventId: registration.eventId,
-          accreditationNumber: {
-            not: null,
-          },
-        },
-      });
-
-    accreditationNumber =
-      buildAccreditationNumber(count + 1);
-  }
-
-  if (!checkInToken) {
-    checkInToken =
-      crypto.randomBytes(32).toString("hex");
-  }
-
+  // Accreditation, approval and event credentials are issued
+  // separately by authorised staff after review.
+  //
   await prisma.professionalRegistration.update({
     where: {
       id,
@@ -101,26 +72,12 @@ export async function POST(
         ? registration.futureEventConsentAt || new Date()
         : null,
 
-      status: "ACCREDITED",
+      status: "SUBMITTED",
 
       submittedAt:
         registration.submittedAt ||
         new Date(),
-
-      approvedAt:
-        registration.approvedAt ||
-        new Date(),
-
-      accreditationNumber,
-      checkInToken,
     },
-  });
-
-  //
-  // Send immediately.
-  //
-  await sendProfessionalAccreditation({
-    registrationId: id,
   });
 
   const host =

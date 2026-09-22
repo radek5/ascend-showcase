@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 
 export default async function ProfessionalConfirmationPage({
@@ -31,7 +32,7 @@ export default async function ProfessionalConfirmationPage({
       <section className="mx-auto max-w-3xl px-6 py-20">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 sm:p-10">
           <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Registration Confirmed
+            Registration Submitted
           </div>
 
           <h1 className="mt-4 text-3xl font-black uppercase">
@@ -39,7 +40,8 @@ export default async function ProfessionalConfirmationPage({
           </h1>
 
           <p className="mt-4 text-lg text-white/70">
-            Your professional registration for REVELATIONX1 Lagos 2027 is confirmed.
+            Your professional registration for REVELATIONX1 Lagos 2027
+            has been received.
           </p>
 
           <div className="mt-8 rounded-2xl border border-white/10 bg-black/20 p-6">
@@ -64,30 +66,35 @@ export default async function ProfessionalConfirmationPage({
             </div>
 
             <div className="mt-1 font-bold text-[#c7ff2f]">
-              PROFESSIONAL ACCREDITATION ISSUED
+              SUBMITTED FOR REVIEW
             </div>
           </div>
 
-          <div className="mt-5 text-sm text-white/40">
-             Accreditation number
+          <div className="mt-6 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-6">
+            <div className="text-xs font-black uppercase tracking-[0.16em] text-[#c7ff2f]">
+              What Happens Next
+            </div>
+
+            <p className="mt-3 text-sm leading-6 text-white/60">
+              The REVELATIONX1 team will review your professional
+              registration before accreditation is approved. If your
+              registration is approved, your professional accreditation,
+              event credential and check-in information will be issued
+              separately.
+            </p>
           </div>
 
-          <div className="mt-1 text-xl font-black text-[#c7ff2f]">
-             {registration.accreditationNumber}
-          </div>
-
-          <p className="mt-8 text-sm leading-6 text-white/50">
-             Your REVELATIONX1 Lagos 2027 professional accreditation has been confirmed.
-             Your accreditation number, QR code and event information have been sent
-             to your registered email address.
-         </p>
+          <p className="mt-6 text-sm leading-6 text-white/45">
+            Submission of a professional registration does not itself
+            grant event accreditation or access to restricted event areas.
+          </p>
 
           <div className="mt-8">
             <Link
               href="/"
               className="inline-flex rounded-full bg-[#c7ff2f] px-7 py-4 text-sm font-black uppercase tracking-[0.08em] text-black"
             >
-              Return to Event
+              Return to REVELATIONX1
             </Link>
           </div>
         </div>
