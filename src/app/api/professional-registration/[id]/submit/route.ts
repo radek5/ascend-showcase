@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { sendProfessionalRegistrationConfirmation } from "@/lib/email/sendProfessionalRegistrationConfirmation";
 import {
   checkProfessionalRegistrationAccess,
   getProfessionalRegistrationAccessError,
@@ -122,6 +123,20 @@ export async function POST(
       },
       {
         status: 409,
+      },
+    );
+  }
+
+  try {
+    await sendProfessionalRegistrationConfirmation({
+      registrationId: id,
+    });
+  } catch (error) {
+    console.error(
+      "Professional registration submitted, but confirmation email delivery failed.",
+      {
+        registrationId: id,
+        error,
       },
     );
   }

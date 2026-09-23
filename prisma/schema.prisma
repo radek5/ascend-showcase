@@ -306,6 +306,7 @@ model ProfessionalRegistration {
   checkInToken           String?   @unique
   checkedInAt            DateTime?
   checkedInByStaffUserId String?
+  submissionEmailSentAt  DateTime?
   approvalEmailSentAt    DateTime?
 
   status ProfessionalRegistrationStatus @default(DRAFT)
