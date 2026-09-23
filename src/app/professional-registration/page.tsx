@@ -1,15 +1,70 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
+import { updateProfessionalRole } from "./actions/updateProfessionalRole";
 
-export default function ProfessionalRegistrationPage() {
+function ProfessionalRegistrationPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const registrationId =
+    searchParams.get("registration") || "";
+
+  const isEditMode = Boolean(registrationId);
+
   const [role, setRole] = useState("");
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [registrationAccess, setRegistrationAccess] = useState<
+    "LOADING" | "AUTHORISED" | "DENIED"
+  >(isEditMode ? "LOADING" : "AUTHORISED");
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+
+    async function loadRegistration() {
+      try {
+        const response = await fetch(
+          `/api/professional-registration/${registrationId}`,
+        );
+
+        if (!response.ok) {
+          setRegistrationAccess("DENIED");
+          return;
+        }
+
+        const registration = await response.json();
+
+        if (registration.status !== "DRAFT") {
+          setRegistrationAccess("DENIED");
+          return;
+        }
+
+        setRole(registration.role || "");
+        setRegistrationAccess("AUTHORISED");
+      } catch (error) {
+        console.error(
+          "Unable to load professional registration:",
+          error,
+        );
+        setRegistrationAccess("DENIED");
+      }
+    }
+
+    loadRegistration();
+  }, [isEditMode, registrationId]);
+
+  function handleNewRegistrationSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     if (!role) {
@@ -18,6 +73,30 @@ export default function ProfessionalRegistrationPage() {
 
     router.push(
       `/professional-registration/details?role=${encodeURIComponent(role)}`,
+    );
+  }
+
+  if (registrationAccess === "LOADING") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-sm text-white/45">
+            Loading registration...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (registrationAccess === "DENIED") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
     );
   }
 
@@ -53,10 +132,12 @@ export default function ProfessionalRegistrationPage() {
         </div>
       </section>
 
+      <ProfessionalRegistrationProgress currentStep={1} />
+
       <section className="mx-auto max-w-3xl px-6 py-16 lg:px-8">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 sm:p-10">
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Step 1
+          <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+            Step 1 of 6
           </div>
 
           <h2 className="mt-3 text-2xl font-black">
@@ -68,7 +149,26 @@ export default function ProfessionalRegistrationPage() {
             showcase.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8">
+          <form
+            action={
+              isEditMode
+                ? updateProfessionalRole
+                : undefined
+            }
+            onSubmit={
+              isEditMode
+                ? undefined
+                : handleNewRegistrationSubmit
+            }
+            className="mt-8"
+          >
+            {isEditMode && (
+              <input
+                type="hidden"
+                name="registrationId"
+                value={registrationId}
+              />
+            )}
             <label className="block space-y-3">
               <span className="text-sm font-semibold">
                 I am attending as:
@@ -107,5 +207,23 @@ export default function ProfessionalRegistrationPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function ProfessionalRegistrationPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#090909] text-white">
+          <div className="mx-auto max-w-3xl px-6 py-16 lg:px-8">
+            <div className="text-sm text-white/45">
+              Loading registration...
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <ProfessionalRegistrationPageContent />
+    </Suspense>
   );
 }

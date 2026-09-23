@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { updateProfessionalTravel } from "./actions/updateProfessionalTravel";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
 
 function ProfessionalTravelPageContent() {
   const searchParams = useSearchParams();
@@ -13,7 +14,96 @@ function ProfessionalTravelPageContent() {
     searchParams.get("registration") || "";
 
   const [arrivalTransfer, setArrivalTransfer] = useState("");
+  const [arrivalDate, setArrivalDate] = useState("");
+  const [arrivalTime, setArrivalTime] = useState("");
+  const [arrivalAirline, setArrivalAirline] = useState("");
+  const [arrivalFlight, setArrivalFlight] = useState("");
+
   const [departureTransfer, setDepartureTransfer] = useState("");
+  const [departureDate, setDepartureDate] = useState("");
+  const [departureTime, setDepartureTime] = useState("");
+  const [departureAirline, setDepartureAirline] = useState("");
+  const [departureFlight, setDepartureFlight] = useState("");
+
+  const [registrationAccess, setRegistrationAccess] = useState<
+    "LOADING" | "AUTHORISED" | "DENIED"
+  >("LOADING");
+
+  useEffect(() => {
+    async function checkRegistrationAccess() {
+      if (!registrationId) {
+        setRegistrationAccess("DENIED");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/professional-registration/${registrationId}`,
+        );
+
+        if (!response.ok) {
+          setRegistrationAccess("DENIED");
+          return;
+        }
+
+        const registration = await response.json();
+
+        setArrivalTransfer(
+          registration.arrivalTransfer ? "YES" : "NO",
+        );
+        setArrivalDate(
+          registration.arrivalDate
+            ? String(registration.arrivalDate).slice(0, 10)
+            : "",
+        );
+        setArrivalTime(registration.arrivalTime || "");
+        setArrivalAirline(registration.arrivalAirline || "");
+        setArrivalFlight(registration.arrivalFlight || "");
+
+        setDepartureTransfer(
+          registration.departureTransfer ? "YES" : "NO",
+        );
+        setDepartureDate(
+          registration.departureDate
+            ? String(registration.departureDate).slice(0, 10)
+            : "",
+        );
+        setDepartureTime(registration.departureTime || "");
+        setDepartureAirline(registration.departureAirline || "");
+        setDepartureFlight(registration.departureFlight || "");
+
+        setRegistrationAccess("AUTHORISED");
+      } catch {
+        setRegistrationAccess("DENIED");
+      }
+    }
+
+    checkRegistrationAccess();
+  }, [registrationId]);
+
+  if (registrationAccess === "LOADING") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-sm text-white/45">
+            Loading travel details...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (registrationAccess === "DENIED") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-4xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
@@ -22,7 +112,7 @@ function ProfessionalTravelPageContent() {
           <RevelationX1Logo />
 
           <Link
-            href="/professional-registration"
+            href={`/professional-registration/details?registration=${registrationId}`}
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
             Back
@@ -45,6 +135,8 @@ function ProfessionalTravelPageContent() {
           </p>
         </div>
       </section>
+
+      <ProfessionalRegistrationProgress currentStep={3} />
 
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
 <form
@@ -69,8 +161,8 @@ function ProfessionalTravelPageContent() {
     value={departureTransfer}
   />
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 sm:p-10">
-            <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-              Step 3
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+              Step 3 of 6
             </div>
 
             <h2 className="mt-3 text-2xl font-black">
@@ -111,6 +203,10 @@ function ProfessionalTravelPageContent() {
                     name="arrivalDate"
                     type="date"
                     required
+                    value={arrivalDate}
+                    onChange={(event) =>
+                      setArrivalDate(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -121,6 +217,10 @@ function ProfessionalTravelPageContent() {
                     name="arrivalTime"
                     type="time"
                     required
+                    value={arrivalTime}
+                    onChange={(event) =>
+                      setArrivalTime(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -131,6 +231,10 @@ function ProfessionalTravelPageContent() {
                     name="arrivalAirline"
                     type="text"
                     required
+                    value={arrivalAirline}
+                    onChange={(event) =>
+                      setArrivalAirline(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -141,6 +245,10 @@ function ProfessionalTravelPageContent() {
                     name="arrivalFlight"
                     type="text"
                     required
+                    value={arrivalFlight}
+                    onChange={(event) =>
+                      setArrivalFlight(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -182,6 +290,10 @@ function ProfessionalTravelPageContent() {
                     name="departureDate"
                     type="date"
                     required
+                    value={departureDate}
+                    onChange={(event) =>
+                      setDepartureDate(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -192,6 +304,10 @@ function ProfessionalTravelPageContent() {
                     name="departureTime"
                     type="time"
                     required
+                    value={departureTime}
+                    onChange={(event) =>
+                      setDepartureTime(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -202,6 +318,10 @@ function ProfessionalTravelPageContent() {
                     name="departureAirline"
                     type="text"
                     required
+                    value={departureAirline}
+                    onChange={(event) =>
+                      setDepartureAirline(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -212,6 +332,10 @@ function ProfessionalTravelPageContent() {
                     name="departureFlight"
                     type="text"
                     required
+                    value={departureFlight}
+                    onChange={(event) =>
+                      setDepartureFlight(event.target.value)
+                    }
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none"
                   />
                 </label>
@@ -221,7 +345,7 @@ function ProfessionalTravelPageContent() {
 
           <div className="flex items-center justify-between">
             <Link
-              href="/professional-registration"
+              href={`/professional-registration/details?registration=${registrationId}`}
               className="text-sm font-semibold text-white/50 transition hover:text-white"
             >
               ← Back

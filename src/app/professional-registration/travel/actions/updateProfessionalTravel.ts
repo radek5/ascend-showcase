@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { checkProfessionalRegistrationAccess } from "@/lib/professionals/registrationOwnership";
 
 export async function updateProfessionalTravel(
   formData: FormData,
@@ -20,14 +21,21 @@ export async function updateProfessionalTravel(
     throw new Error("Professional registration ID missing.");
   }
 
-  const registration =
-    await prisma.professionalRegistration.findUnique({
-      where: { id: registrationId },
-      select: { id: true },
-    });
+  const access =
+    await checkProfessionalRegistrationAccess(
+      registrationId,
+    );
 
-  if (!registration) {
-    throw new Error("Professional registration not found.");
+  if (!access.authorised) {
+    throw new Error(
+      "Professional registration not found or not authorised.",
+    );
+  }
+
+  if (access.status !== "DRAFT") {
+    throw new Error(
+      "This professional registration has already been submitted.",
+    );
   }
 
   const arrivalDate = String(
@@ -86,11 +94,13 @@ export async function updateProfessionalTravel(
     );
   }
 
-  await prisma.professionalRegistration.update({
-    where: {
-      id: registrationId,
-    },
-    data: {
+  const update =
+    await prisma.professionalRegistration.updateMany({
+      where: {
+        id: registrationId,
+        status: "DRAFT",
+      },
+      data: {
       arrivalTransfer,
 
       arrivalDate:
@@ -124,6 +134,12 @@ export async function updateProfessionalTravel(
         departureTransfer ? departureFlight || null : null,
     },
   });
+
+  if (update.count !== 1) {
+    throw new Error(
+      "This professional registration can no longer be changed.",
+    );
+  }
 
   redirect(
     `/professional-registration/accommodation?registration=${registrationId}`,

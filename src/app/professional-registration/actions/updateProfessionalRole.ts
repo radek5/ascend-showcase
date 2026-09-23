@@ -4,19 +4,24 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { checkProfessionalRegistrationAccess } from "@/lib/professionals/registrationOwnership";
 
-export async function updateProfessionalAccommodation(
+const ALLOWED_ROLES = [
+  "CLUB_REPRESENTATIVE",
+  "SCOUT",
+  "FOOTBALL_AGENT",
+] as const;
+
+type ProfessionalRole =
+  (typeof ALLOWED_ROLES)[number];
+
+export async function updateProfessionalRole(
   formData: FormData,
 ) {
   const registrationId = String(
     formData.get("registrationId") || "",
   ).trim();
 
-  const hotelStatus = String(
-    formData.get("hotelStatus") || "",
-  ).trim();
-
-  const lagosAddress = String(
-    formData.get("lagosAddress") || "",
+  const role = String(
+    formData.get("role") || "",
   ).trim();
 
   if (!registrationId) {
@@ -26,16 +31,12 @@ export async function updateProfessionalAccommodation(
   }
 
   if (
-    !["YES", "NO", "NOT_BOOKED"].includes(hotelStatus)
+    !ALLOWED_ROLES.includes(
+      role as ProfessionalRole,
+    )
   ) {
     throw new Error(
-      "Please select your accommodation status.",
-    );
-  }
-
-  if (hotelStatus === "NO" && !lagosAddress) {
-    throw new Error(
-      "Please provide your address in Lagos.",
+      "Please select a valid professional role.",
     );
   }
 
@@ -63,13 +64,9 @@ export async function updateProfessionalAccommodation(
         status: "DRAFT",
       },
       data: {
-      hotelStatus,
-      lagosAddress:
-        hotelStatus === "NO"
-          ? lagosAddress
-          : null,
-    },
-  });
+        role: role as ProfessionalRole,
+      },
+    });
 
   if (update.count !== 1) {
     throw new Error(
@@ -78,6 +75,6 @@ export async function updateProfessionalAccommodation(
   }
 
   redirect(
-    `/professional-registration/review?registration=${registrationId}`,
+    `/professional-registration/details?registration=${registrationId}`,
   );
 }

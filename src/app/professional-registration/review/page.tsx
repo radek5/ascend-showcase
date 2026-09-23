@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { checkProfessionalRegistrationAccess } from "@/lib/professionals/registrationOwnership";
+import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
 
 function formatDate(value: Date | null) {
   if (!value) return "Not provided";
@@ -22,6 +25,29 @@ export default async function ProfessionalReviewPage({
           </h1>
         </div>
       </main>
+    );
+  }
+
+  const access =
+    await checkProfessionalRegistrationAccess(
+      registrationId,
+    );
+
+  if (!access.authorised) {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (access.status !== "DRAFT") {
+    redirect(
+      `/professional-registration/confirmation?registration=${registrationId}`,
     );
   }
 
@@ -62,7 +88,12 @@ export default async function ProfessionalReviewPage({
         </div>
       </section>
 
+      <ProfessionalRegistrationProgress currentStep={5} />
+
       <section className="mx-auto max-w-4xl space-y-8 px-6 py-16 lg:px-8">
+        <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+          Step 5 of 6
+        </div>
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
           <div className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
             Accreditation

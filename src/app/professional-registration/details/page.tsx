@@ -4,18 +4,105 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { createProfessionalRegistration } from "./actions/createProfessionalRegistration";
+import { updateProfessionalRegistrationDetails } from "./actions/updateProfessionalRegistrationDetails";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
 
 function ProfessionalDetailsPageContent() {
   const searchParams = useSearchParams();
 
-  const role = searchParams.get("role") || "";
+  const roleFromQuery = searchParams.get("role") || "";
+  const registrationId =
+    searchParams.get("registration") || "";
 
+  const isEditMode = Boolean(registrationId);
+
+  const [role, setRole] = useState(roleFromQuery);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [fileName, setFileName] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  const [hasExistingHeadshot, setHasExistingHeadshot] =
+    useState(false);
+
+  const [registrationAccess, setRegistrationAccess] = useState<
+    "LOADING" | "AUTHORISED" | "DENIED"
+  >(isEditMode ? "LOADING" : "AUTHORISED");
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+
+    async function loadRegistration() {
+      try {
+        const response = await fetch(
+          `/api/professional-registration/${registrationId}`,
+        );
+
+        if (!response.ok) {
+          setRegistrationAccess("DENIED");
+          return;
+        }
+
+        const registration = await response.json();
+
+        if (registration.status !== "DRAFT") {
+          setRegistrationAccess("DENIED");
+          return;
+        }
+
+        setRole(registration.role || "");
+        setFullName(registration.fullName || "");
+        setEmail(registration.email || "");
+        setPhone(registration.phone || "");
+        setHasExistingHeadshot(
+          Boolean(registration.headshotUrl),
+        );
+
+        if (registration.headshotUrl) {
+          setPreview(
+            `/api/professional-registration/${registrationId}/headshot`,
+          );
+        }
+
+        setRegistrationAccess("AUTHORISED");
+      } catch (error) {
+        console.error(
+          "Unable to load professional registration:",
+          error,
+        );
+        setRegistrationAccess("DENIED");
+      }
+    }
+
+    loadRegistration();
+  }, [isEditMode, registrationId]);
+
+  if (registrationAccess === "LOADING") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-sm text-white/45">
+            Loading registration details...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (registrationAccess === "DENIED") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
@@ -24,7 +111,11 @@ function ProfessionalDetailsPageContent() {
           <RevelationX1Logo />
 
           <Link
-            href="/professional-registration"
+            href={
+              isEditMode
+                ? `/professional-registration?registration=${registrationId}`
+                : "/professional-registration"
+            }
             className="text-sm font-medium text-white/60 transition hover:text-white"
           >
             Back
@@ -48,10 +139,12 @@ function ProfessionalDetailsPageContent() {
         </div>
       </section>
 
+      <ProfessionalRegistrationProgress currentStep={2} />
+
       <section className="mx-auto max-w-3xl px-6 py-16 lg:px-8">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 sm:p-10">
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Step 2
+          <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+            Step 2 of 6
           </div>
 
           <h2 className="mt-3 text-2xl font-black">
@@ -70,9 +163,21 @@ function ProfessionalDetailsPageContent() {
           </p>
 
           <form
-            action={createProfessionalRegistration}
+            action={
+              isEditMode
+                ? updateProfessionalRegistrationDetails
+                : createProfessionalRegistration
+            }
             className="mt-8 grid gap-6"
           >
+            {isEditMode && (
+              <input
+                type="hidden"
+                name="registrationId"
+                value={registrationId}
+              />
+            )}
+
             <input
               type="hidden"
               name="role"
@@ -144,20 +249,32 @@ function ProfessionalDetailsPageContent() {
 
                 <div>
                   <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90">
-                    Upload Headshot
+                    {isEditMode && hasExistingHeadshot
+                      ? "Replace Headshot"
+                      : "Upload Headshot"}
 
                     <input
                       name="headshot"
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
-                      required
+                      required={
+                        !isEditMode ||
+                        !hasExistingHeadshot
+                      }
                       className="sr-only"
                       onChange={(event) => {
                         const file = event.target.files?.[0];
 
                         if (!file) {
                           setFileName("");
-                          setPreview(null);
+
+                          setPreview(
+                            isEditMode &&
+                              hasExistingHeadshot
+                              ? `/api/professional-registration/${registrationId}/headshot`
+                              : null,
+                          );
+
                           return;
                         }
 
@@ -180,7 +297,9 @@ function ProfessionalDetailsPageContent() {
                     </div>
                   ) : (
                     <div className="mt-3 text-xs text-white/35">
-                      No photo selected
+                      {isEditMode && hasExistingHeadshot
+                        ? "Current headshot retained unless replaced"
+                        : "No photo selected"}
                     </div>
                   )}
 
@@ -194,7 +313,11 @@ function ProfessionalDetailsPageContent() {
 
             <div className="mt-4 flex items-center justify-between">
               <Link
-                href="/professional-registration"
+                href={
+              isEditMode
+                ? `/professional-registration?registration=${registrationId}`
+                : "/professional-registration"
+            }
                 className="text-sm font-semibold text-white/50 transition hover:text-white"
               >
                 ← Back

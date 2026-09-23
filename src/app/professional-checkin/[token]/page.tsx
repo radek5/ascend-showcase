@@ -89,7 +89,7 @@ export default async function ProfessionalCheckInPage({
             <div className="mt-5 aspect-square overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/30">
               {registration.headshotUrl ? (
                 <img
-                  src={`/api/professional-registration/${registration.id}/headshot`}
+                  src={`/api/professional-checkin/${token}/headshot`}
                   alt={`${registration.fullName} accreditation headshot`}
                   className="h-full w-full object-cover"
                 />

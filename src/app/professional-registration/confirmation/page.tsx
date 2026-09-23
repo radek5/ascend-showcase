@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
+import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
+import { checkProfessionalRegistrationAccess } from "@/lib/professionals/registrationOwnership";
 
 export default async function ProfessionalConfirmationPage({
   searchParams,
@@ -9,11 +11,39 @@ export default async function ProfessionalConfirmationPage({
 }) {
   const { registration: registrationId } = await searchParams;
 
-  const registration = registrationId
-    ? await prisma.professionalRegistration.findUnique({
-        where: { id: registrationId },
-      })
-    : null;
+  if (!registrationId) {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
+    );
+  }
+
+  const access =
+    await checkProfessionalRegistrationAccess(
+      registrationId,
+    );
+
+  if (!access.authorised) {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
+    );
+  }
+
+  const registration =
+    await prisma.professionalRegistration.findUnique({
+      where: { id: registrationId },
+    });
 
   if (!registration) {
     return (
@@ -27,11 +57,44 @@ export default async function ProfessionalConfirmationPage({
     );
   }
 
+  const statusLabel = {
+    DRAFT: "REGISTRATION IN PROGRESS",
+    SUBMITTED: "SUBMITTED FOR REVIEW",
+    UNDER_REVIEW: "UNDER REVIEW",
+    APPROVED: "APPROVED — ACCREDITATION PENDING",
+    MORE_INFO_REQUIRED: "MORE INFORMATION REQUIRED",
+    REJECTED: "NOT APPROVED",
+    ACCREDITED: "ACCREDITATION ISSUED",
+    CHECKED_IN: "CHECKED IN",
+  }[registration.status];
+
   return (
     <main className="min-h-screen bg-[#090909] text-white">
+      <section className="border-b border-white/10 bg-white/[0.02]">
+        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+          <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
+            Lagos 2027
+          </div>
+
+          <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
+            Professional Registration
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-white/55">
+            Your professional registration status and next steps.
+          </p>
+        </div>
+      </section>
+
+      <ProfessionalRegistrationProgress currentStep={6} />
+
       <section className="mx-auto max-w-3xl px-6 py-20">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 sm:p-10">
-          <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
+          <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+            Step 6 of 6
+          </div>
+
+          <div className="mt-3 text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
             Registration Submitted
           </div>
 
@@ -66,7 +129,7 @@ export default async function ProfessionalConfirmationPage({
             </div>
 
             <div className="mt-1 font-bold text-[#c7ff2f]">
-              SUBMITTED FOR REVIEW
+              {statusLabel}
             </div>
           </div>
 

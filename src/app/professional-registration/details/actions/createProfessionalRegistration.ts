@@ -3,6 +3,7 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { createProfessionalRegistrationSession } from "@/lib/professionals/session";
 import {
   r2,
   R2_BUCKET_NAME,
@@ -173,6 +174,10 @@ export async function createProfessionalRegistration(
       "Unable to upload the headshot. Please try again.",
     );
   }
+
+  await createProfessionalRegistrationSession({
+    professionalRegistrationId: registration.id,
+  });
 
   redirect(
     `/professional-registration/travel?registration=${registration.id}`,

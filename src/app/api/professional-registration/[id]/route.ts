@@ -1,11 +1,33 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  checkProfessionalRegistrationAccess,
+  getProfessionalRegistrationAccessError,
+} from "@/lib/professionals/registrationOwnership";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
+
+  const access =
+    await checkProfessionalRegistrationAccess(id);
+
+  if (!access.authorised) {
+    const error =
+      getProfessionalRegistrationAccessError(access);
+
+    return NextResponse.json(
+      {
+        error: error.error,
+        code: error.code,
+      },
+      {
+        status: error.status,
+      },
+    );
+  }
 
   const registration =
     await prisma.professionalRegistration.findUnique({

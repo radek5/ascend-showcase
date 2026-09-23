@@ -2,6 +2,11 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentStaffUser } from "@/lib/staff/auth";
+import {
+  checkProfessionalRegistrationAccess,
+  getProfessionalRegistrationAccessError,
+} from "@/lib/professionals/registrationOwnership";
 import {
   r2,
   R2_BUCKET_NAME,
@@ -12,6 +17,29 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
+
+  const staffUser =
+    await getCurrentStaffUser();
+
+  if (!staffUser) {
+    const access =
+      await checkProfessionalRegistrationAccess(id);
+
+    if (!access.authorised) {
+      const error =
+        getProfessionalRegistrationAccessError(access);
+
+      return NextResponse.json(
+        {
+          error: error.error,
+          code: error.code,
+        },
+        {
+          status: error.status,
+        },
+      );
+    }
+  }
 
   const registration =
     await prisma.professionalRegistration.findUnique({

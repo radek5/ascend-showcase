@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { updateProfessionalAccommodation } from "./actions/updateProfessionalAccommodation";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
+import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
 
 function AccommodationPageContent() {
   const searchParams = useSearchParams();
@@ -13,6 +14,7 @@ function AccommodationPageContent() {
     searchParams.get("registration") || "";
 
   const [hotelStatus, setHotelStatus] = useState("");
+  const [lagosAddress, setLagosAddress] = useState("");
 
 const [professional, setProfessional] = useState<{
   id: string;
@@ -33,14 +35,19 @@ const [professional, setProfessional] = useState<{
   departureTime: string | null;
   departureAirline: string | null;
   departureFlight: string | null;
+
+  hotelStatus: string | null;
+  lagosAddress: string | null;
 } | null>(null);
 
-const [loadingProfessional, setLoadingProfessional] = useState(true);
+const [registrationAccess, setRegistrationAccess] = useState<
+  "LOADING" | "AUTHORISED" | "DENIED"
+>("LOADING");
 
 useEffect(() => {
   async function loadProfessional() {
     if (!registrationId) {
-      setLoadingProfessional(false);
+      setRegistrationAccess("DENIED");
       return;
     }
 
@@ -50,24 +57,51 @@ useEffect(() => {
       );
 
       if (!response.ok) {
-        throw new Error("Unable to load registration.");
+        setRegistrationAccess("DENIED");
+        return;
       }
 
       const data = await response.json();
 
       setProfessional(data);
+      setHotelStatus(data.hotelStatus || "");
+      setLagosAddress(data.lagosAddress || "");
+      setRegistrationAccess("AUTHORISED");
     } catch (error) {
       console.error(
         "Unable to load professional registration:",
         error,
       );
-    } finally {
-      setLoadingProfessional(false);
+      setRegistrationAccess("DENIED");
     }
   }
 
   loadProfessional();
 }, [registrationId]);
+
+  if (registrationAccess === "LOADING") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-sm text-white/45">
+            Loading accommodation details...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (registrationAccess === "DENIED") {
+    return (
+      <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
+        <div className="mx-auto max-w-4xl">
+          <h1 className="text-3xl font-black">
+            Registration not found
+          </h1>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
@@ -100,6 +134,8 @@ useEffect(() => {
         </div>
       </section>
 
+      <ProfessionalRegistrationProgress currentStep={4} />
+
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <form
   action={updateProfessionalAccommodation}
@@ -118,8 +154,8 @@ useEffect(() => {
   />    
 
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 sm:p-10">
-            <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-              Step 4
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
+              Step 4 of 6
             </div>
 
             <h2 className="mt-3 text-2xl font-black">
@@ -196,6 +232,10 @@ useEffect(() => {
                     name="lagosAddress"
                     required
                     rows={4}
+                    value={lagosAddress}
+                    onChange={(event) =>
+                      setLagosAddress(event.target.value)
+                    }
                     placeholder="Hotel name and address, apartment or other accommodation details"
                     className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
                   />
@@ -258,36 +298,28 @@ useEffect(() => {
               <div>
                 <div className="text-white/35">Name</div>
                 <div className="mt-1 font-semibold">
-                  {loadingProfessional
-                     ? "Loading..."
-                     : professional?.fullName || "Not provided"}
+                  {professional?.fullName || "Not provided"}
                 </div>
               </div>
 
               <div>
                 <div className="text-white/35">Role</div>
                 <div className="mt-1 font-semibold">
-                  {loadingProfessional
-                    ? "Loading..."
-                    : professional?.role.replaceAll("_", " ") || "Not provided"}
+                  {professional?.role.replaceAll("_", " ") || "Not provided"}
                 </div>
               </div>
 
               <div>
                 <div className="text-white/35">Email</div>
                 <div className="mt-1 font-semibold">
-                  {loadingProfessional
-                    ? "Loading..."
-                    : professional?.email || "Not provided"}
+                  {professional?.email || "Not provided"}
                 </div>
               </div>
 
               <div>
                 <div className="text-white/35">Mobile / WhatsApp</div>
                 <div className="mt-1 font-semibold">
-                  {loadingProfessional
-                    ? "Loading..."
-                    : professional?.phone || "Not provided"}
+                  {professional?.phone || "Not provided"}
                 </div>
               </div>
 
