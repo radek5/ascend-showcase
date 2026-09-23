@@ -32,6 +32,12 @@ export async function sendProfessionalRegistrationConfirmation({
     );
   }
 
+  if (!registration.registrationNumber) {
+    throw new Error(
+      "Professional registration number must be allocated before sending confirmation.",
+    );
+  }
+
   if (
     registration.submissionEmailSentAt &&
     !force
@@ -113,6 +119,19 @@ export async function sendProfessionalRegistrationConfirmation({
     </div>
 
     <div style="margin-top:18px;font-size:11px;font-weight:700;letter-spacing:2px;color:#7e7e7e;">
+      REGISTRATION NUMBER
+    </div>
+
+    <div style="margin-top:8px;font-size:22px;font-weight:900;letter-spacing:1px;color:#ffffff;">
+      ${registration.registrationNumber}
+    </div>
+
+    <div style="margin-top:6px;font-size:12px;color:#8d8d8d;line-height:1.6;">
+      This is your permanent REVELATIONX1 Lagos 2027 professional registration number.
+      Please keep it for your records.
+    </div>
+
+    <div style="margin-top:18px;font-size:11px;font-weight:700;letter-spacing:2px;color:#7e7e7e;">
       REGISTRATION ROLE
     </div>
 
@@ -150,8 +169,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 
   <p style="margin:14px 0 0;color:#a9a9a9;line-height:1.7;">
     If your registration is approved, you will subsequently
-    receive your professional accreditation and event access
-    information.
+    receive your event pass and event access information.
   </p>
 
 </td>
@@ -193,7 +211,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
     from: `"${fromName}" <${fromEmail}>`,
     to: registration.email,
     subject:
-      "REVELATIONX1 Lagos 2027 — Professional Registration Received",
+      `${registration.registrationNumber} — REVELATIONX1 Lagos 2027 Professional Registration Received`,
     html,
   });
 

@@ -301,7 +301,10 @@ model ProfessionalRegistration {
   eventId String
   event   Event  @relation(fields: [eventId], references: [id])
 
-  // Accreditation
+  // Permanent professional-facing registration identity
+  registrationNumber     String?   @unique
+
+  // Accreditation / event access
   accreditationNumber    String?   @unique
   checkInToken           String?   @unique
   checkedInAt            DateTime?

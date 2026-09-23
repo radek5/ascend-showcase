@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { sendProfessionalRegistrationConfirmation } from "@/lib/email/sendProfessionalRegistrationConfirmation";
+import { allocateProfessionalRegistrationNumber } from "@/lib/professionals/allocateProfessionalRegistrationNumber";
 import {
   checkProfessionalRegistrationAccess,
   getProfessionalRegistrationAccessError,
@@ -126,6 +127,17 @@ export async function POST(
       },
     );
   }
+
+  /*
+   * Allocate the permanent professional registration
+   * number only after submission has succeeded.
+   *
+   * This number identifies the registration. It does
+   * not represent approval or event access.
+   */
+  await allocateProfessionalRegistrationNumber({
+    registrationId: id,
+  });
 
   try {
     await sendProfessionalRegistrationConfirmation({

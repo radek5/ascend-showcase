@@ -124,6 +124,18 @@ export default async function ProfessionalConfirmationPage({
               {registration.role.replaceAll("_", " ")}
             </div>
 
+            {registration.registrationNumber ? (
+              <>
+                <div className="mt-5 text-sm text-white/40">
+                  Professional Registration Number
+                </div>
+
+                <div className="mt-1 text-xl font-black tracking-[0.04em] text-[#c7ff2f]">
+                  {registration.registrationNumber}
+                </div>
+              </>
+            ) : null}
+
             <div className="mt-5 text-sm text-white/40">
               Status
             </div>
@@ -133,6 +145,23 @@ export default async function ProfessionalConfirmationPage({
             </div>
           </div>
 
+          {registration.submissionEmailSentAt ? (
+            <div className="mt-6 rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-5">
+              <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
+                Confirmation Email Sent
+              </div>
+
+              <p className="mt-2 text-sm leading-6 text-white/60">
+                A confirmation email has been sent to{" "}
+                <span className="font-bold text-white">
+                  {registration.email}
+                </span>
+                . It includes your professional registration number. Please
+                keep it for your records.
+              </p>
+            </div>
+          ) : null}
+
           <div className="mt-6 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-6">
             <div className="text-xs font-black uppercase tracking-[0.16em] text-[#c7ff2f]">
               What Happens Next
@@ -140,16 +169,14 @@ export default async function ProfessionalConfirmationPage({
 
             <p className="mt-3 text-sm leading-6 text-white/60">
               The REVELATIONX1 team will review your professional
-              registration before accreditation is approved. If your
-              registration is approved, your professional accreditation,
-              event credential and check-in information will be issued
-              separately.
+              registration. If your registration is approved, your event
+              pass and check-in information will be issued separately.
             </p>
           </div>
 
           <p className="mt-6 text-sm leading-6 text-white/45">
             Submission of a professional registration does not itself
-            grant event accreditation or access to restricted event areas.
+            grant approval or access to restricted event areas.
           </p>
 
           <div className="mt-8">
