@@ -52,8 +52,8 @@ export default async function ProfessionalBadgePage({
           </h1>
 
           <p className="mt-4 leading-7 text-white/50">
-            This professional must complete ASCEND event check-in
-            before an accreditation badge can be printed.
+            This professional must complete REVELATIONX1 event check-in
+            before an Event Pass badge can be printed.
           </p>
 
           <Link
@@ -71,12 +71,12 @@ export default async function ProfessionalBadgePage({
     process.env.NEXT_PUBLIC_APP_URL ||
     "";
 
-  const accreditationUrl =
+  const eventPassUrl =
     `${appUrl}/professional-checkin/${token}`;
 
   const qrDataUrl =
     await QRCode.toDataURL(
-      accreditationUrl,
+      eventPassUrl,
       {
         width: 500,
         margin: 1,
@@ -144,7 +144,7 @@ export default async function ProfessionalBadgePage({
           {/* HEADER */}
           <div className="bg-black px-[8mm] pb-[5mm] pt-[7mm] text-white">
             <div className="text-[20px] font-black tracking-[0.28em]">
-              ASCEND
+              REVELATIONX1
             </div>
 
             <div className="mt-[1mm] text-[8px] font-bold uppercase tracking-[0.22em] text-white/55">
@@ -157,7 +157,7 @@ export default async function ProfessionalBadgePage({
               </div>
 
               <div className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/60">
-                Professional Accreditation
+                Professional Event Pass
               </div>
             </div>
           </div>
@@ -190,11 +190,11 @@ export default async function ProfessionalBadgePage({
             </div>
 
             <div className="mt-[4mm] text-[8px] font-bold uppercase tracking-[0.14em] text-black/45">
-              Accreditation Number
+              Professional Registration Number
             </div>
 
             <div className="mt-[1mm] text-[15px] font-black tracking-[0.03em]">
-              {registration.accreditationNumber}
+              {registration.registrationNumber}
             </div>
           </div>
 
@@ -203,7 +203,7 @@ export default async function ProfessionalBadgePage({
             <div className="h-[28mm] w-[28mm] shrink-0">
               <img
                 src={qrDataUrl}
-                alt="Professional accreditation QR"
+                alt="Professional Event Pass QR"
                 className="h-full w-full"
               />
             </div>
@@ -215,11 +215,11 @@ export default async function ProfessionalBadgePage({
 
               <p className="mt-[1.5mm] text-[7px] leading-[1.45] text-black/55">
                 This credential must be displayed while inside
-                ASCEND controlled event areas.
+                REVELATIONX1 controlled event areas.
               </p>
 
               <div className="mt-[2mm] text-[7px] font-bold uppercase tracking-[0.08em]">
-                Scan to verify accreditation
+                Scan to verify Event Pass
               </div>
             </div>
           </div>

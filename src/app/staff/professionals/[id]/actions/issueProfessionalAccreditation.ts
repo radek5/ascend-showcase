@@ -7,12 +7,6 @@ import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
 import { sendProfessionalAccreditation } from "@/lib/email/sendProfessionalAccreditation";
 
-function generateAccreditationNumber() {
-  return `RX1-LAG27-PR-${randomBytes(6)
-    .toString("hex")
-    .toUpperCase()}`;
-}
-
 function generateCheckInToken() {
   return randomBytes(32).toString("hex");
 }
@@ -51,7 +45,6 @@ export async function issueProfessionalAccreditation(
         id: true,
         status: true,
         archivedAt: true,
-        accreditationNumber: true,
         checkInToken: true,
       },
     });
@@ -62,12 +55,11 @@ export async function issueProfessionalAccreditation(
     registration.status !== "APPROVED"
   ) {
     throw new Error(
-      "This professional registration is not available for accreditation.",
+      "This professional registration is not available for Event Pass issuance.",
     );
   }
 
   if (
-    registration.accreditationNumber ||
     registration.checkInToken
   ) {
     throw new Error(
@@ -75,8 +67,6 @@ export async function issueProfessionalAccreditation(
     );
   }
 
-  const accreditationNumber =
-    generateAccreditationNumber();
   const checkInToken = generateCheckInToken();
 
   const transition =
@@ -85,19 +75,17 @@ export async function issueProfessionalAccreditation(
         id: registrationId,
         status: "APPROVED",
         archivedAt: null,
-        accreditationNumber: null,
         checkInToken: null,
       },
       data: {
         status: "ACCREDITED",
-        accreditationNumber,
         checkInToken,
       },
     });
 
   if (transition.count !== 1) {
     throw new Error(
-      "This professional registration is no longer available for accreditation.",
+      "This professional registration is no longer available for Event Pass issuance.",
     );
   }
 
@@ -109,7 +97,7 @@ export async function issueProfessionalAccreditation(
     });
   } catch (error) {
     console.error(
-      "Professional accreditation issued, but email delivery failed.",
+      "Professional Event Pass issued, but email delivery failed.",
       {
         registrationId,
         error,

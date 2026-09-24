@@ -100,14 +100,14 @@ export default async function ProfessionalReviewPage({
           <aside>
             <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
               <div className="text-xs font-black uppercase tracking-[0.18em] text-white/35">
-                Accreditation Identity
+                Professional Identity
               </div>
 
               <div className="mt-5 aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/30">
                 {registration.headshotUrl ? (
                   <img
                     src={`/api/professional-registration/${registration.id}/headshot`}
-                    alt={`${registration.fullName} accreditation headshot`}
+                    alt={`${registration.fullName} professional headshot`}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -129,17 +129,17 @@ export default async function ProfessionalReviewPage({
 
               <div className="mt-6 border-t border-white/10 pt-5">
                 <div className="text-xs text-white/35">
-                  Accreditation number
+                  Professional registration number
                 </div>
 
                 <div className="mt-1 break-words text-sm font-bold">
-                  {registration.accreditationNumber || "Not issued"}
+                  {registration.registrationNumber || "Not issued"}
                 </div>
               </div>
 
               <div className="mt-4">
                 <div className="text-xs text-white/35">
-                  Credential
+                  Event Pass
                 </div>
 
                 <div className="mt-1 text-sm font-bold">
@@ -434,7 +434,7 @@ export default async function ProfessionalReviewPage({
 
                 <div>
                   <div className="text-white/35">
-                    Accreditation email
+                    Event Pass email
                   </div>
                   <div className="mt-1 font-semibold">
                     {formatDateTime(
@@ -465,7 +465,7 @@ export default async function ProfessionalReviewPage({
                     This registration has been submitted and is ready
                     for staff review. Starting review moves the
                     registration to UNDER REVIEW. It does not approve
-                    the professional or issue accreditation.
+                    the professional or issue an Event Pass.
                   </p>
 
                   <form
@@ -490,9 +490,9 @@ export default async function ProfessionalReviewPage({
                 <>
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
                     This registration is under staff review. Approval
-                    confirms that the professional may proceed to the
-                    accreditation stage. It does not issue an
-                    accreditation credential or permit event check-in.
+                    confirms that the professional may proceed to Event
+                    Pass issuance. It does not issue the Event Pass or
+                    permit event check-in.
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-3">
@@ -537,10 +537,9 @@ export default async function ProfessionalReviewPage({
                 <>
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
                     This professional has been approved for attendance.
-                    Accreditation has not yet been issued. Issuing
-                    accreditation creates the event credential and
-                    check-in token, then attempts to email the QR
-                    credential to the professional.
+                    The Event Pass has not yet been issued. Issuing the
+                    Event Pass creates the check-in token and then attempts
+                    to email the QR Event Pass to the professional.
                   </p>
 
                   <form
@@ -557,24 +556,24 @@ export default async function ProfessionalReviewPage({
                       type="submit"
                       className="rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition hover:brightness-110"
                     >
-                      Issue Accreditation
+                      Issue Event Pass
                     </button>
                   </form>
 
                   <p className="mt-5 max-w-3xl text-xs leading-5 text-white/35">
-                    This action creates the professional&apos;s event
-                    credential. Once issued, the registration moves to
-                    ACCREDITED and becomes eligible for event check-in.
+                    This action creates the professional&apos;s Event
+                    Pass. Once issued, the registration becomes eligible
+                    for event check-in.
                   </p>
                 </>
               ) : registration.status === "ACCREDITED" &&
                 !registration.approvalEmailSentAt ? (
                 <>
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-white/55">
-                    Accreditation has been issued, but the accreditation
+                    The Event Pass has been issued, but the Event Pass
                     email has not been recorded as sent. The existing
-                    credential can be emailed again without creating a
-                    new accreditation number or check-in token.
+                    Event Pass can be emailed again without creating a
+                    new check-in token.
                   </p>
 
                   <form
@@ -591,7 +590,7 @@ export default async function ProfessionalReviewPage({
                       type="submit"
                       className="rounded-full bg-[#c7ff2f] px-6 py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition hover:brightness-110"
                     >
-                      Send Accreditation Email
+                      Send Event Pass Email
                     </button>
                   </form>
                 </>

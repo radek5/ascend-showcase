@@ -29,7 +29,7 @@ export async function resendProfessionalAccreditation(
       select: {
         status: true,
         archivedAt: true,
-        accreditationNumber: true,
+        registrationNumber: true,
         checkInToken: true,
         approvalEmailSentAt: true,
       },
@@ -41,22 +41,22 @@ export async function resendProfessionalAccreditation(
     registration.status !== "ACCREDITED"
   ) {
     throw new Error(
-      "This professional registration is not available for accreditation email delivery.",
+      "This professional registration is not available for Event Pass email delivery.",
     );
   }
 
   if (
-    !registration.accreditationNumber ||
+    !registration.registrationNumber ||
     !registration.checkInToken
   ) {
     throw new Error(
-      "Professional accreditation credentials are incomplete.",
+      "Professional Event Pass credentials are incomplete.",
     );
   }
 
   if (registration.approvalEmailSentAt) {
     throw new Error(
-      "The professional accreditation email has already been sent.",
+      "The professional Event Pass email has already been sent.",
     );
   }
 

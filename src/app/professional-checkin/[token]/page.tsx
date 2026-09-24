@@ -26,15 +26,15 @@ export default async function ProfessionalCheckInPage({
         <div className="mx-auto max-w-3xl">
           <div className="rounded-[2rem] border border-red-500/20 bg-red-500/[0.05] p-8">
             <div className="text-xs font-black uppercase tracking-[0.2em] text-red-400">
-              Invalid Accreditation
+              Invalid Event Pass
             </div>
 
             <h1 className="mt-4 text-3xl font-black">
-              Accreditation Not Found
+              Event Pass Not Found
             </h1>
 
             <p className="mt-4 text-white/55">
-              This professional accreditation QR code is invalid or no longer
+              This professional Event Pass QR code is invalid or no longer
               available.
             </p>
           </div>
@@ -65,11 +65,11 @@ export default async function ProfessionalCheckInPage({
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            ASCEND Lagos 2027
+            REVELATIONX1 Lagos 2027
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
-            Professional Accreditation
+            Professional Event Pass
           </h1>
 
           <p className="mt-3 text-white/50">
@@ -83,14 +83,14 @@ export default async function ProfessionalCheckInPage({
           {/* HEADSHOT */}
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
             <div className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
-              Accreditation Photo
+              Professional Photo
             </div>
 
             <div className="mt-5 aspect-square overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/30">
               {registration.headshotUrl ? (
                 <img
                   src={`/api/professional-checkin/${token}/headshot`}
-                  alt={`${registration.fullName} accreditation headshot`}
+                  alt={`${registration.fullName} professional headshot`}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -101,15 +101,15 @@ export default async function ProfessionalCheckInPage({
             </div>
 
             <div className="mt-5 text-xs leading-5 text-white/35">
-              ASCEND staff should confirm that the attendee matches this
+              REVELATIONX1 staff should confirm that the attendee matches this
               photograph before completing check-in.
             </div>
           </div>
 
-          {/* ACCREDITATION DETAILS */}
+          {/* EVENT PASS DETAILS */}
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8">
             <div className="text-xs font-black uppercase tracking-[0.2em] text-[#c7ff2f]">
-              Professional Accreditation
+              Professional Event Pass
             </div>
 
             <h2 className="mt-4 text-3xl font-black">
@@ -123,17 +123,17 @@ export default async function ProfessionalCheckInPage({
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <div>
                 <div className="text-sm text-white/35">
-                  Accreditation number
+                  Professional registration number
                 </div>
 
                 <div className="mt-1 text-lg font-black">
-                  {registration.accreditationNumber || "Not issued"}
+                  {registration.registrationNumber || "Not issued"}
                 </div>
               </div>
 
               <div>
                 <div className="text-sm text-white/35">
-                  Accreditation status
+                  Event Pass status
                 </div>
 
                 <div
@@ -143,7 +143,9 @@ export default async function ProfessionalCheckInPage({
                       : "text-red-400"
                   }`}
                 >
-                  {registration.status.replaceAll("_", " ")}
+                  {registration.status === "ACCREDITED"
+                    ? "EVENT PASS ISSUED"
+                    : registration.status.replaceAll("_", " ")}
                 </div>
               </div>
             </div>
@@ -194,8 +196,8 @@ export default async function ProfessionalCheckInPage({
     </div>
 
     <p className="mt-2 text-sm leading-6 text-white/55">
-      This registration is not currently accredited for professional
-      event access.
+      This registration does not currently have a valid Event Pass for
+      professional event access.
     </p>
   </div>
 ) : staffUser ? (
@@ -215,7 +217,7 @@ export default async function ProfessionalCheckInPage({
       </div>
 
       <p className="mt-4 text-sm leading-6 text-white/45">
-        Confirm that the person presenting this accreditation
+        Confirm that the person presenting this Event Pass
         matches the photograph before completing check-in.
       </p>
     </div>
@@ -236,11 +238,11 @@ export default async function ProfessionalCheckInPage({
   /* NOT LOGGED IN */
   <div className="mt-8 rounded-2xl border border-white/10 bg-black/20 p-6">
     <div className="text-xs font-black uppercase tracking-[0.18em] text-white/40">
-      ASCEND Staff
+      REVELATIONX1 Staff
     </div>
 
     <p className="mt-3 text-sm leading-6 text-white/55">
-      This accreditation is valid. Only authorised ASCEND staff can
+      This Event Pass is valid. Only authorised REVELATIONX1 staff can
       complete event check-in.
     </p>
 

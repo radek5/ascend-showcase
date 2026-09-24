@@ -81,7 +81,7 @@ export default async function ProfessionalsPage({
                   },
                 },
                 {
-                  accreditationNumber: {
+                  registrationNumber: {
                     contains: q,
                     mode: "insensitive",
                   },
@@ -237,7 +237,7 @@ export default async function ProfessionalsPage({
 
             <p className="mt-3 max-w-2xl text-white/50">
               Manage club representatives, scouts, football agents,
-              accreditation, travel and professional event check-in.
+              Event Passes, travel and professional event check-in.
             </p>
           </div>
 
@@ -275,7 +275,7 @@ export default async function ProfessionalsPage({
           />
 
           <SummaryCard
-            label="Accredited"
+            label="Event Pass Issued"
             value={accreditedCount}
             highlight
           />
@@ -293,7 +293,7 @@ export default async function ProfessionalsPage({
           <input
             name="q"
             defaultValue={q}
-            placeholder="Search name, email, accreditation or flight"
+            placeholder="Search name, email, registration number or flight"
             className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#1685ff]/60 xl:col-span-2"
           />
 
@@ -319,9 +319,9 @@ export default async function ProfessionalsPage({
             defaultValue={status}
             className="rounded-xl border border-white/10 bg-[#111] px-4 py-3 text-sm outline-none focus:border-[#1685ff]/60"
           >
-            <option value="">All accreditation statuses</option>
+            <option value="">All professional statuses</option>
             <option value="ACCREDITED">
-              Accredited
+              Event Pass Issued
             </option>
             <option value="CHECKED_IN">
               Checked In
@@ -406,7 +406,7 @@ export default async function ProfessionalsPage({
                 </th>
 
                 <th className="px-5 py-4">
-                  Accreditation
+                  Professional Registration No.
                 </th>
 
                 <th className="px-5 py-4">
@@ -480,13 +480,13 @@ export default async function ProfessionalsPage({
                     </div>
                   </td>
 
-                  {/* ACCREDITATION */}
+                  {/* PROFESSIONAL REGISTRATION NUMBER */}
 
                   <td className="px-5 py-5">
-                    {professional.accreditationNumber ? (
+                    {professional.registrationNumber ? (
                       <div className="font-black text-[#c7ff2f]">
                         {
-                          professional.accreditationNumber
+                          professional.registrationNumber
                         }
                       </div>
                     ) : (

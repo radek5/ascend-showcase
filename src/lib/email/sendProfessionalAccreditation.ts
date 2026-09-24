@@ -39,20 +39,20 @@ export async function sendProfessionalAccreditation({
     );
   }
 
-  if (!registration.accreditationNumber) {
+  if (!registration.registrationNumber) {
     throw new Error(
-      "Accreditation number must exist before sending confirmation.",
+      "Professional registration number must exist before sending the event pass.",
     );
   }
 
   if (!registration.checkInToken) {
     throw new Error(
-      "Check-in token must exist before sending confirmation.",
+      "Check-in token must exist before sending the event pass.",
     );
   }
 
   //
-  // Do not send the accreditation email twice.
+  // Do not send the event-pass email twice.
   //
   if (registration.approvalEmailSentAt) {
     return {
@@ -82,16 +82,19 @@ export async function sendProfessionalAccreditation({
   );
 
   const supportEmail =
+    process.env.REVELATIONX1_SUPPORT_EMAIL ||
     process.env.ASCEND_SUPPORT_EMAIL ||
-    "showcase@ascendfootball.com";
+    "ralph@rznconsulting.com";
 
   const fromEmail =
+    process.env.REVELATIONX1_FROM_EMAIL ||
     process.env.ASCEND_FROM_EMAIL ||
-    "showcase@ascendfootball.com";
+    "ralph@rznconsulting.com";
 
   const fromName =
+    process.env.REVELATIONX1_FROM_NAME ||
     process.env.ASCEND_FROM_NAME ||
-    "ASCEND Football Showcase";
+    "REVELATIONX1 Football Showcase";
 
   const role =
     registration.role.replaceAll("_", " ");
@@ -203,7 +206,7 @@ export async function sendProfessionalAccreditation({
             <tr>
               <td style="padding:0 0 28px;">
                 <div style="font-size:23px;font-weight:800;letter-spacing:7px;">
-                  ASCEND
+                  REVELATIONX1
                 </div>
 
                 <div style="margin-top:4px;font-size:10px;letter-spacing:4px;color:#8d8d8d;">
@@ -216,7 +219,7 @@ export async function sendProfessionalAccreditation({
               <td style="border:1px solid #2c3911;background:#11160b;border-radius:22px;padding:34px;">
 
                 <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#c7ff2f;">
-                  PROFESSIONAL ACCREDITATION CONFIRMED
+                  PROFESSIONAL EVENT PASS ISSUED
                 </div>
 
                 <h1 style="margin:14px 0 10px;font-size:34px;">
@@ -225,18 +228,18 @@ export async function sendProfessionalAccreditation({
 
                 <p style="margin:0;color:#a9a9a9;line-height:1.7;">
                   Dear ${registration.fullName}, your professional registration
-                  has been confirmed and your ASCEND Lagos 2027 accreditation
+                  has been approved and your REVELATIONX1 Lagos 2027 Event Pass
                   has been issued.
                 </p>
 
                 <div style="margin-top:28px;padding-top:24px;border-top:1px solid #303030;">
 
                   <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#7e7e7e;">
-                    ACCREDITATION NUMBER
+                    PROFESSIONAL REGISTRATION NUMBER
                   </div>
 
                   <div style="margin-top:8px;font-size:28px;font-weight:900;color:#c7ff2f;">
-                    ${registration.accreditationNumber}
+                    ${registration.registrationNumber}
                   </div>
 
                   <div style="margin-top:14px;color:#a0a0a0;">
@@ -257,24 +260,24 @@ export async function sendProfessionalAccreditation({
                     <td align="center" style="padding:30px;">
 
                       <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#c7ff2f;">
-                        PROFESSIONAL CHECK-IN QR
+                        PROFESSIONAL EVENT PASS
                       </div>
 
                       <h2 style="margin:10px 0 20px;">
-                        Present this code on arrival
+                        Present this QR code on arrival
                       </h2>
 
                       <img
-                        src="cid:ascend-professional-qr"
+                        src="cid:revelationx1-professional-event-pass"
                         width="230"
                         height="230"
-                        alt="ASCEND professional accreditation QR code"
+                        alt="REVELATIONX1 professional Event Pass QR code"
                         style="display:block;background:white;padding:10px;border-radius:14px;"
                       />
 
                       <p style="margin:20px auto 0;max-width:470px;color:#969696;line-height:1.7;">
-                        ASCEND staff will scan this QR code to retrieve your
-                        professional accreditation and complete event check-in.
+                        REVELATIONX1 staff will scan this QR code to retrieve your
+                        professional registration and complete event check-in.
                       </p>
 
                     </td>
@@ -331,23 +334,6 @@ export async function sendProfessionalAccreditation({
                         ${hotelText}
                       </p>
 
-                      <div style="margin-top:20px;padding:18px;border:1px solid #31410d;background:#151b0d;border-radius:12px;">
-
-                        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#7e7e7e;">
-                          ASCEND HOTEL CODE
-                        </div>
-
-                        <div style="margin-top:8px;font-size:21px;font-weight:900;color:#c7ff2f;">
-                          ASCENDLAGOS2027
-                        </div>
-
-                        <p style="margin:10px 0 0;color:#8f8f8f;font-size:12px;line-height:1.6;">
-                          Hotel discount rate and booking-code activation remain
-                          subject to final hotel confirmation.
-                        </p>
-
-                      </div>
-
                       <p style="margin:18px 0 0;">
                         <a
                           href="https://www.thelagoscontinental.com/"
@@ -378,14 +364,14 @@ export async function sendProfessionalAccreditation({
                       </h2>
 
                       <p style="margin:0;color:#a9a9a9;line-height:1.8;">
-                        Professional accreditation is required while attending
-                        ASCEND Lagos 2027. Please present your QR code and any
-                        identification requested by ASCEND staff.
+                        Your Event Pass is required while attending REVELATIONX1
+                        Lagos 2027. Please present your QR code and any
+                        identification requested by REVELATIONX1 staff.
                       </p>
 
                       <p style="margin:16px 0 0;color:#a9a9a9;line-height:1.8;">
                         Access to player-only, changing, medical and other
-                        restricted areas remains controlled under ASCEND
+                        restricted areas remains controlled under REVELATIONX1
                         safeguarding procedures.
                       </p>
 
@@ -406,7 +392,7 @@ export async function sendProfessionalAccreditation({
 
                 <br />
 
-                ASCEND Football Showcase · ${registration.event.edition}
+                REVELATIONX1 Football Showcase · ${registration.event.edition}
 
               </td>
             </tr>
@@ -428,18 +414,18 @@ export async function sendProfessionalAccreditation({
     to: registration.email,
 
     subject:
-      `${registration.accreditationNumber} — ASCEND Lagos 2027 Professional Accreditation`,
+      `${registration.registrationNumber} — REVELATIONX1 Lagos 2027 Professional Event Pass`,
 
     html,
 
     attachments: [
       {
         filename:
-          `${registration.accreditationNumber}-QR.png`,
+          `${registration.registrationNumber}-Event-Pass-QR.png`,
 
         content: qrBuffer,
 
-        cid: "ascend-professional-qr",
+        cid: "revelationx1-professional-event-pass",
       },
     ],
   });
