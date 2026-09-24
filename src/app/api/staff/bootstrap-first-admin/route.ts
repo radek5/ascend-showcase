@@ -121,7 +121,12 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-  } catch {
+  } catch (error) {
+    console.error(
+      "First staff admin bootstrap failed:",
+      error,
+    );
+
     return NextResponse.json(
       { error: "Unable to create first staff administrator." },
       { status: 409 },
