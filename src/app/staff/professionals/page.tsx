@@ -394,7 +394,7 @@ export default async function ProfessionalsPage({
         {/* REGISTER */}
 
         <div className="mt-8 overflow-x-auto rounded-2xl border border-white/10">
-          <table className="min-w-[1400px] w-full border-collapse text-sm">
+          <table className="min-w-[1550px] w-full border-collapse text-sm">
             <thead className="bg-white/[0.03] text-left text-xs uppercase tracking-[0.08em] text-white/35">
               <tr>
                 <th className="px-5 py-4">
@@ -411,6 +411,10 @@ export default async function ProfessionalsPage({
 
                 <th className="px-5 py-4">
                   Arrival
+                </th>
+
+                <th className="px-5 py-4">
+                  Departure
                 </th>
 
                 <th className="px-5 py-4">
@@ -530,6 +534,51 @@ export default async function ProfessionalsPage({
                               ? " · "
                               : ""}
                             {professional.arrivalFlight ||
+                              ""}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-white/30">
+                        Not provided
+                      </span>
+                    )}
+                  </td>
+
+                  {/* DEPARTURE */}
+
+                  <td className="px-5 py-5">
+                    {professional.departureDate ? (
+                      <>
+                        <div className="font-semibold">
+                          {new Intl.DateTimeFormat(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              timeZone: "UTC",
+                            },
+                          ).format(
+                            professional.departureDate,
+                          )}
+                        </div>
+
+                        <div className="mt-1 text-xs text-white/40">
+                          {professional.departureTime ||
+                            "Time not provided"}
+                        </div>
+
+                        {(professional.departureAirline ||
+                          professional.departureFlight) && (
+                          <div className="mt-1 text-xs text-white/35">
+                            {professional.departureAirline ||
+                              ""}
+                            {professional.departureAirline &&
+                            professional.departureFlight
+                              ? " · "
+                              : ""}
+                            {professional.departureFlight ||
                               ""}
                           </div>
                         )}
