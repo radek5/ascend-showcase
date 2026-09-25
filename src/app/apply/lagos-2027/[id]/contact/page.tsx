@@ -28,6 +28,7 @@ const steps = [
   "Club & Academy",
   "Representation",
   "Video",
+  "Kit & Sizing",
   "Consent",
   "Review",
   "Confirmation",
@@ -127,7 +128,7 @@ export default function ContactPage() {
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-6 py-5 lg:px-8">
           <RevelationX1Logo />
 
           <Link
@@ -140,34 +141,30 @@ export default function ContactPage() {
       </header>
 
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
-          <div className="flex min-w-[1050px]">
-            {steps.map((step, index) => (
-              <div
-                key={step}
-                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-3"
-              >
-                <div
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    index === 1
-                      ? "bg-[#c7ff2f] text-black"
-                      : index < 1
-                        ? "bg-white/10 text-white"
-                        : "border border-white/15 text-white/40"
-                  }`}
-                >
-                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
-                </div>
+        <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
+          <div className="grid min-w-[1260px] grid-cols-10 gap-2">
+                        {steps.map((step, index) => {
+              const active = index === 1;
+              const completed = index < 1;
 
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
-                    index === 1 ? "text-white" : "text-white/35"
+              return (
+                <div
+                  key={step}
+                  className={`min-w-[118px] rounded-xl border px-3 py-3 text-center text-[10px] font-black uppercase tracking-[0.08em] ${
+                    active
+                      ? "border-[#c7ff2f] bg-[#c7ff2f] text-black"
+                      : completed
+                        ? "border-white/20 bg-white/10 text-white"
+                        : "border-white/10 bg-black/20 text-white/40"
                   }`}
                 >
-                  {step}
-                </span>
-              </div>
-            ))}
+                  <div className="mb-1 text-[9px] opacity-60">
+                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                  </div>
+                  <div className="leading-4">{step}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -175,7 +172,7 @@ export default function ContactPage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-14 lg:grid-cols-[1fr_340px] lg:px-8">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Step 2 of 8
+            Step 2 of 9
           </div>
 
           <h1 className="mt-3 text-3xl font-black sm:text-4xl">Contact</h1>

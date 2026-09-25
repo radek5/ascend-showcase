@@ -16,9 +16,6 @@ type PageProps = {
   }>;
 };
 
-const KIT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-const BOOT_SIZE_SYSTEMS = ["UK", "EU", "US"];
-
 export default async function SelectedPlayerConfirmationPage({
   params,
 }: PageProps) {
@@ -127,8 +124,8 @@ export default async function SelectedPlayerConfirmationPage({
           </h1>
 
           <p className="mt-3 max-w-2xl leading-7 text-white/55">
-            Complete the information REVELATIONX1 needs to prepare your
-            participation, player kit and event operations for Lagos 2027.
+            Complete the information REVELATIONX1 needs to confirm your
+            participation and event requirements for Lagos 2027.
           </p>
 
           {confirmation?.confirmedAt ? (
@@ -162,42 +159,7 @@ export default async function SelectedPlayerConfirmationPage({
             </FormSection>
 
             <FormSection
-              title="2. Player Kit"
-              description="REVELATIONX1 will provide player kit for selected participants. Please give us your current sizes."
-            >
-              <div className="grid gap-6 sm:grid-cols-2">
-                <SelectField
-                  label="Shirt size"
-                  name="shirtSize"
-                  required
-                  defaultValue={confirmation?.shirtSize || ""}
-                  options={KIT_SIZES}
-                />
-
-                <SelectField
-                  label="Shorts size"
-                  name="shortsSize"
-                  required
-                  defaultValue={confirmation?.shortsSize || ""}
-                  options={KIT_SIZES}
-                />
-
-                <Field
-                  label="Sock size / range"
-                  name="sockSize"
-                  defaultValue={confirmation?.sockSize || ""}
-                  placeholder="Optional"
-                />
-              </div>
-
-              <p className="text-xs leading-5 text-white/35">
-                Sock sizing is optional at this stage and may be confirmed again
-                once the final kit supplier and size ranges are known.
-              </p>
-            </FormSection>
-
-            <FormSection
-              title="3. Emergency Contact"
+              title="2. Emergency Contact"
               description="Review these details carefully. REVELATIONX1 may need to contact this person during the event in an emergency."
             >
               <div className="grid gap-6 sm:grid-cols-2">
@@ -226,7 +188,7 @@ export default async function SelectedPlayerConfirmationPage({
             </FormSection>
 
             <FormSection
-              title="4. Event Requirements"
+              title="3. Event Requirements"
               description="Please give us current information so the event team can prepare appropriately."
             >
               <YesNoField
@@ -277,7 +239,7 @@ export default async function SelectedPlayerConfirmationPage({
             </FormSection>
 
             <FormSection
-              title="5. Final Confirmation"
+              title="4. Final Confirmation"
               description="Please review your information before confirming."
             >
               <Checkbox

@@ -17,6 +17,7 @@ const steps = [
   "Club & Academy",
   "Representation",
   "Video",
+  "Kit & Sizing",
   "Consent",
   "Review",
   "Confirmation",
@@ -138,7 +139,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-6 py-5 lg:px-8">
           <RevelationX1Logo />
 
           <Link
@@ -151,41 +152,37 @@ export default async function ConfirmationPage({ params }: PageProps) {
       </header>
 
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl overflow-x-auto px-6 lg:px-8">
-          <div className="flex min-w-[1050px]">
-            {steps.map((step, index) => (
-              <div
-                key={step}
-                className="flex flex-1 items-center gap-2 border-r border-white/10 py-5 pr-3"
-              >
-                <div
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                    index === 8
-                      ? "bg-[#c7ff2f] text-black"
-                      : index < 8
-                        ? "bg-white/10 text-white"
-                        : "border border-white/15 text-white/40"
-                  }`}
-                >
-                  {["1", "2", "3", "4A", "4B", "5", "6", "7", "8"][index]}
-                </div>
+        <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
+          <div className="grid min-w-[1260px] grid-cols-10 gap-2">
+                        {steps.map((step, index) => {
+              const active = index === 9;
+              const completed = index < 9;
 
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-[0.08em] ${
-                    index === 8 ? "text-white" : "text-white/35"
+              return (
+                <div
+                  key={step}
+                  className={`min-w-[118px] rounded-xl border px-3 py-3 text-center text-[10px] font-black uppercase tracking-[0.08em] ${
+                    active
+                      ? "border-[#c7ff2f] bg-[#c7ff2f] text-black"
+                      : completed
+                        ? "border-white/20 bg-white/10 text-white"
+                        : "border-white/10 bg-black/20 text-white/40"
                   }`}
                 >
-                  {step}
-                </span>
-              </div>
-            ))}
+                  <div className="mb-1 text-[9px] opacity-60">
+                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                  </div>
+                  <div className="leading-4">{step}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
         <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#c7ff2f]">
-          {outcomePresentation ? outcomePresentation.eyebrow : "Step 8 of 8"}
+          {outcomePresentation ? outcomePresentation.eyebrow : "Step 9 of 9"}
         </div>
 
         <div className="mt-6 rounded-[2rem] border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.04] p-8 sm:p-10">

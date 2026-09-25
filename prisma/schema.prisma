@@ -294,6 +294,18 @@ enum ShowcaseKitSize {
   XXXL
 }
 
+enum ShowcaseSockSize {
+  S
+  M
+  L
+}
+
+enum ShowcaseShoeSizeSystem {
+  UK
+  EU
+  US
+}
+
 model ProfessionalRegistration {
   id String @id @default(cuid())
 
@@ -302,7 +314,7 @@ model ProfessionalRegistration {
   event   Event  @relation(fields: [eventId], references: [id])
 
   // Permanent professional-facing registration identity
-  registrationNumber     String?   @unique
+  registrationNumber String? @unique
 
   // Accreditation / event access
   accreditationNumber    String?   @unique
@@ -481,6 +493,13 @@ model ShowcaseApplication {
   secondaryPosition String?
   preferredFoot     String?
 
+  // Kit & sizing
+  shirtSize      ShowcaseKitSize?
+  shortsSize     ShowcaseKitSize?
+  sockSize       ShowcaseSockSize?
+  shoeSizeSystem ShowcaseShoeSizeSystem?
+  shoeSize       String?
+
   currentClub        String?
   currentAcademy     String?
   footballBackground String?
@@ -619,11 +638,9 @@ model ShowcaseSelectedPlayerConfirmation {
   attendanceConfirmed Boolean @default(false)
 
   // Kit
-  shirtSize      ShowcaseKitSize?
-  shortsSize     ShowcaseKitSize?
-  sockSize       String?
-  bootSizeSystem String?
-  bootSize       String?
+  shirtSize  ShowcaseKitSize?
+  shortsSize ShowcaseKitSize?
+  sockSize   String?
 
   // Emergency contact confirmed for the event
   emergencyContactName         String?

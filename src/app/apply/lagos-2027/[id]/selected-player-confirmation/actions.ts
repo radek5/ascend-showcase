@@ -9,9 +9,6 @@ import {
 } from "@/lib/applicants/applicationOwnership";
 import { prisma } from "@/lib/prisma";
 
-const KIT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
-const BOOT_SIZE_SYSTEMS = ["UK", "EU", "US"] as const;
-
 function requiredText(formData: FormData, name: string, label: string) {
   const value = String(formData.get(name) ?? "").trim();
 
@@ -118,39 +115,6 @@ export async function updateSelectedPlayerConfirmation(formData: FormData) {
     throw new Error("You must confirm that you intend to attend Lagos 2027.");
   }
 
-  const shirtSize = requiredText(formData, "shirtSize", "Shirt size");
-
-  const shortsSize = requiredText(formData, "shortsSize", "Shorts size");
-
-  if (
-    !KIT_SIZES.includes(shirtSize as (typeof KIT_SIZES)[number]) ||
-    !KIT_SIZES.includes(shortsSize as (typeof KIT_SIZES)[number])
-  ) {
-    throw new Error("A valid kit size is required.");
-  }
-
-  const sockSize = optionalText(formData, "sockSize");
-
-  const bootSizeSystem = requiredText(
-    formData,
-    "bootSizeSystem",
-    "Football boot size system",
-  );
-
-  if (
-    !BOOT_SIZE_SYSTEMS.includes(
-      bootSizeSystem as (typeof BOOT_SIZE_SYSTEMS)[number],
-    )
-  ) {
-    throw new Error("A valid football boot size system is required.");
-  }
-
-  const bootSize = requiredText(
-    formData,
-    "bootSize",
-    "Football boot size",
-  );
-
   const emergencyContactName = requiredText(
     formData,
     "emergencyContactName",
@@ -229,12 +193,6 @@ export async function updateSelectedPlayerConfirmation(formData: FormData) {
 
       attendanceConfirmed,
 
-      shirtSize: shirtSize as (typeof KIT_SIZES)[number],
-      shortsSize: shortsSize as (typeof KIT_SIZES)[number],
-      sockSize,
-      bootSizeSystem,
-      bootSize,
-
       emergencyContactName,
       emergencyContactRelationship,
       emergencyContactPhone,
@@ -256,12 +214,6 @@ export async function updateSelectedPlayerConfirmation(formData: FormData) {
 
     update: {
       attendanceConfirmed,
-
-      shirtSize: shirtSize as (typeof KIT_SIZES)[number],
-      shortsSize: shortsSize as (typeof KIT_SIZES)[number],
-      sockSize,
-      bootSizeSystem,
-      bootSize,
 
       emergencyContactName,
       emergencyContactRelationship,

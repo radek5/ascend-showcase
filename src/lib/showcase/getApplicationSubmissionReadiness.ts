@@ -32,6 +32,12 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
       position: true,
       preferredFoot: true,
 
+      shirtSize: true,
+      shortsSize: true,
+      sockSize: true,
+      shoeSizeSystem: true,
+      shoeSize: true,
+
       emergencyContactName: true,
       emergencyContactRelationship: true,
       emergencyContactPhone: true,
@@ -211,6 +217,34 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
 
   /*
    * ----------------------------------------------------------
+   * KIT & SIZING
+   * ----------------------------------------------------------
+   */
+
+  const missingSizingFields: string[] = [];
+
+  if (!application.shirtSize) {
+    missingSizingFields.push("shirtSize");
+  }
+
+  if (!application.shortsSize) {
+    missingSizingFields.push("shortsSize");
+  }
+
+  if (!application.sockSize) {
+    missingSizingFields.push("sockSize");
+  }
+
+  if (!application.shoeSizeSystem) {
+    missingSizingFields.push("shoeSizeSystem");
+  }
+
+  if (!application.shoeSize) {
+    missingSizingFields.push("shoeSize");
+  }
+
+  /*
+   * ----------------------------------------------------------
    * CONSENTS
    * ----------------------------------------------------------
    */
@@ -254,6 +288,7 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
     footballStatusComplete &&
     footballDisclosureComplete &&
     missingVideoTypes.length === 0 &&
+    missingSizingFields.length === 0 &&
     missingConsents.length === 0;
 
   /*
@@ -274,6 +309,8 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
     redirectPath = `/apply/${application.eventSlug}/${application.id}/representation`;
   } else if (missingVideoTypes.length > 0) {
     redirectPath = `/apply/${application.eventSlug}/${application.id}/video`;
+  } else if (missingSizingFields.length > 0) {
+    redirectPath = `/apply/${application.eventSlug}/${application.id}/sizing`;
   } else if (missingConsents.length > 0) {
     redirectPath = `/apply/${application.eventSlug}/${application.id}/consent`;
   }
