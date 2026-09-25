@@ -4,12 +4,12 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 export async function createCommercialRelationship(
   formData: FormData,
 ) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const eventId = String(
     formData.get("eventId") || "",

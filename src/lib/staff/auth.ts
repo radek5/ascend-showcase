@@ -42,7 +42,7 @@ export async function requireStaffAdmin() {
     await requireStaffUser();
 
   if (staffUser.role !== "ADMIN") {
-    redirect("/staff/dashboard");
+    redirect("/staff/dashboard?error=access-restricted");
   }
 
   return staffUser;

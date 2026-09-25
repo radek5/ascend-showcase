@@ -89,11 +89,13 @@ export default async function OperationsPage() {
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <OperationCard
-            title="Payments & Revenue"
-            text="Payments, payment status and event revenue."
-            href="/staff/payments"
-          />
+          {staffUser.role === "ADMIN" && (
+            <OperationCard
+              title="Payments & Revenue"
+              text="Payments, payment status and event revenue."
+              href="/staff/payments"
+            />
+          )}
 
           <OperationCard
             title="Airport Transfers"

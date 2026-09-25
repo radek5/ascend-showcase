@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 import { updateCommercialRelationship } from "./actions";
 
@@ -15,7 +15,7 @@ type EditCommercialPageProps = {
 export default async function EditCommercialPage({
   params,
 }: EditCommercialPageProps) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const { id } = await params;
 

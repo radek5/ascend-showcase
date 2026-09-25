@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 type CommercialRelationshipPageProps = {
   params: Promise<{
@@ -13,7 +13,7 @@ type CommercialRelationshipPageProps = {
 export default async function CommercialRelationshipPage({
   params,
 }: CommercialRelationshipPageProps) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const { id } = await params;
 

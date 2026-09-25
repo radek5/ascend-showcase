@@ -5,7 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
 import { staffLogout } from "../actions/logout";
 
-export default async function StaffDashboardPage() {
+export default async function StaffDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+}) {
+  const params = await searchParams;
   const staffUser = await requireStaffUser();
 
   const selectorAccess = await prisma.selectorAccount.findUnique({
@@ -108,6 +115,18 @@ export default async function StaffDashboardPage() {
           Football Showcase.
         </p>
 
+        {params.error === "access-restricted" && (
+          <div className="mt-6 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] px-5 py-4">
+            <div className="text-sm font-black text-amber-200">
+              Access restricted
+            </div>
+            <p className="mt-1 text-sm text-amber-100/60">
+              You don't have permission to access that area. Please contact an
+              administrator if you require access.
+            </p>
+          </div>
+        )}
+
         {/* EVENT SNAPSHOT */}
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -209,15 +228,25 @@ export default async function StaffDashboardPage() {
 
             <QuickLink href="/staff/mailing-list" label="Contact Network" />
 
-            <QuickLink href="/staff/payments" label="Payments" />
+            {staffUser.role === "ADMIN" && (
+              <>
+                <QuickLink href="/staff/payments" label="Payments" />
 
-            <QuickLink href="/staff/finance" label="Finance" />
+                <QuickLink href="/staff/finance" label="Finance" />
 
-            <QuickLink href="/staff/commercial" label="Sponsors & Partners" />
+                <QuickLink
+                  href="/staff/commercial"
+                  label="Sponsors & Partners"
+                />
+
+                <QuickLink
+                  href="/staff/selection"
+                  label="Selection Control"
+                />
+              </>
+            )}
 
             <QuickLink href="/staff/checkin" label="Check-In" />
-
-            <QuickLink href="/staff/selection" label="Selection Control" />
 
             <QuickLink href="/staff/scout-requests" label="Scout Requests" />
 

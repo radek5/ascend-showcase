@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 import { createCommercialRelationship } from "./actions";
 
 export default async function NewCommercialOrganisationPage() {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const activeEvent = await prisma.event.findFirst({
     where: {
