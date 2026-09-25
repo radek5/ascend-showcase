@@ -17,6 +17,7 @@ type PageProps = {
 };
 
 const KIT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const BOOT_SIZE_SYSTEMS = ["UK", "EU", "US"];
 
 export default async function SelectedPlayerConfirmationPage({
   params,

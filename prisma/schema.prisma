@@ -619,9 +619,11 @@ model ShowcaseSelectedPlayerConfirmation {
   attendanceConfirmed Boolean @default(false)
 
   // Kit
-  shirtSize  ShowcaseKitSize?
-  shortsSize ShowcaseKitSize?
-  sockSize   String?
+  shirtSize      ShowcaseKitSize?
+  shortsSize     ShowcaseKitSize?
+  sockSize       String?
+  bootSizeSystem String?
+  bootSize       String?
 
   // Emergency contact confirmed for the event
   emergencyContactName         String?
