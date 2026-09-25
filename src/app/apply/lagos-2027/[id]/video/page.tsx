@@ -79,6 +79,63 @@ const emptyUpload = (): UploadState => ({
   error: "",
 });
 
+const MIN_VIDEO_SHORT_EDGE = 720;
+
+function validateVideoQuality(file: File): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    const objectUrl = URL.createObjectURL(file);
+
+    const cleanup = () => {
+      URL.revokeObjectURL(objectUrl);
+      video.removeAttribute("src");
+      video.load();
+    };
+
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+
+      cleanup();
+
+      if (!width || !height) {
+        reject(
+          new Error(
+            "We could not read this video's resolution. Please choose another video.",
+          ),
+        );
+        return;
+      }
+
+      const shortEdge = Math.min(width, height);
+
+      if (shortEdge < MIN_VIDEO_SHORT_EDGE) {
+        reject(
+          new Error(
+            `Video quality is too low (${width}×${height}). Minimum accepted quality is 720p HD. Please upload a higher-quality video.`,
+          ),
+        );
+        return;
+      }
+
+      resolve();
+    };
+
+    video.onerror = () => {
+      cleanup();
+      reject(
+        new Error(
+          "We could not verify this video's quality. Please use an MP4, MOV or WebM video.",
+        ),
+      );
+    };
+
+    video.src = objectUrl;
+  });
+}
+
 export default function VideoPage() {
   const params = useParams<{ id: string }>();
 
@@ -152,11 +209,12 @@ export default function VideoPage() {
     }
   }
 
-  function chooseFile(
+  async function chooseFile(
     type: InitialVideoType,
     event: ChangeEvent<HTMLInputElement>,
   ) {
-    const file = event.target.files?.[0] || null;
+    const input = event.currentTarget;
+    const file = input.files?.[0] || null;
 
     if (!file) {
       return;
@@ -166,18 +224,48 @@ export default function VideoPage() {
 
     if (file.size > max) {
       updateUpload(type, {
+        file: null,
+        filename: "",
+        uploaded: false,
+        progress: 0,
         error: "Maximum file size is 500 MB.",
       });
+      input.value = "";
       return;
     }
 
     updateUpload(type, {
-      file,
+      file: null,
       filename: file.name,
       uploaded: false,
       progress: 0,
       error: "",
     });
+
+    try {
+      await validateVideoQuality(file);
+
+      updateUpload(type, {
+        file,
+        filename: file.name,
+        uploaded: false,
+        progress: 0,
+        error: "",
+      });
+    } catch (error) {
+      updateUpload(type, {
+        file: null,
+        filename: "",
+        uploaded: false,
+        progress: 0,
+        error:
+          error instanceof Error
+            ? error.message
+            : "This video does not meet the minimum quality requirement.",
+      });
+
+      input.value = "";
+    }
   }
 
   function updateUpload(type: InitialVideoType, partial: Partial<UploadState>) {
@@ -419,6 +507,24 @@ export default function VideoPage() {
               footage should show enough continuous play for the assessment team
               to understand your positioning, movement, decision-making and
               involvement in the game.
+            </p>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-5">
+            <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
+              Video quality requirements
+            </div>
+
+            <div className="mt-3 grid gap-2 text-sm leading-6 text-white/60 sm:grid-cols-2">
+              <div>• Minimum quality: 720p HD</div>
+              <div>• 1080p or better recommended</div>
+              <div>• MP4, MOV or WebM</div>
+              <div>• Maximum 500 MB per video</div>
+            </div>
+
+            <p className="mt-3 text-xs leading-5 text-white/40">
+              Videos below 720p cannot be submitted. Use clear footage in which
+              you can be identified and your involvement in play can be assessed.
             </p>
           </div>
 
@@ -740,7 +846,8 @@ function VideoUploadCard({
           </label>
 
           <div className="min-w-0 flex-1 text-sm text-white/45">
-            {state.filename || "MP4, MOV or WebM · Maximum 500 MB"}
+            {state.filename ||
+              "MP4, MOV or WebM · Minimum 720p · Maximum 500 MB"}
           </div>
 
           {state.file && !state.uploaded ? (
@@ -907,8 +1014,9 @@ function AdditionalVideoUploader({
           accept="video/mp4,video/quicktime,video/webm"
           className="sr-only"
           disabled={uploading}
-          onChange={(event) => {
-            const selected = event.target.files?.[0];
+          onChange={async (event) => {
+            const input = event.currentTarget;
+            const selected = input.files?.[0];
 
             if (!selected) {
               return;
@@ -917,20 +1025,42 @@ function AdditionalVideoUploader({
             const max = 500 * 1024 * 1024;
 
             if (selected.size > max) {
+              setFile(null);
+              setFilename("");
               setError("Maximum file size is 500 MB.");
+              setProgress(0);
+              input.value = "";
               return;
             }
 
-            setFile(selected);
+            setFile(null);
             setFilename(selected.name);
             setError("");
             setProgress(0);
+
+            try {
+              await validateVideoQuality(selected);
+
+              setFile(selected);
+              setFilename(selected.name);
+              setError("");
+            } catch (error) {
+              setFile(null);
+              setFilename("");
+              setError(
+                error instanceof Error
+                  ? error.message
+                  : "This video does not meet the minimum quality requirement.",
+              );
+              input.value = "";
+            }
           }}
         />
       </label>
 
       <div className="mt-3 break-words text-xs text-white/40">
-        {filename || "MP4, MOV or WebM · Maximum 500 MB"}
+        {filename ||
+          "MP4, MOV or WebM · Minimum 720p · Maximum 500 MB"}
       </div>
 
       {file ? (
