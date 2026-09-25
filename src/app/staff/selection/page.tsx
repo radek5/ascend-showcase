@@ -7,7 +7,7 @@ import ReleaseSelectionDecisionsButton from "./ReleaseSelectionDecisionsButton";
 import SendSelectionOutcomesButton from "./SendSelectionOutcomesButton";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 import {
   assignSelector,
@@ -17,7 +17,7 @@ import {
 } from "./actions";
 
 export default async function SelectionPage() {
-  const staffUser = await requireStaffUser();
+  const staffUser = await requireStaffAdmin();
 
   const event = await prisma.event.findUnique({
     where: {

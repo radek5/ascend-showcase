@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 type PaymentsPageProps = {
   searchParams: Promise<{
@@ -15,7 +15,7 @@ type PaymentsPageProps = {
 export default async function PaymentsPage({
   searchParams,
 }: PaymentsPageProps) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const params = await searchParams;
 

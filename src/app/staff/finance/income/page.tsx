@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 type IncomePageProps = {
   searchParams: Promise<{
@@ -12,7 +12,7 @@ type IncomePageProps = {
 export default async function IncomeLedgerPage({
   searchParams,
 }: IncomePageProps) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const params = await searchParams;
   const selectedStatus = String(

@@ -2,17 +2,17 @@ import Link from "next/link";
 
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 
-import { staffLogin } from "./actions";
+import { registerStaffUser } from "./actions";
 
-type StaffLoginPageProps = {
+type StaffRegisterPageProps = {
   searchParams: Promise<{
     error?: string;
   }>;
 };
 
-export default async function StaffLoginPage({
+export default async function StaffRegisterPage({
   searchParams,
-}: StaffLoginPageProps) {
+}: StaffRegisterPageProps) {
   const params = await searchParams;
 
   return (
@@ -28,10 +28,10 @@ export default async function StaffLoginPage({
           />
 
           <Link
-            href="/"
+            href="/staff/login"
             className="text-sm font-medium text-white/50 transition hover:text-white"
           >
-            Return to Showcase
+            Staff Login
           </Link>
         </div>
       </header>
@@ -42,15 +42,16 @@ export default async function StaffLoginPage({
             REVELATIONX1 Back Office
           </div>
 
-          <h1 className="mt-3 text-4xl font-black">Staff Login</h1>
+          <h1 className="mt-3 text-4xl font-black">
+            Create Staff Account
+          </h1>
 
           <p className="mt-3 text-sm leading-6 text-white/50">
-            Authorised REVELATIONX1 staff only. Sign in to manage Showcase
-            registrations and operations.
+            Create your REVELATIONX1 Back Office account.
           </p>
 
           <form
-            action={staffLogin}
+            action={registerStaffUser}
             className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6"
           >
             {params.error && (
@@ -60,7 +61,22 @@ export default async function StaffLoginPage({
             )}
 
             <label className="block">
-              <span className="text-sm font-bold">Email address</span>
+              <span className="text-sm font-bold">
+                Full name
+              </span>
+
+              <input
+                name="name"
+                autoComplete="name"
+                required
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+              />
+            </label>
+
+            <label className="mt-5 block">
+              <span className="text-sm font-bold">
+                Email address
+              </span>
 
               <input
                 name="email"
@@ -72,12 +88,34 @@ export default async function StaffLoginPage({
             </label>
 
             <label className="mt-5 block">
-              <span className="text-sm font-bold">Password</span>
+              <span className="text-sm font-bold">
+                Password
+              </span>
 
               <input
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
+                minLength={12}
+                required
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
+              />
+
+              <div className="mt-2 text-xs text-white/35">
+                Minimum 12 characters.
+              </div>
+            </label>
+
+            <label className="mt-5 block">
+              <span className="text-sm font-bold">
+                Confirm password
+              </span>
+
+              <input
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                minLength={12}
                 required
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-4 outline-none transition focus:border-[#c7ff2f]/60"
               />
@@ -87,22 +125,18 @@ export default async function StaffLoginPage({
               type="submit"
               className="mt-7 w-full rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90"
             >
-              Sign In
+              Create Account
             </button>
           </form>
 
           <p className="mt-5 text-center text-sm text-white/45">
-            Need a staff account?{" "}
+            Already have an account?{" "}
             <Link
-              href="/staff/register"
+              href="/staff/login"
               className="font-bold text-[#c7ff2f]"
             >
-              Create account
+              Sign in
             </Link>
-          </p>
-
-          <p className="mt-3 text-center text-xs leading-5 text-white/30">
-            Access is restricted to authorised REVELATIONX1 personnel.
           </p>
         </div>
       </section>

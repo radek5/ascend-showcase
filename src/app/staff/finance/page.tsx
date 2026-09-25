@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 export default async function FinancePage() {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const activeEvent = await prisma.event.findFirst({
     where: {

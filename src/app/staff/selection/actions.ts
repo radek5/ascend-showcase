@@ -4,7 +4,7 @@ import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffAdmin, requireStaffUser } from "@/lib/staff/auth";
+import { requireStaffAdmin } from "@/lib/staff/auth";
 
 import { sendShowcaseSelectionOutcome } from "@/lib/email/sendShowcaseSelectionOutcome";
 
@@ -37,7 +37,7 @@ async function createAssessmentCode() {
 }
 
 export async function prepareForSelection(formData: FormData) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -88,7 +88,7 @@ export async function prepareForSelection(formData: FormData) {
 }
 
 export async function assignSelector(formData: FormData) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -192,7 +192,7 @@ export async function assignSelector(formData: FormData) {
 }
 
 export async function sendForSecondReview(formData: FormData) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -260,7 +260,7 @@ export async function sendForSecondReview(formData: FormData) {
 }
 
 export async function setFinalSelectionDecision(formData: FormData) {
-  await requireStaffUser();
+  await requireStaffAdmin();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
