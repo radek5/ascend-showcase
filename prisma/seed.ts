@@ -15,64 +15,55 @@ async function main() {
     },
 
     update: {
+      name: "REVELATIONX1 Football Showcase",
+      edition: "Lagos 2026",
+
+      city: "Lagos",
+      country: "Nigeria",
+      venue: "Gbagada Stadium",
+
       active: true,
       registrationOpen: true,
 
-      registrationStartsAt: new Date(
-        "2027-01-09T09:00:00+01:00",
-      ),
+      registrationStartsAt: new Date("2026-12-05T09:00:00+01:00"),
 
-      registrationEndsAt: new Date(
-        "2027-01-10T19:00:00+01:00",
-      ),
+      registrationEndsAt: new Date("2026-12-06T19:00:00+01:00"),
 
-      footballStartsAt: new Date(
-        "2027-01-11T09:00:00+01:00",
-      ),
+      footballStartsAt: new Date("2026-12-07T09:00:00+01:00"),
 
-      footballEndsAt: new Date(
-        "2027-01-15T17:00:00+01:00",
-      ),
+      footballEndsAt: new Date("2026-12-11T17:00:00+01:00"),
 
-      registrationFeeAmount: 10000000,
+      registrationFeeAmount: 0,
       registrationFeeCurrency: "NGN",
     },
 
     create: {
       slug: "lagos-2027",
 
-      name: "ASCEND Football Showcase",
-      edition: "Lagos 2027",
+      name: "REVELATIONX1 Football Showcase",
+      edition: "Lagos 2026",
 
       city: "Lagos",
       country: "Nigeria",
-      venue: "Onikan Stadium",
+      venue: "Gbagada Stadium",
 
-      registrationStartsAt: new Date(
-        "2027-01-09T09:00:00+01:00",
-      ),
+      registrationStartsAt: new Date("2026-12-05T09:00:00+01:00"),
 
-      registrationEndsAt: new Date(
-        "2027-01-10T19:00:00+01:00",
-      ),
+      registrationEndsAt: new Date("2026-12-06T19:00:00+01:00"),
 
-      footballStartsAt: new Date(
-        "2027-01-11T09:00:00+01:00",
-      ),
+      footballStartsAt: new Date("2026-12-07T09:00:00+01:00"),
 
-      footballEndsAt: new Date(
-        "2027-01-15T17:00:00+01:00",
-      ),
+      footballEndsAt: new Date("2026-12-11T17:00:00+01:00"),
 
       registrationOpen: true,
       active: true,
 
-      registrationFeeAmount: 10000000,
+      registrationFeeAmount: 0,
       registrationFeeCurrency: "NGN",
     },
   });
 
-  console.log("✓ Lagos 2027 event seeded");
+  console.log("✓ Lagos 2026 event seeded");
 }
 
 main()

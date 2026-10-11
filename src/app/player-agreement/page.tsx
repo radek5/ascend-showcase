@@ -25,7 +25,7 @@ export default function PlayerAgreementPage() {
         </h1>
 
         <p className="mt-3 text-sm text-white/40">
-          Lagos 2027
+          Lagos 2026
         </p>
 
         <div className="mt-10 space-y-10 text-sm leading-7 text-white/65">

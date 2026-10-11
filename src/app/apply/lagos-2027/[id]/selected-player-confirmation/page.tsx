@@ -120,12 +120,12 @@ export default async function SelectedPlayerConfirmationPage({
           </div>
 
           <h1 className="mt-3 text-3xl font-black sm:text-4xl">
-            Confirm Your Lagos 2027 Participation
+            Confirm Your Lagos 2026 Participation
           </h1>
 
           <p className="mt-3 max-w-2xl leading-7 text-white/55">
             Complete the information REVELATIONX1 needs to confirm your
-            participation and event requirements for Lagos 2027.
+            participation and event requirements for Lagos 2026.
           </p>
 
           {confirmation?.confirmedAt ? (
@@ -149,12 +149,12 @@ export default async function SelectedPlayerConfirmationPage({
 
             <FormSection
               title="1. Attendance"
-              description="Confirm that you intend to take up your selected place at Lagos 2027."
+              description="Confirm that you intend to take up your selected place at Lagos 2026."
             >
               <Checkbox
                 name="attendanceConfirmed"
                 defaultChecked={confirmation?.attendanceConfirmed ?? false}
-                label="I confirm that I intend to attend the Lagos 2027 Men's Football Showcase."
+                label="I confirm that I intend to attend the Lagos 2026 Men's Football Showcase."
               />
             </FormSection>
 
@@ -245,7 +245,7 @@ export default async function SelectedPlayerConfirmationPage({
               <Checkbox
                 name="informationConfirmed"
                 defaultChecked={confirmation?.informationConfirmed ?? false}
-                label="I confirm that the information above is accurate and current, and I understand that REVELATIONX1 will use it to organise my participation in Lagos 2027."
+                label="I confirm that the information above is accurate and current, and I understand that REVELATIONX1 will use it to organise my participation in Lagos 2026."
               />
             </FormSection>
 
@@ -279,7 +279,7 @@ export default async function SelectedPlayerConfirmationPage({
               {application.firstName} {application.lastName}
             </div>
 
-            <div className="mt-1 text-[#c7ff2f]">Lagos 2027</div>
+            <div className="mt-1 text-[#c7ff2f]">Lagos 2026</div>
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <SummaryRow label="Selection" value="Selected" />

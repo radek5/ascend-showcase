@@ -47,10 +47,10 @@ export async function allocateApplicationIdentity({
   }
 
   /*
-   * Lagos 2027 identity format:
+   * Lagos 2026 identity format:
    *
-   * RX1-LAG27-P-0042
-   * LAG27-0042
+   * RX1-LAG26-P-0042
+   * LAG26-0042
    *
    * Both MUST always share the same suffix.
    */
@@ -107,9 +107,9 @@ export async function allocateApplicationIdentity({
 
   const suffix = String(nextSequence).padStart(4, "0");
 
-  const registrationNumber = `RX1-LAG27-P-${suffix}`;
+  const registrationNumber = `RX1-LAG26-P-${suffix}`;
 
-  const assessmentCode = `LAG27-${suffix}`;
+  const assessmentCode = `LAG26-${suffix}`;
 
   const checkInToken =
     application.checkInToken ?? crypto.randomBytes(32).toString("hex");

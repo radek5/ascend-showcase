@@ -428,7 +428,7 @@ export default async function StaffCheckInPage({
         {/* SHOWCASE SELECTED PLAYERS */}
 
         <CheckInSection
-          title="Lagos 2027 Credential-Ready Players"
+          title="Lagos 2026 Credential-Ready Players"
           count={showcasePlayers.length}
         >
           {showcasePlayers.map((player) => {

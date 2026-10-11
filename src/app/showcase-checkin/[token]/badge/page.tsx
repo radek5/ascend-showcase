@@ -98,7 +98,7 @@ export default async function ShowcasePlayerBadgePage({
           <h1 className="mt-4 text-3xl font-black">Check-In Required</h1>
 
           <p className="mt-4 leading-7 text-white/50">
-            This player must hold a valid Lagos 2027 event credential and
+            This player must hold a valid Lagos 2026 event credential and
             complete REVELATIONX1 event check-in before a player badge can be
             printed.
           </p>
@@ -203,7 +203,7 @@ export default async function ShowcasePlayerBadgePage({
 
             <div className="mt-[4mm] flex items-center justify-between border-t border-white/15 pt-[3mm]">
               <div className="text-[11px] font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
-                Lagos 2027
+                Lagos 2026
               </div>
 
               <div className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/60">

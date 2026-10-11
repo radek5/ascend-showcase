@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
+import {
+  createSelectionResponseTokens,
+  discardSelectionResponseTokens,
+} from "@/lib/showcase/selectionResponseTokens";
 import { getMailTransport } from "./mailer";
 
 type Args = {
@@ -116,36 +120,173 @@ export async function sendShowcaseSelectionOutcome({
       ? {
           label: "OFFICIAL SELECTION DECISION",
           title: "You have been selected",
-          subject: `${application.registrationNumber} — Selected for REVELATIONX1 Lagos 2027`,
+          subject: `${application.registrationNumber} — Selected for REVELATIONX1 Lagos 2026`,
           accent: "#c7ff2f",
           message:
-            "Congratulations. Following the REVELATIONX1 Lagos 2027 eligibility and football assessment process, you have been selected and offered a place at the Men's Football Showcase.",
+            "Congratulations. Following the REVELATIONX1 Lagos 2026 eligibility and football assessment process, you have been selected and offered a place at the Men's Football Showcase.",
           next: "Your selection is an offer of one of the 50 available places. You will need to confirm whether you accept your place before your participation is finalised.",
-          action: "View Your Selection",
         }
       : application.status === "RESERVE"
         ? {
             label: "OFFICIAL SELECTION DECISION",
-            title: "You are on the reserve list",
-            subject: `${application.registrationNumber} — Lagos 2027 Selection Decision`,
+            title: "You are on standby",
+            subject: `${application.registrationNumber} — Lagos 2026 Selection Decision`,
             accent: "#f3c950",
             message:
-              "Your application has completed the REVELATIONX1 Lagos 2027 eligibility and football assessment process, and you have been placed on the reserve list.",
-            next: "If a suitable place becomes available, REVELATIONX1 may contact you with an offer to join the Showcase. Your numeric position on the reserve list is not published.",
-            action: "View Your Decision",
+              "Your application has completed the REVELATIONX1 Lagos 2026 eligibility and football assessment process, and you have been placed on standby.",
+            next: "If a suitable place becomes available, REVELATIONX1 may contact you with an offer to join the Showcase. Your numeric standby position is not published.",
           }
         : {
             label: "OFFICIAL SELECTION DECISION",
-            title: "Lagos 2027 selection decision",
-            subject: `${application.registrationNumber} — Lagos 2027 Selection Decision`,
+            title: "Lagos 2026 selection decision",
+            subject: `${application.registrationNumber} — Lagos 2026 Selection Decision`,
             accent: "#b8b8b8",
             message:
-              "Your application has completed the REVELATIONX1 Lagos 2027 eligibility and football assessment process. You have not been selected for the final Showcase on this occasion.",
+              "Your application has completed the REVELATIONX1 Lagos 2026 eligibility and football assessment process. You have not been selected for the final Showcase on this occasion.",
             next: "Selection was highly competitive, with only 50 places available. Thank you for the time, effort and football evidence you committed to your application.",
-            action: "View Your Application",
           };
 
-  const html = `
+  /*
+   * ----------------------------------------------------------
+   * DELIVERY CLAIM
+   * ----------------------------------------------------------
+   *
+   * The sent timestamp prevents ordinary duplicate sends, but
+   * by itself it does not prevent two staff processes from both
+   * reading "not sent" at the same time.
+   *
+   * Claim the email atomically before contacting the mail
+   * provider. Only one process can hold the active claim.
+   *
+   * A claim older than 30 minutes is treated as abandoned so a
+   * crashed process cannot permanently block future delivery.
+   */
+
+  const claimToken = randomUUID();
+  const claimedAt = new Date();
+  const staleBefore = new Date(Date.now() - 30 * 60 * 1000);
+
+  const claim = await prisma.showcaseApplication.updateMany({
+    where: {
+      id: application.id,
+
+      ...(force
+        ? {}
+        : {
+            selectionOutcomeEmailSentAt: null,
+          }),
+
+      OR: [
+        {
+          selectionOutcomeEmailClaimedAt: null,
+        },
+        {
+          selectionOutcomeEmailClaimedAt: {
+            lt: staleBefore,
+          },
+        },
+      ],
+    },
+
+    data: {
+      selectionOutcomeEmailClaimedAt: claimedAt,
+      selectionOutcomeEmailClaimToken: claimToken,
+    },
+  });
+
+  if (claim.count !== 1) {
+    return {
+      messageId: null,
+      recipientEmail: application.email,
+      skipped: true,
+    };
+  }
+
+  let issuedTokens: Awaited<
+    ReturnType<typeof createSelectionResponseTokens>
+  > | null = null;
+
+  let actionHtml: string;
+  let info;
+
+  try {
+    if (application.status === "SELECTED") {
+      issuedTokens = await createSelectionResponseTokens(application.id);
+
+      const acceptUrl = `${appUrl}/selection-response?token=${encodeURIComponent(
+        issuedTokens.acceptToken,
+      )}&response=ACCEPTED`;
+
+      const declineUrl = `${appUrl}/selection-response?token=${encodeURIComponent(
+        issuedTokens.declineToken,
+      )}&response=DECLINED`;
+
+      actionHtml = `
+<table width="100%" cellspacing="0" cellpadding="0"
+style="border:1px solid #262626;background:#111111;border-radius:18px;">
+<tr>
+<td align="center" style="padding:30px;">
+
+  <h2 style="margin:0 0 12px;font-size:22px;">
+    Confirm your place
+  </h2>
+
+  <p style="margin:0 auto 22px;max-width:500px;color:#969696;line-height:1.7;">
+    Please confirm whether you accept your place at the REVELATIONX1
+    Lagos 2026 Men's Football Showcase.
+  </p>
+
+  <a
+    href="${acceptUrl}"
+    style="display:inline-block;background:#c7ff2f;color:#090909;text-decoration:none;font-weight:900;padding:14px 24px;border-radius:999px;margin:4px 6px;"
+  >
+    ACCEPT MY PLACE
+  </a>
+
+  <a
+    href="${declineUrl}"
+    style="display:inline-block;border:1px solid #555555;color:#ffffff;text-decoration:none;font-weight:900;padding:13px 24px;border-radius:999px;margin:4px 6px;"
+  >
+    DECLINE MY PLACE
+  </a>
+
+  <p style="margin:22px auto 0;max-width:500px;color:#777777;font-size:12px;line-height:1.7;">
+    Each secure link opens a confirmation page. Your response is not
+    recorded until you confirm it on that page.
+  </p>
+
+</td>
+</tr>
+</table>`;
+    } else {
+      actionHtml = `
+<table width="100%" cellspacing="0" cellpadding="0"
+style="border:1px solid #262626;background:#111111;border-radius:18px;">
+<tr>
+<td align="center" style="padding:30px;">
+
+  <h2 style="margin:0 0 12px;font-size:22px;">
+    View your official decision
+  </h2>
+
+  <p style="margin:0 auto 22px;max-width:500px;color:#969696;line-height:1.7;">
+    Sign in securely to your REVELATIONX1 account to view your
+    Lagos 2026 application and official selection status.
+  </p>
+
+  <a
+    href="${accountUrl}"
+    style="display:inline-block;background:${presentation.accent};color:#090909;text-decoration:none;font-weight:900;padding:14px 24px;border-radius:999px;"
+  >
+    View Your Application
+  </a>
+
+</td>
+</tr>
+</table>`;
+    }
+
+    const html = `
 <!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#090909;font-family:Arial,Helvetica,sans-serif;color:#ffffff;">
@@ -217,32 +358,7 @@ export async function sendShowcaseSelectionOutcome({
 <tr>
 <td style="padding-top:22px;">
 
-<table width="100%" cellspacing="0" cellpadding="0"
-style="border:1px solid #262626;background:#111111;border-radius:18px;">
-
-<tr>
-<td align="center" style="padding:30px;">
-
-  <h2 style="margin:0 0 12px;font-size:22px;">
-    View your official decision
-  </h2>
-
-  <p style="margin:0 auto 22px;max-width:500px;color:#969696;line-height:1.7;">
-    Sign in securely to your REVELATIONX1 account to view your
-    Lagos 2027 application and official selection status.
-  </p>
-
-  <a
-    href="${accountUrl}"
-    style="display:inline-block;background:${presentation.accent};color:#090909;text-decoration:none;font-weight:900;padding:14px 24px;border-radius:999px;"
-  >
-    ${presentation.action}
-  </a>
-
-</td>
-</tr>
-
-</table>
+  ${actionHtml}
 
 </td>
 </tr>
@@ -258,7 +374,7 @@ ${supportEmail}
 
 <br /><br />
 
-REVELATIONX1 Football Showcase · Lagos 2027
+REVELATIONX1 Football Showcase · Lagos 2026
 
 </td>
 </tr>
@@ -273,65 +389,6 @@ REVELATIONX1 Football Showcase · Lagos 2027
 </html>
 `;
 
-  /*
-   * ----------------------------------------------------------
-   * DELIVERY CLAIM
-   * ----------------------------------------------------------
-   *
-   * The sent timestamp prevents ordinary duplicate sends, but
-   * by itself it does not prevent two staff processes from both
-   * reading "not sent" at the same time.
-   *
-   * Claim the email atomically before contacting the mail
-   * provider. Only one process can hold the active claim.
-   *
-   * A claim older than 30 minutes is treated as abandoned so a
-   * crashed process cannot permanently block future delivery.
-   */
-
-  const claimToken = randomUUID();
-  const claimedAt = new Date();
-  const staleBefore = new Date(Date.now() - 30 * 60 * 1000);
-
-  const claim = await prisma.showcaseApplication.updateMany({
-    where: {
-      id: application.id,
-
-      ...(force
-        ? {}
-        : {
-            selectionOutcomeEmailSentAt: null,
-          }),
-
-      OR: [
-        {
-          selectionOutcomeEmailClaimedAt: null,
-        },
-        {
-          selectionOutcomeEmailClaimedAt: {
-            lt: staleBefore,
-          },
-        },
-      ],
-    },
-
-    data: {
-      selectionOutcomeEmailClaimedAt: claimedAt,
-      selectionOutcomeEmailClaimToken: claimToken,
-    },
-  });
-
-  if (claim.count !== 1) {
-    return {
-      messageId: null,
-      recipientEmail: application.email,
-      skipped: true,
-    };
-  }
-
-  let info;
-
-  try {
     const transporter = getMailTransport();
 
     info = await transporter.sendMail({
@@ -341,8 +398,16 @@ REVELATIONX1 Football Showcase · Lagos 2027
       html,
     });
   } catch (error) {
+    if (issuedTokens) {
+      await discardSelectionResponseTokens([
+        issuedTokens.acceptTokenId,
+        issuedTokens.declineTokenId,
+      ]);
+    }
+
     /*
-     * SMTP failed before the provider confirmed delivery.
+     * Email preparation or SMTP delivery failed before the provider
+     * confirmed delivery.
      *
      * Release only this sender's claim so the notification can
      * be retried safely.
@@ -373,25 +438,47 @@ REVELATIONX1 Football Showcase · Lagos 2027
    */
   const sentAt = new Date();
 
-  const completed = await prisma.showcaseApplication.updateMany({
-    where: {
-      id: application.id,
-      selectionOutcomeEmailClaimToken: claimToken,
-    },
+  await prisma.$transaction(async (tx) => {
+    const completed = await tx.showcaseApplication.updateMany({
+      where: {
+        id: application.id,
+        selectionOutcomeEmailClaimToken: claimToken,
+      },
 
-    data: {
-      selectionOutcomeEmailSentAt: sentAt,
-      selectionOutcomeMessageId: info.messageId || null,
-      selectionOutcomeEmailClaimedAt: null,
-      selectionOutcomeEmailClaimToken: null,
-    },
+      data: {
+        selectionOutcomeEmailSentAt: sentAt,
+        selectionOutcomeMessageId: info.messageId || null,
+        selectionOutcomeEmailClaimedAt: null,
+        selectionOutcomeEmailClaimToken: null,
+        ...(issuedTokens
+          ? {
+              selectionResponseDeadline: issuedTokens.expiresAt,
+            }
+          : {}),
+      },
+    });
+
+    if (completed.count !== 1) {
+      throw new Error(
+        "Selection outcome email was accepted by the mail provider, but the delivery record could not be finalised. The delivery claim has been retained to reduce duplicate-send risk.",
+      );
+    }
+
+    if (issuedTokens) {
+      await tx.showcaseSelectionResponseToken.updateMany({
+        where: {
+          applicationId: application.id,
+          id: {
+            notIn: [issuedTokens.acceptTokenId, issuedTokens.declineTokenId],
+          },
+          usedAt: null,
+        },
+        data: {
+          usedAt: sentAt,
+        },
+      });
+    }
   });
-
-  if (completed.count !== 1) {
-    throw new Error(
-      "Selection outcome email was accepted by the mail provider, but the delivery record could not be finalised. The delivery claim has been retained to reduce duplicate-send risk.",
-    );
-  }
 
   return {
     messageId: info.messageId,

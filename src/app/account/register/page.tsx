@@ -25,7 +25,7 @@ export default async function RegisterPage({
             href="/apply/lagos-2027"
             className="text-sm font-medium text-white/55 transition hover:text-white"
           >
-            Lagos 2027
+            Lagos 2026
           </Link>
         </div>
       </header>

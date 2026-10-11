@@ -218,7 +218,7 @@ export default function PlayerEditForm({
             </select>
 
             <p className="text-xs leading-5 text-white/40">
-              Lagos 2027 is the Men&apos;s Football Showcase. Changing this may
+              Lagos 2026 is the Men&apos;s Football Showcase. Changing this may
               affect event eligibility.
             </p>
           </label>
@@ -235,7 +235,7 @@ export default function PlayerEditForm({
             />
 
             <p className="text-xs leading-5 text-white/40">
-              Lagos 2027 requires players to be aged 18–20 on the first day of
+              Lagos 2026 requires players to be aged 18–20 on the first day of
               the programme.
             </p>
           </label>

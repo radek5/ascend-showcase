@@ -127,8 +127,7 @@ export async function sendShowcaseApplicationConfirmation({
   ${intro}
 
   <p style="margin:0;color:#a9a9a9;line-height:1.7;">
-    Your REVELATIONX1 Lagos 2027 player application and
-    football evidence have been successfully received.
+    Your REVELATIONX1 Lagos 2026 player application has been successfully received.
   </p>
 
   <p style="margin:14px 0 0;color:#ffffff;font-weight:700;line-height:1.7;">
@@ -148,7 +147,7 @@ export async function sendShowcaseApplicationConfirmation({
     </div>
 
     <p style="margin:10px 0 0;color:#888888;font-size:13px;line-height:1.6;">
-      This is your permanent REVELATIONX1 Lagos 2027
+      This is your permanent REVELATIONX1 Lagos 2026
       registration code. Please keep it for your records.
     </p>
 
@@ -218,7 +217,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
 
   <p style="margin:12px 0 0;color:#ffffff;font-weight:800;line-height:1.7;">
     The best 50 eligible players will be selected for the
-    final REVELATIONX1 Lagos 2027 Men's Football Showcase.
+    final REVELATIONX1 Lagos 2026 Men's Football Showcase.
   </p>
 </div>
 
@@ -245,7 +244,7 @@ style="border:1px solid #3c3210;background:#181507;border-radius:18px;">
 
 <p style="margin:14px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
   Submission of an application does not guarantee selection
-  or an invitation to the Lagos 2027 Men's Football Showcase.
+  or an invitation to the Lagos 2026 Men's Football Showcase.
 </p>
 
 <p style="margin:12px 0 0;color:#b8b8b8;line-height:1.8;">
@@ -287,7 +286,7 @@ ${supportEmail}
 
 <br />
 
-REVELATIONX1 Football Showcase · Lagos 2027
+REVELATIONX1 Football Showcase · Lagos 2026
 
 </td>
 </tr>
@@ -309,7 +308,7 @@ REVELATIONX1 Football Showcase · Lagos 2027
 
     to: recipientEmail,
 
-    subject: `${application.registrationNumber} — REVELATIONX1 Lagos 2027 Application Received`,
+    subject: `${application.registrationNumber} — REVELATIONX1 Lagos 2026 Application Received`,
 
     html,
   });

@@ -75,7 +75,7 @@ export default async function ProfessionalReviewPage({
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -305,7 +305,7 @@ export default async function ProfessionalReviewPage({
             />
 
             <span className="text-sm leading-6 text-white/60">
-              I agree to comply with the REVELATIONX1 Lagos 2027 Event Code of Conduct
+              I agree to comply with the REVELATIONX1 Lagos 2026 Event Code of Conduct
               and Safeguarding Requirements.
             </span>
           </label>

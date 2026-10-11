@@ -2,61 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { requireStaffUser } from "@/lib/staff/auth";
-import {
-  createSelectorSession,
-} from "@/lib/selectors/session";
+import { createSelectorSession } from "@/lib/selectors/session";
 
-function redirectUrl(
-  request: NextRequest,
-  pathname: string
-) {
-  const forwardedHost =
-    request.headers.get("x-forwarded-host");
+function redirectUrl(request: NextRequest, pathname: string) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
 
-  const host =
-    forwardedHost ||
-    request.headers.get("host");
+  const host = forwardedHost || request.headers.get("host");
 
-  const forwardedProto =
-    request.headers.get("x-forwarded-proto");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
 
   const protocol =
     forwardedProto ||
-    (process.env.NODE_ENV === "production"
-      ? "https"
-      : "http");
+    (process.env.NODE_ENV === "production" ? "https" : "http");
 
   if (!host) {
-    throw new Error(
-      "Unable to determine application host."
-    );
+    throw new Error("Unable to determine application host.");
   }
 
-  return new URL(
-    pathname,
-    `${protocol}://${host}`
-  );
+  return new URL(pathname, `${protocol}://${host}`);
 }
 
-export async function GET(
-  request: NextRequest
-) {
-  const staffUser =
-    await requireStaffUser();
+export async function GET(request: NextRequest) {
+  const staffUser = await requireStaffUser();
 
-  const selector =
-    await prisma.selectorAccount.findUnique({
-      where: {
-        staffUserId: staffUser.id,
-      },
-    });
+  const selector = await prisma.selectorAccount.findUnique({
+    where: {
+      staffUserId: staffUser.id,
+    },
+  });
 
   if (!selector || !selector.active) {
     return NextResponse.redirect(
       redirectUrl(
         request,
-        "/staff/dashboard?error=selector-access-not-authorised"
-      )
+        "/staff/dashboard?error=selector-access-not-authorised",
+      ),
     );
   }
 
@@ -74,10 +54,35 @@ export async function GET(
     selectorId: selector.id,
   });
 
-  return NextResponse.redirect(
-    redirectUrl(
-      request,
-      "/selectors"
-    )
-  );
+  const assignmentId = request.nextUrl.searchParams.get("assignmentId");
+
+  if (assignmentId) {
+    const assignment = await prisma.selectorAssignment.findFirst({
+      where: {
+        id: assignmentId,
+        selectorId: selector.id,
+        status: {
+          not: "CANCELLED",
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!assignment) {
+      return NextResponse.redirect(
+        redirectUrl(
+          request,
+          "/staff/selection?error=assessment-not-authorised",
+        ),
+      );
+    }
+
+    return NextResponse.redirect(
+      redirectUrl(request, `/selectors/assignments/${assignment.id}`),
+    );
+  }
+
+  return NextResponse.redirect(redirectUrl(request, "/selectors/assignments"));
 }

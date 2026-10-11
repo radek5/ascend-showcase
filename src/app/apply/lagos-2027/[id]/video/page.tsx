@@ -58,6 +58,9 @@ type Application = {
   status: string;
   videos: ExistingVideo[];
   videoRequests: VideoRequest[];
+  videoExempt: boolean;
+  preselected: boolean;
+  videoExemptionReason: "PREVIOUSLY_OBSERVED_LIVE" | null;
 };
 
 type UploadState = {
@@ -434,6 +437,9 @@ export default function VideoPage() {
     );
   }
 
+  const initialVideoRequirementComplete =
+    application.videoExempt || allRequiredUploaded;
+
   return (
     <main className="min-h-screen bg-[#090909] text-white">
       <header className="border-b border-white/10">
@@ -452,7 +458,7 @@ export default function VideoPage() {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
           <div className="grid min-w-[1260px] grid-cols-10 gap-2">
-                        {steps.map((step, index) => {
+            {steps.map((step, index) => {
               const active = index === 5;
               const completed = index < 5;
 
@@ -468,7 +474,11 @@ export default function VideoPage() {
                   }`}
                 >
                   <div className="mb-1 text-[9px] opacity-60">
-                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                    {
+                      ["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][
+                        index
+                      ]
+                    }
                   </div>
                   <div className="leading-4">{step}</div>
                 </div>
@@ -489,76 +499,103 @@ export default function VideoPage() {
           </h1>
 
           <p className="mt-3 max-w-3xl text-white/55">
-            Submit multiple examples of your football performance so the
-            REVELATIONX1 assessment team can evaluate you across different
-            situations.
+            {application.videoExempt
+              ? application.preselected
+                ? "You have already been selected for the REVELATIONX1 Lagos 2026 Football Showcase. No scouting videos are required."
+                : "Your initial video requirement has been waived because REVELATIONX1 has previously observed you live."
+              : "Submit multiple examples of your football performance so the REVELATIONX1 assessment team can evaluate you across different situations."}
           </p>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-            <h2 className="text-xl font-black">
-              Initial assessment requirement
-            </h2>
+          {application.videoExempt ? (
+            <div className="mt-8 rounded-2xl border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.05] p-6">
+              <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
+                Video Requirement Exempt
+              </div>
 
-            <p className="mt-3 text-sm leading-6 text-white/50">
-              Three videos are required for the initial assessment. Match
-              footage should show enough continuous play for the assessment team
-              to understand your positioning, movement, decision-making and
-              involvement in the game.
-            </p>
-          </div>
+              <h2 className="mt-3 text-2xl font-black">
+                No assessment videos are required
+              </h2>
 
-          <div className="mt-6 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-5">
-            <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
-              Video quality requirements
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
+                {application.preselected
+                  ? "You have already been selected for the REVELATIONX1 Lagos 2026 Football Showcase. Please continue your registration."
+                  : "REVELATIONX1 has previously observed this player live. You may continue without uploading the three initial assessment videos."}
+              </p>
+
+              <div className="mt-5 inline-flex rounded-full border border-[#c7ff2f]/20 bg-black/20 px-4 py-2 text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f]">
+                Previously Observed Live
+              </div>
             </div>
+          ) : (
+            <>
+              <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+                <h2 className="text-xl font-black">
+                  Initial assessment requirement
+                </h2>
 
-            <div className="mt-3 grid gap-2 text-sm leading-6 text-white/60 sm:grid-cols-2">
-              <div>• Minimum quality: 720p HD</div>
-              <div>• 1080p or better recommended</div>
-              <div>• MP4, MOV or WebM</div>
-              <div>• Maximum 500 MB per video</div>
-            </div>
+                <p className="mt-3 text-sm leading-6 text-white/50">
+                  Three videos are required for the initial assessment. Match
+                  footage should show enough continuous play for the assessment
+                  team to understand your positioning, movement, decision-making
+                  and involvement in the game.
+                </p>
+              </div>
 
-            <p className="mt-3 text-xs leading-5 text-white/40">
-              Videos below 720p cannot be submitted. Use clear footage in which
-              you can be identified and your involvement in play can be assessed.
-            </p>
-          </div>
+              <div className="mt-6 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-5">
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
+                  Video quality requirements
+                </div>
 
-          <div className="mt-8 grid gap-5 xl:grid-cols-4">
-            <VideoUploadCard
-              title="Match Footage 1"
-              description="Continuous match footage from a competitive game."
-              type="MATCH_1"
-              state={uploads.MATCH_1}
-              onChoose={chooseFile}
-              onUpload={uploadVideo}
-            />
+                <div className="mt-3 grid gap-2 text-sm leading-6 text-white/60 sm:grid-cols-2">
+                  <div>• Minimum quality: 720p HD</div>
+                  <div>• 1080p or better recommended</div>
+                  <div>• MP4, MOV or WebM</div>
+                  <div>• Maximum 500 MB per video</div>
+                </div>
 
-            <VideoUploadCard
-              title="Match Footage 2"
-              description="Footage from a second match or different period of play."
-              type="MATCH_2"
-              state={uploads.MATCH_2}
-              onChoose={chooseFile}
-              onUpload={uploadVideo}
-            />
+                <p className="mt-3 text-xs leading-5 text-white/40">
+                  Videos below 720p cannot be submitted. Use clear footage in
+                  which you can be identified and your involvement in play can
+                  be assessed.
+                </p>
+              </div>
 
-            <VideoUploadCard
-              title="Highlights / Position Evidence"
-              description="Additional evidence showing your strongest actions and position-specific qualities."
-              type="HIGHLIGHTS"
-              state={uploads.HIGHLIGHTS}
-              onChoose={chooseFile}
-              onUpload={uploadVideo}
-            />
+              <div className="mt-8 grid gap-5 xl:grid-cols-4">
+                <VideoUploadCard
+                  title="Match Footage 1"
+                  description="Continuous match footage from a competitive game."
+                  type="MATCH_1"
+                  state={uploads.MATCH_1}
+                  onChoose={chooseFile}
+                  onUpload={uploadVideo}
+                />
 
-            <MoreVideosCard
-              applicationId={id}
-              videos={application.videos}
-              onUploaded={loadApplication}
-            />
-          </div>
+                <VideoUploadCard
+                  title="Match Footage 2"
+                  description="Footage from a second match or different period of play."
+                  type="MATCH_2"
+                  state={uploads.MATCH_2}
+                  onChoose={chooseFile}
+                  onUpload={uploadVideo}
+                />
+
+                <VideoUploadCard
+                  title="Highlights / Position Evidence"
+                  description="Additional evidence showing your strongest actions and position-specific qualities."
+                  type="HIGHLIGHTS"
+                  state={uploads.HIGHLIGHTS}
+                  onChoose={chooseFile}
+                  onUpload={uploadVideo}
+                />
+
+                <MoreVideosCard
+                  applicationId={id}
+                  videos={application.videos}
+                  onUploaded={loadApplication}
+                />
+              </div>
+            </>
+          )}
 
           {application.videoRequests.length > 0 ? (
             <div className="mt-10 space-y-8">
@@ -706,29 +743,34 @@ export default function VideoPage() {
             <button
               type="button"
               disabled={
-                somethingUploading ||
-                (!allRequiredUploaded &&
-                  !allOutstandingRequiredFilesSelected)
+                !application.videoExempt &&
+                (somethingUploading ||
+                  (!allRequiredUploaded &&
+                    !allOutstandingRequiredFilesSelected))
               }
+
               onClick={() => {
-                if (allRequiredUploaded) {
+                if (initialVideoRequirementComplete) {
                   router.push(`/apply/lagos-2027/${id}/sizing`);
                   return;
                 }
 
                 void uploadAllRequiredVideos();
               }}
+
               className="rounded-full bg-[#c7ff2f] px-8 py-4 text-sm font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {somethingUploading
-                ? "Uploading..."
-                : allRequiredUploaded
-                  ? "Continue"
-                  : "Upload All 3 Videos"}
+              {application.videoExempt
+                ? "Continue"
+                : somethingUploading
+                  ? "Uploading..."
+                  : allRequiredUploaded
+                    ? "Continue"
+                    : "Upload All 3 Videos"}
             </button>
           </div>
 
-          {!allRequiredUploaded ? (
+          {!application.videoExempt && !allRequiredUploaded ? (
             <p className="mt-3 text-right text-xs text-white/35">
               All three assessment videos must be submitted before you can
               continue.
@@ -746,7 +788,7 @@ export default function VideoPage() {
               {application.firstName} {application.lastName}
             </div>
 
-            <div className="mt-1 text-[#c7ff2f]">Lagos 2027</div>
+            <div className="mt-1 text-[#c7ff2f]">Lagos 2026</div>
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <div className="flex justify-between gap-6">
@@ -756,33 +798,40 @@ export default function VideoPage() {
 
               <div className="flex justify-between gap-6">
                 <span className="text-white/40">Videos required</span>
-                <span>3</span>
+                <span>{application.videoExempt ? "Exempt" : "3"}</span>
               </div>
 
-              <div className="flex justify-between gap-6">
-                <span className="text-white/40">Submitted</span>
+              {!application.videoExempt ? (
+                <div className="flex justify-between gap-6">
+                  <span className="text-white/40">Submitted</span>
 
-                <span>
-                  {
-                    [
-                      uploads.MATCH_1.uploaded,
-                      uploads.MATCH_2.uploaded,
-                      uploads.HIGHLIGHTS.uploaded,
-                    ].filter(Boolean).length
-                  }{" "}
-                  / 3
-                </span>
-              </div>
+                  <span>
+                    {
+                      [
+                        uploads.MATCH_1.uploaded,
+                        uploads.MATCH_2.uploaded,
+                        uploads.HIGHLIGHTS.uploaded,
+                      ].filter(Boolean).length
+                    }{" "}
+                    / 3
+                  </span>
+                </div>
+              ) : null}
 
               <div className="flex justify-between gap-6">
                 <span className="text-white/40">Selection</span>
-                <span>Best 50</span>
+                <span>
+                  {application.preselected ? "Already selected" : "Best 50"}
+                </span>
               </div>
             </div>
 
             <div className="mt-6 rounded-xl border border-[#c7ff2f]/15 bg-[#c7ff2f]/[0.05] p-4 text-sm leading-6 text-white/60">
-              Submitted video is used as evidence during the REVELATIONX1 player
-              assessment process.
+              {application.videoExempt
+                ? application.preselected
+                  ? "You have already been selected for the REVELATIONX1 Lagos 2026 Football Showcase. No scouting videos are required."
+                  : "Your initial video requirement has been waived because REVELATIONX1 has previously observed you live."
+                : "Submitted video is used as evidence during the REVELATIONX1 player assessment process."}
             </div>
           </div>
         </aside>
@@ -1056,8 +1105,7 @@ function AdditionalVideoUploader({
       </label>
 
       <div className="mt-3 break-words text-xs text-white/40">
-        {filename ||
-          "MP4, MOV or WebM · Minimum 720p · Maximum 500 MB"}
+        {filename || "MP4, MOV or WebM · Minimum 720p · Maximum 500 MB"}
       </div>
 
       {file ? (

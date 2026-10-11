@@ -228,7 +228,7 @@ export default async function ProfessionalsPage({
             </Link>
 
             <div className="mt-6 text-xs font-black uppercase tracking-[0.22em] text-[#1685ff]">
-              Lagos 2027
+              Lagos 2026
             </div>
 
             <h1 className="mt-3 text-4xl font-black">

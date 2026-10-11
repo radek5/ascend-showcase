@@ -37,7 +37,8 @@ export async function POST(
     if (access.submittedAt) {
       return NextResponse.json(
         {
-          error: "This application has already been submitted and identity documents can no longer be changed.",
+          error:
+            "This application has already been submitted and identity documents can no longer be changed.",
           code: "APPLICATION_ALREADY_SUBMITTED",
         },
         { status: 409 },
@@ -97,24 +98,96 @@ export async function POST(
       );
     }
 
-    const updated = await prisma.showcaseIdentityDocument.update({
-      where: {
-        id: document.id,
-      },
-      data: {
-        status: "UPLOADED",
-        storageProvider: "CLOUDFLARE_R2",
-        storageKey,
-        uploadedAt: new Date(),
+    const completedAt = new Date();
 
-        /*
-         * A replacement must always be
-         * reviewed again by RevelationX1
-         */
-        verifiedAt: null,
-        verifiedBy: null,
-        reviewNotes: null,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const completedDocument = await tx.showcaseIdentityDocument.update({
+        where: {
+          id: document.id,
+        },
+        data: {
+          status: "UPLOADED",
+          storageProvider: "CLOUDFLARE_R2",
+          storageKey,
+          uploadedAt: completedAt,
+
+          /*
+           * A replacement must always be
+           * reviewed again by RevelationX1
+           */
+          verifiedAt: null,
+          verifiedBy: null,
+          reviewNotes: null,
+        },
+      });
+
+      if (completedDocument.type !== "NIN") {
+        return completedDocument;
+      }
+
+      const application = await tx.showcaseApplication.findUnique({
+        where: {
+          id: applicationId,
+        },
+        select: {
+          id: true,
+          eventSlug: true,
+          ninHash: true,
+          videoExemption: {
+            select: {
+              id: true,
+              status: true,
+            },
+          },
+        },
+      });
+
+      if (!application?.ninHash) {
+        return completedDocument;
+      }
+
+      /*
+       * An application can have only one linked exemption.
+       * If it is already linked, there is nothing further to claim.
+       */
+      if (application.videoExemption) {
+        return completedDocument;
+      }
+
+      const exemption = await tx.showcaseVideoExemption.findUnique({
+        where: {
+          eventSlug_ninHash: {
+            eventSlug: application.eventSlug,
+            ninHash: application.ninHash,
+          },
+        },
+        select: {
+          id: true,
+          status: true,
+          matchedApplicationId: true,
+        },
+      });
+
+      if (
+        !exemption ||
+        exemption.status !== "AWAITING_REGISTRATION" ||
+        exemption.matchedApplicationId
+      ) {
+        return completedDocument;
+      }
+
+      await tx.showcaseVideoExemption.update({
+        where: {
+          id: exemption.id,
+        },
+        data: {
+          status: "MATCHED",
+          matchedApplicationId: application.id,
+          matchedAt: completedAt,
+        },
+      });
+
+      return completedDocument;
     });
 
     return NextResponse.json({

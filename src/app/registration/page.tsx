@@ -29,7 +29,7 @@ export default function RegistrationChoicePage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-white/55">
-            Choose how you would like to register for the REVELATIONX1 Lagos 2027 Football Showcase.
+            Choose how you would like to register for the REVELATIONX1 Lagos 2026 Football Showcase.
           </p>
         </div>
       </section>
@@ -49,7 +49,7 @@ export default function RegistrationChoicePage() {
             </h2>
 
             <p className="mt-4 max-w-lg leading-7 text-white/55">
-              Apply as a player for the REVELATIONX1 Lagos 2027 Football Showcase.
+              Apply as a player for the REVELATIONX1 Lagos 2026 Football Showcase.
             </p>
 
             <div className="mt-10 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.1em]">
@@ -73,7 +73,7 @@ export default function RegistrationChoicePage() {
             </h2>
 
             <p className="mt-4 max-w-lg leading-7 text-white/55">
-              Register to attend REVELATIONX1 Lagos 2027 as a football professional.
+              Register to attend REVELATIONX1 Lagos 2026 as a football professional.
             </p>
 
             <div className="mt-10 inline-flex items-center gap-3 text-sm font-black uppercase tracking-[0.1em]">

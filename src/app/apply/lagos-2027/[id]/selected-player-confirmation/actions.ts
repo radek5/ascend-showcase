@@ -105,14 +105,14 @@ export async function updateSelectedPlayerConfirmation(formData: FormData) {
 
   if (application.selectionResponse !== "ACCEPTED") {
     throw new Error(
-      "You must accept your Lagos 2027 place before completing this confirmation.",
+      "You must accept your Lagos 2026 place before completing this confirmation.",
     );
   }
 
   const attendanceConfirmed = formData.get("attendanceConfirmed") === "on";
 
   if (!attendanceConfirmed) {
-    throw new Error("You must confirm that you intend to attend Lagos 2027.");
+    throw new Error("You must confirm that you intend to attend Lagos 2026.");
   }
 
   const emergencyContactName = requiredText(

@@ -105,7 +105,7 @@ export async function sendProfessionalRegistrationConfirmation({
 
   <p style="margin:0;color:#a9a9a9;line-height:1.7;">
     We have received your professional registration for
-    REVELATIONX1 Lagos 2027.
+    REVELATIONX1 Lagos 2026.
   </p>
 
   <div style="margin-top:26px;padding:20px;border:1px solid #303030;border-radius:14px;background:#0d0d0d;">
@@ -127,7 +127,7 @@ export async function sendProfessionalRegistrationConfirmation({
     </div>
 
     <div style="margin-top:6px;font-size:12px;color:#8d8d8d;line-height:1.6;">
-      This is your permanent REVELATIONX1 Lagos 2027 professional registration number.
+      This is your permanent REVELATIONX1 Lagos 2026 professional registration number.
       Please keep it for your records.
     </div>
 
@@ -211,7 +211,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
     from: `"${fromName}" <${fromEmail}>`,
     to: registration.email,
     subject:
-      `${registration.registrationNumber} — REVELATIONX1 Lagos 2027 Professional Registration Received`,
+      `${registration.registrationNumber} — REVELATIONX1 Lagos 2026 Professional Registration Received`,
     html,
   });
 

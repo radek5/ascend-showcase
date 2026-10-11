@@ -27,6 +27,13 @@ export async function finaliseShowcaseApplication({
       eventSlug: true,
       status: true,
       submittedAt: true,
+      selectedPlayerRecord: {
+        select: {
+          id: true,
+          footballSelected: true,
+          matchedApplicationId: true,
+        },
+      },
     },
   });
 
@@ -76,15 +83,40 @@ export async function finaliseShowcaseApplication({
    */
 
   if (!application.submittedAt) {
-    await prisma.showcaseApplication.update({
-      where: {
-        id: application.id,
-      },
+    const preselected =
+      application.selectedPlayerRecord?.footballSelected === true &&
+      application.selectedPlayerRecord.matchedApplicationId === application.id;
 
-      data: {
-        status: "SUBMITTED",
-        submittedAt: new Date(),
-      },
+    const completedAt = new Date();
+
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.showcaseApplication.updateMany({
+        where: {
+          id: application.id,
+          submittedAt: null,
+          status: "DRAFT",
+        },
+        data: {
+          status: preselected ? "SELECTED" : "SUBMITTED",
+          submittedAt: completedAt,
+          ...(preselected ? { selectedAt: completedAt } : {}),
+        },
+      });
+
+      if (updated.count !== 1) {
+        return;
+      }
+
+      if (preselected && application.selectedPlayerRecord) {
+        await tx.showcaseSelectedPlayer.update({
+          where: {
+            id: application.selectedPlayerRecord.id,
+          },
+          data: {
+            registrationCompletedAt: completedAt,
+          },
+        });
+      }
     });
   }
 

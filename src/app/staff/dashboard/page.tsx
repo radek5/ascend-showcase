@@ -15,17 +15,6 @@ export default async function StaffDashboardPage({
   const params = await searchParams;
   const staffUser = await requireStaffUser();
 
-  const selectorAccess = await prisma.selectorAccount.findUnique({
-    where: {
-      staffUserId: staffUser.id,
-    },
-
-    select: {
-      id: true,
-      active: true,
-    },
-  });
-
   const [
     playerCount,
     professionalCount,
@@ -105,7 +94,7 @@ export default async function StaffDashboardPage({
 
       <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
         <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-          Lagos 2027
+          Lagos 2026
         </div>
 
         <h1 className="mt-3 text-4xl font-black sm:text-5xl">Back Office</h1>
@@ -171,7 +160,7 @@ export default async function StaffDashboardPage({
             </h2>
 
             <p className="mt-4 max-w-xl leading-7 text-white/50">
-              Manage everyone attending Lagos 2027 — player registrations, club
+              Manage everyone attending Lagos 2026 — player registrations, club
               representatives, scouts, football agents, accreditation and
               check-in.
             </p>
@@ -239,27 +228,13 @@ export default async function StaffDashboardPage({
                   label="Sponsors & Partners"
                 />
 
-                <QuickLink
-                  href="/staff/selection"
-                  label="Selection Control"
-                />
+                <QuickLink href="/staff/selection" label="Selection Control" />
               </>
             )}
 
             <QuickLink href="/staff/checkin" label="Check-In" />
 
             <QuickLink href="/staff/scout-requests" label="Scout Requests" />
-
-            {selectorAccess?.active ? (
-              <Link
-                href="/selectors/enter"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full border border-[#c7ff2f]/30 bg-[#c7ff2f]/[0.05] px-5 py-2.5 text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f] transition hover:bg-[#c7ff2f]/10"
-              >
-                Selector Portal ↗
-              </Link>
-            ) : null}
 
             {staffUser.role === "ADMIN" && (
               <>

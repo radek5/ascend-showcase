@@ -57,10 +57,10 @@ function getAgeResult(dobValue: string): AgeResult {
    * footballStartsAt and eligibility configuration
    * from the Event record.
    *
-   * Lagos 2027 currently starts:
-   * 11 January 2027.
+   * Lagos 2026 currently starts:
+   * 7 December 2026.
    */
-  const eventDate = new Date("2027-01-11T08:00:00.000Z");
+  const eventDate = new Date("2026-12-07T08:00:00.000Z");
 
   let age = eventDate.getUTCFullYear() - dob.getUTCFullYear();
 
@@ -129,14 +129,14 @@ export default function Lagos2027StartApplicationForm({
 
     if (!sexEligible) {
       setError(
-        "Lagos 2027 is the Men's Football Showcase and is open to eligible male players.",
+        "Lagos 2026 is the Men's Football Showcase and is open to eligible male players.",
       );
       return;
     }
 
     if (!ageResult?.eligible) {
       setError(
-        "You must meet the Lagos 2027 age requirement before continuing.",
+        "You must meet the Lagos 2026 age requirement before continuing.",
       );
       return;
     }
@@ -196,7 +196,7 @@ export default function Lagos2027StartApplicationForm({
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -205,7 +205,7 @@ export default function Lagos2027StartApplicationForm({
 
           <p className="mt-3 max-w-2xl text-white/55">
             Apply for professional football assessment and selection for the
-            inaugural REVELATIONX1 Lagos 2027 Football Showcase.
+            inaugural REVELATIONX1 Lagos 2026 Football Showcase.
           </p>
 
           <div className="mt-5 inline-flex rounded-full border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.06] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#c7ff2f]">
@@ -233,7 +233,11 @@ export default function Lagos2027StartApplicationForm({
                   }`}
                 >
                   <div className="mb-1 text-[9px] opacity-60">
-                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                    {
+                      ["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][
+                        index
+                      ]
+                    }
                   </div>
                   <div className="leading-4">{step}</div>
                 </div>
@@ -284,7 +288,7 @@ export default function Lagos2027StartApplicationForm({
               </select>
 
               <p className="text-xs leading-5 text-white/40">
-                Lagos 2027 is the Men&apos;s Football Showcase and is open to
+                Lagos 2026 is the Men&apos;s Football Showcase and is open to
                 eligible male players.
               </p>
             </label>
@@ -306,8 +310,8 @@ export default function Lagos2027StartApplicationForm({
               />
 
               <p className="text-xs leading-5 text-white/40">
-                You must be aged 18–20 on the first day of the programme, 11
-                January 2027.
+                You must be aged 18–20 on the first day of the programme, 7
+                December 2026.
               </p>
             </label>
 
@@ -327,7 +331,7 @@ export default function Lagos2027StartApplicationForm({
 
                     <p className="mt-1 text-xs leading-5 text-white/55">
                       You meet the competition category requirement for Lagos
-                      2027.
+                      2026.
                     </p>
                   </>
                 ) : (
@@ -337,7 +341,7 @@ export default function Lagos2027StartApplicationForm({
                     </div>
 
                     <p className="mt-1 text-xs leading-5 text-red-100/70">
-                      Lagos 2027 is the Men&apos;s Football Showcase and is open
+                      Lagos 2026 is the Men&apos;s Football Showcase and is open
                       to eligible male players.
                     </p>
 
@@ -537,7 +541,7 @@ export default function Lagos2027StartApplicationForm({
               REVELATIONX1 Football Showcase
             </div>
 
-            <div className="mt-1 text-[#c7ff2f]">Lagos 2027</div>
+            <div className="mt-1 text-[#c7ff2f]">Lagos 2026</div>
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <div className="flex justify-between gap-6">
@@ -578,12 +582,12 @@ export default function Lagos2027StartApplicationForm({
 
               <p className="mt-3 text-sm leading-6 text-white/70">
                 There is no application fee or assessment fee for the
-                REVELATIONX1 Lagos 2027 Men&apos;s Football Showcase.
+                REVELATIONX1 Lagos 2026 Men&apos;s Football Showcase.
               </p>
 
               <p className="mt-3 text-sm font-bold leading-6 text-white">
-                50 players will be selected on ability following the
-                application and screening process.
+                50 players will be selected on ability following the application
+                and screening process.
               </p>
 
               <p className="mt-3 text-sm leading-6 text-white/60">

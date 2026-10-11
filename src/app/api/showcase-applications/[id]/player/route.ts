@@ -234,7 +234,7 @@ export async function PUT(req: Request, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "Lagos 2027 is the Men's Football Showcase and is open to eligible male players.",
+            "Lagos 2026 is the Men's Football Showcase and is open to eligible male players.",
 
           code: "COMPETITION_CATEGORY_INELIGIBLE",
         },

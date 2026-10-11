@@ -76,7 +76,7 @@ export default async function ProfessionalReviewPage({
           <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-                Lagos 2027 · Professional Review
+                Lagos 2026 · Professional Review
               </div>
 
               <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">

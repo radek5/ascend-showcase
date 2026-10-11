@@ -4,6 +4,11 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 
 import { getCurrentApplicantUser } from "@/lib/applicants/auth";
+import { claimSelectedPlayerInvitation } from "@/lib/applicants/claimSelectedPlayerInvitation";
+import {
+  clearSelectedPlayerInvitation,
+  getSelectedPlayerInvitation,
+} from "@/lib/applicants/selectedPlayerInvitation";
 import { prisma } from "@/lib/prisma";
 import { calculateAgeOnDate } from "@/lib/showcase/lagos2027AgeEligibility";
 
@@ -51,6 +56,8 @@ export async function POST(req: Request) {
         { status: 403 },
       );
     }
+
+    const selectedInvitationToken = await getSelectedPlayerInvitation();
 
     const body = await req.json();
 
@@ -119,7 +126,7 @@ export async function POST(req: Request) {
     if (!dateOfBirth) {
       return NextResponse.json(
         {
-          error: "Date of birth is required for Lagos 2027.",
+          error: "Date of birth is required for Lagos 2026.",
         },
         { status: 400 },
       );
@@ -168,35 +175,35 @@ export async function POST(req: Request) {
     });
 
     if (!event) {
-      console.error("LAGOS 2027 event is not configured.");
+      console.error("LAGOS 2026 event is not configured.");
 
       return NextResponse.json(
         {
-          error: "Lagos 2027 is not currently available for applications.",
+          error: "Lagos 2026 is not currently available for applications.",
         },
         { status: 503 },
       );
     }
 
     if (!event.footballStartsAt) {
-      console.error("LAGOS 2027 footballStartsAt is not configured.");
+      console.error("LAGOS 2026 footballStartsAt is not configured.");
 
       return NextResponse.json(
         {
           error:
-            "Lagos 2027 eligibility cannot currently be verified. Please try again later.",
+            "Lagos 2026 eligibility cannot currently be verified. Please try again later.",
         },
         { status: 503 },
       );
     }
 
     if (event.showcaseMinimumAge == null || event.showcaseMaximumAge == null) {
-      console.error("LAGOS 2027 age eligibility is not configured.");
+      console.error("LAGOS 2026 age eligibility is not configured.");
 
       return NextResponse.json(
         {
           error:
-            "Lagos 2027 eligibility cannot currently be verified. Please try again later.",
+            "Lagos 2026 eligibility cannot currently be verified. Please try again later.",
         },
         { status: 503 },
       );
@@ -209,7 +216,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Lagos 2027 is the Men's Football Showcase and is open to eligible male players.",
+            "Lagos 2026 is the Men's Football Showcase and is open to eligible male players.",
           code: "COMPETITION_CATEGORY_INELIGIBLE",
         },
         { status: 422 },
@@ -237,7 +244,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            `You are below the minimum age for Lagos 2027. ` +
+            `You are below the minimum age for Lagos 2026. ` +
             `This programme is open only to players aged ` +
             `${event.showcaseMinimumAge}–${event.showcaseMaximumAge} ` +
             `on the first day of the programme.`,
@@ -253,7 +260,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            `You are above the maximum age for Lagos 2027. ` +
+            `You are above the maximum age for Lagos 2026. ` +
             `This programme is open only to players aged ` +
             `${event.showcaseMinimumAge}–${event.showcaseMaximumAge} ` +
             `on the first day of the programme.`,
@@ -270,7 +277,7 @@ export async function POST(req: Request) {
      * controlled legacy-draft recovery.
      *
      * A verified applicant account may have only one
-     * Lagos 2027 application.
+     * Lagos 2026 application.
      *
      * Existing applications already owned by the account
      * are resumed directly.
@@ -313,40 +320,58 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             error:
-              "You have already submitted an application for Lagos 2027. Please use your applicant account to view its status.",
+              "You have already submitted an application for Lagos 2026. Please use your applicant account to view its status.",
             code: "DUPLICATE_APPLICATION",
           },
           { status: 409 },
         );
       }
 
-      const application = await prisma.showcaseApplication.update({
-        where: {
-          id: ownedApplication.id,
-        },
+      const application = await prisma.$transaction(async (tx) => {
+        const updatedApplication = await tx.showcaseApplication.update({
+          where: {
+            id: ownedApplication.id,
+          },
 
-        data: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: normalisedEmail,
+          data: {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: normalisedEmail,
 
-          dateOfBirth: parsedDob,
-          age: calculatedAge,
-          sex,
+            dateOfBirth: parsedDob,
+            age: calculatedAge,
+            sex,
 
-          nationality: nationality?.trim() || null,
+            nationality: nationality?.trim() || null,
 
-          countryOfResidence: countryOfResidence?.trim() || null,
+            countryOfResidence: countryOfResidence?.trim() || null,
 
-          position: position.trim(),
+            position: position.trim(),
 
-          secondaryPosition: secondaryPosition?.trim() || null,
+            secondaryPosition: secondaryPosition?.trim() || null,
 
-          preferredFoot: preferredFoot?.trim() || null,
+            preferredFoot: preferredFoot?.trim() || null,
 
-          footballBackground: footballBackground?.trim() || null,
-        },
+            footballBackground: footballBackground?.trim() || null,
+          },
+        });
+
+        if (selectedInvitationToken) {
+          await claimSelectedPlayerInvitation({
+            tx,
+            token: selectedInvitationToken,
+            applicationId: updatedApplication.id,
+            applicantUserId: applicantUser.id,
+            eventSlug: EVENT_SLUG,
+          });
+        }
+
+        return updatedApplication;
       });
+
+      if (selectedInvitationToken) {
+        await clearSelectedPlayerInvitation();
+      }
 
       return NextResponse.json({
         success: true,
@@ -395,7 +420,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "An application has already been submitted for Lagos 2027 matching this verified email address and date of birth. Please contact REVELATIONX1 if you need help accessing it.",
+            "An application has already been submitted for Lagos 2026 matching this verified email address and date of birth. Please contact REVELATIONX1 if you need help accessing it.",
           code: "DUPLICATE_APPLICATION",
         },
         { status: 409 },
@@ -415,7 +440,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "We found an existing Lagos 2027 application matching these details. Please contact REVELATIONX1 for assistance.",
+            "We found an existing Lagos 2026 application matching these details. Please contact REVELATIONX1 for assistance.",
           code: "APPLICATION_OWNERSHIP_CONFLICT",
         },
         { status: 409 },
@@ -433,7 +458,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "We found more than one unfinished Lagos 2027 application matching your verified account details. Please contact REVELATIONX1 so we can safely resolve them.",
+            "We found more than one unfinished Lagos 2026 application matching your verified account details. Please contact REVELATIONX1 so we can safely resolve them.",
           code: "MULTIPLE_LEGACY_APPLICATIONS",
         },
         { status: 409 },
@@ -465,7 +490,7 @@ export async function POST(req: Request) {
           return null;
         }
 
-        return tx.showcaseApplication.update({
+        const updatedApplication = await tx.showcaseApplication.update({
           where: {
             id: legacyApplication.id,
           },
@@ -492,6 +517,18 @@ export async function POST(req: Request) {
             footballBackground: footballBackground?.trim() || null,
           },
         });
+
+        if (selectedInvitationToken) {
+          await claimSelectedPlayerInvitation({
+            tx,
+            token: selectedInvitationToken,
+            applicationId: updatedApplication.id,
+            applicantUserId: applicantUser.id,
+            eventSlug: EVENT_SLUG,
+          });
+        }
+
+        return updatedApplication;
       });
 
       if (!application) {
@@ -503,6 +540,10 @@ export async function POST(req: Request) {
           },
           { status: 409 },
         );
+      }
+
+      if (selectedInvitationToken) {
+        await clearSelectedPlayerInvitation();
       }
 
       return NextResponse.json({
@@ -529,11 +570,11 @@ export async function POST(req: Request) {
         (existing) => normalisePhone(existing.phone) === normalisedPhone,
       );
 
-        if (phoneDuplicate) {
+    if (phoneDuplicate) {
       return NextResponse.json(
         {
           error:
-            "We found a possible existing Lagos 2027 application matching this date of birth and phone number. Please do not start a second application. Contact REVELATIONX1 for assistance.",
+            "We found a possible existing Lagos 2026 application matching this date of birth and phone number. Please do not start a second application. Contact REVELATIONX1 for assistance.",
           code: "POSSIBLE_DUPLICATE_APPLICATION",
         },
         { status: 409 },
@@ -550,54 +591,72 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Applications for REVELATIONX1 Lagos 2027 are currently closed. If you have already started an application, please sign in to continue it.",
+            "Applications for REVELATIONX1 Lagos 2026 are currently closed. If you have already started an application, please sign in to continue it.",
           code: "REGISTRATION_CLOSED",
         },
         { status: 403 },
       );
     }
 
-    const application = await prisma.showcaseApplication.create({
-      data: {
-        eventSlug: EVENT_SLUG,
-        userId: applicantUser.id,
+    const application = await prisma.$transaction(async (tx) => {
+      const createdApplication = await tx.showcaseApplication.create({
+        data: {
+          eventSlug: EVENT_SLUG,
+          userId: applicantUser.id,
 
-        assessmentFeeRequired: false,
-        assessmentFeeAmount: null,
-        assessmentFeeCurrency: "NGN",
+          assessmentFeeRequired: false,
+          assessmentFeeAmount: null,
+          assessmentFeeCurrency: "NGN",
 
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: normalisedEmail,
-        phone: phone?.trim() || null,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: normalisedEmail,
+          phone: phone?.trim() || null,
 
-        dateOfBirth: parsedDob,
-        age: calculatedAge,
-        sex,
+          dateOfBirth: parsedDob,
+          age: calculatedAge,
+          sex,
 
-        nationality: nationality?.trim() || null,
+          nationality: nationality?.trim() || null,
 
-        countryOfResidence: countryOfResidence?.trim() || null,
+          countryOfResidence: countryOfResidence?.trim() || null,
 
-        stateRegion: stateRegion?.trim() || null,
+          stateRegion: stateRegion?.trim() || null,
 
-        city: city?.trim() || null,
+          city: city?.trim() || null,
 
-        position: position.trim(),
+          position: position.trim(),
 
-        secondaryPosition: secondaryPosition?.trim() || null,
+          secondaryPosition: secondaryPosition?.trim() || null,
 
-        preferredFoot: preferredFoot?.trim() || null,
+          preferredFoot: preferredFoot?.trim() || null,
 
-        currentClub: currentClub?.trim() || null,
+          currentClub: currentClub?.trim() || null,
 
-        currentAcademy: currentAcademy?.trim() || null,
+          currentAcademy: currentAcademy?.trim() || null,
 
-        footballBackground: footballBackground?.trim() || null,
+          footballBackground: footballBackground?.trim() || null,
 
-        status: "DRAFT",
-      },
+          status: "DRAFT",
+        },
+      });
+
+      if (selectedInvitationToken) {
+        await claimSelectedPlayerInvitation({
+          tx,
+          token: selectedInvitationToken,
+          applicationId: createdApplication.id,
+          applicantUserId: applicantUser.id,
+          eventSlug: EVENT_SLUG,
+        });
+      }
+
+      return createdApplication;
     });
+
+    if (selectedInvitationToken) {
+      await clearSelectedPlayerInvitation();
+    }
 
     return NextResponse.json({
       success: true,

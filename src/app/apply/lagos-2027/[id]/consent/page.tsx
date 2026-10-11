@@ -265,7 +265,7 @@ export default async function ConsentPage({ params }: PageProps) {
               {application.firstName} {application.lastName}
             </div>
 
-            <div className="mt-1 text-[#c7ff2f]">Lagos 2027</div>
+            <div className="mt-1 text-[#c7ff2f]">Lagos 2026</div>
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <Row label="Eligibility" value="18–20" />

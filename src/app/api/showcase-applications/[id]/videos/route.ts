@@ -51,6 +51,20 @@ export async function GET(
         currentClub: true,
         status: true,
 
+        videoExemption: {
+          select: {
+            status: true,
+            reason: true,
+          },
+        },
+
+        selectedPlayerRecord: {
+          select: {
+            footballSelected: true,
+            matchedApplicationId: true,
+          },
+        },
+
         videos: {
           orderBy: {
             createdAt: "asc",
@@ -80,15 +94,31 @@ export async function GET(
       );
     }
 
+    const { videoExemption, selectedPlayerRecord, ...publicApplication } =
+      application;
+
+    const preselected =
+      selectedPlayerRecord?.footballSelected === true &&
+      selectedPlayerRecord.matchedApplicationId === application.id;
+
+    const videoExempt = videoExemption?.status === "MATCHED" || preselected;
+
     return NextResponse.json({
       success: true,
 
       application: {
-        ...application,
+        ...publicApplication,
+
+        videoExempt,
+        preselected,
+
+        videoExemptionReason:
+          videoExempt && videoExemption?.reason === "PREVIOUSLY_OBSERVED_LIVE"
+            ? "PREVIOUSLY_OBSERVED_LIVE"
+            : null,
 
         videos: application.videos.map((video) => ({
           ...video,
-
           sizeBytes: video.sizeBytes ? video.sizeBytes.toString() : null,
         })),
 
@@ -97,7 +127,6 @@ export async function GET(
 
           videos: request.videos.map((video) => ({
             ...video,
-
             sizeBytes: video.sizeBytes ? video.sizeBytes.toString() : null,
           })),
         })),

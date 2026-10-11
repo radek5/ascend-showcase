@@ -61,7 +61,7 @@ export default async function SelectorLoginPage({
       <section className="mx-auto flex min-h-[calc(100vh-82px)] max-w-7xl items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <div className="text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-4xl font-black">

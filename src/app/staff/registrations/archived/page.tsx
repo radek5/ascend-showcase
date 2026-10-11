@@ -32,7 +32,7 @@ export default async function ArchivedRegistrationsPage() {
             </Link>
 
             <div className="mt-6 text-xs font-black uppercase tracking-[0.22em] text-[#c7ff2f]">
-              Lagos 2027
+              Lagos 2026
             </div>
 
             <h1 className="mt-3 text-4xl font-black">

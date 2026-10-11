@@ -57,7 +57,7 @@ export async function checkInShowcasePlayer(formData: FormData) {
     !application.selectedPlayerConfirmation?.confirmedAt
   ) {
     throw new Error(
-      "This player does not currently have a valid Lagos 2027 event credential.",
+      "This player does not currently have a valid Lagos 2026 event credential.",
     );
   }
 

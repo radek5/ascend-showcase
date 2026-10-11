@@ -267,7 +267,7 @@ export default function ContactPage() {
               {application.firstName} {application.lastName}
             </div>
 
-            <div className="mt-1 text-[#c7ff2f]">Lagos 2027</div>
+            <div className="mt-1 text-[#c7ff2f]">Lagos 2026</div>
 
             <div className="mt-6 space-y-4 border-t border-white/10 pt-6 text-sm">
               <div className="flex justify-between gap-6">

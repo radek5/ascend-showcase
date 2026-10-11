@@ -306,6 +306,16 @@ enum ShowcaseShoeSizeSystem {
   US
 }
 
+enum ShowcaseVideoExemptionStatus {
+  AWAITING_REGISTRATION
+  MATCHED
+  REVOKED
+}
+
+enum ShowcaseVideoExemptionReason {
+  PREVIOUSLY_OBSERVED_LIVE
+}
+
 model ProfessionalRegistration {
   id String @id @default(cuid())
 
@@ -391,6 +401,9 @@ model StaffUser {
 
   selectorAccount SelectorAccount?
 
+  videoExemptionsAuthorised ShowcaseVideoExemption[] @relation("ShowcaseVideoExemptionAuthorisedBy")
+  videoExemptionsRevoked    ShowcaseVideoExemption[] @relation("ShowcaseVideoExemptionRevokedBy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -454,6 +467,43 @@ model Event {
 
   @@index([active])
   @@index([city])
+}
+
+model ShowcaseVideoExemption {
+  id String @id @default(cuid())
+
+  eventSlug String
+
+  fullName String
+
+  // NIN is never stored in plaintext.
+  // ninHash is a keyed HMAC used for deterministic matching.
+  // ninLast4 is retained only for masked Back Office display.
+  ninHash  String
+  ninLast4 String
+
+  reason ShowcaseVideoExemptionReason @default(PREVIOUSLY_OBSERVED_LIVE)
+  status ShowcaseVideoExemptionStatus @default(AWAITING_REGISTRATION)
+
+  authorisedByStaffUserId String
+  authorisedByStaffUser   StaffUser @relation("ShowcaseVideoExemptionAuthorisedBy", fields: [authorisedByStaffUserId], references: [id])
+  authorisedAt            DateTime  @default(now())
+
+  matchedApplicationId String?              @unique
+  matchedApplication   ShowcaseApplication? @relation(fields: [matchedApplicationId], references: [id], onDelete: SetNull)
+  matchedAt            DateTime?
+
+  revokedByStaffUserId String?
+  revokedByStaffUser   StaffUser? @relation("ShowcaseVideoExemptionRevokedBy", fields: [revokedByStaffUserId], references: [id])
+  revokedAt            DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventSlug, ninHash])
+  @@index([eventSlug, status])
+  @@index([authorisedByStaffUserId])
+  @@index([revokedByStaffUserId])
 }
 
 model ShowcaseApplication {
@@ -551,8 +601,16 @@ model ShowcaseApplication {
   videos        ShowcaseApplicationVideo[]
   videoRequests ShowcaseVideoRequest[]
 
+  // NIN matching identity.
+  // The raw NIN is never persisted.
+  ninHash  String?
+  ninLast4 String?
+
   identityDocuments ShowcaseIdentityDocument[]
 
+  videoExemption ShowcaseVideoExemption?
+
+  selectedPlayerRecord        ShowcaseSelectedPlayer?
   additionalVideoRequestedAt  DateTime?
   additionalVideoDeadline     DateTime?
   additionalVideoCompletedAt  DateTime?
@@ -604,13 +662,22 @@ model ShowcaseApplication {
   selectionOutcomeEmailClaimToken String?
 
   // Reserve-list management
-  reserveRank       Int?
-  reservePromotedAt DateTime?
+  reserveRank                  Int?
+  reservePromotedAt            DateTime?
+  reservePromotedByStaffUserId String?
+  reservePromotionReason       String?
+
+  // Post-release selection lifecycle
+  selectionExitAt            DateTime?
+  selectionExitReason        String?
+  selectionExitNotes         String?
+  selectionExitByStaffUserId String?
 
   // Selected-place response
   selectionResponse         ShowcaseSelectionResponse?
   selectionResponseAt       DateTime?
   selectionResponseDeadline DateTime?
+  selectionResponseTokens   ShowcaseSelectionResponseToken[]
 
   selectedPlayerConfirmation ShowcaseSelectedPlayerConfirmation?
 
@@ -626,6 +693,23 @@ model ShowcaseApplication {
   @@index([status])
   @@index([eventSlug, status])
   @@index([userId])
+}
+
+model ShowcaseSelectionResponseToken {
+  id String @id @default(cuid())
+
+  applicationId String
+  application   ShowcaseApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([expiresAt])
 }
 
 model ShowcaseSelectedPlayerConfirmation {
@@ -1478,4 +1562,54 @@ model ApplicantPasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// ------------------------------------------------------------
+// REVELATIONX1 — SELECTED PLAYERS REGISTER
+// ------------------------------------------------------------
+// Players selected through scouting before online registration.
+// Registration, identity verification and participation clearance
+// are tracked separately from the football selection decision.
+
+model ShowcaseSelectedPlayer {
+  id String @id @default(cuid())
+
+  eventSlug       String
+  batchCode       String
+  sourceRowNumber Int
+
+  fullName    String
+  reportedAge Int?
+  position    String
+
+  whatsappNumber String?
+
+  // Football selection has already been made.
+  footballSelected Boolean @default(true)
+
+  // Individually approved exceptions to the event age range.
+  ageExceptionApproved   Boolean   @default(false)
+  ageExceptionReason     String?
+  ageExceptionApprovedAt DateTime?
+
+  // Secure personalised registration link.
+  registrationTokenHash      String?   @unique
+  registrationTokenExpiresAt DateTime?
+  registrationTokenUsedAt    DateTime?
+
+  // Registration linkage.
+  matchedApplicationId String?              @unique
+  matchedApplication   ShowcaseApplication? @relation(fields: [matchedApplicationId], references: [id], onDelete: SetNull)
+  matchedAt            DateTime?
+
+  registrationCompletedAt DateTime?
+  identityClearedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventSlug, batchCode, sourceRowNumber])
+  @@index([eventSlug, batchCode])
+  @@index([eventSlug, footballSelected])
+  @@index([whatsappNumber])
 }

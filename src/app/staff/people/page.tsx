@@ -43,7 +43,7 @@ export default async function PeoplePage() {
           </Link>
 
           <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
         </div>
       </header>

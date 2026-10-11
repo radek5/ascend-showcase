@@ -11,18 +11,17 @@ const MAX_ALLOCATION_ATTEMPTS = 5;
 export async function allocateProfessionalRegistrationNumber({
   registrationId,
 }: AllocateProfessionalRegistrationNumberArgs) {
-  const registration =
-    await prisma.professionalRegistration.findUnique({
-      where: {
-        id: registrationId,
-      },
+  const registration = await prisma.professionalRegistration.findUnique({
+    where: {
+      id: registrationId,
+    },
 
-      select: {
-        id: true,
-        eventId: true,
-        registrationNumber: true,
-      },
-    });
+    select: {
+      id: true,
+      eventId: true,
+      registrationNumber: true,
+    },
+  });
 
   if (!registration) {
     throw new Error("Professional registration not found.");
@@ -37,9 +36,9 @@ export async function allocateProfessionalRegistrationNumber({
   }
 
   /*
-   * Lagos 2027 professional registration format:
+   * Lagos 2026 professional registration format:
    *
-   * RX1-LAG27-PRO-001
+   * RX1-LAG26-PRO-001
    *
    * Registration numbers are permanent and are issued
    * when the professional registration is submitted.
@@ -48,20 +47,19 @@ export async function allocateProfessionalRegistrationNumber({
    * confirmation of attendance.
    */
   for (let attempt = 0; attempt < MAX_ALLOCATION_ATTEMPTS; attempt += 1) {
-    const existing =
-      await prisma.professionalRegistration.findMany({
-        where: {
-          eventId: registration.eventId,
+    const existing = await prisma.professionalRegistration.findMany({
+      where: {
+        eventId: registration.eventId,
 
-          registrationNumber: {
-            not: null,
-          },
+        registrationNumber: {
+          not: null,
         },
+      },
 
-        select: {
-          registrationNumber: true,
-        },
-      });
+      select: {
+        registrationNumber: true,
+      },
+    });
 
     let highestSequence = 0;
 
@@ -70,10 +68,7 @@ export async function allocateProfessionalRegistrationNumber({
         continue;
       }
 
-      const match =
-        item.registrationNumber.match(
-          /^RX1-LAG27-PRO-(\d+)$/,
-        );
+      const match = item.registrationNumber.match(/^RX1-LAG26-PRO-(\d+)$/);
 
       if (!match) {
         continue;
@@ -81,10 +76,7 @@ export async function allocateProfessionalRegistrationNumber({
 
       const sequence = Number(match[1]);
 
-      if (
-        Number.isFinite(sequence) &&
-        sequence > highestSequence
-      ) {
+      if (Number.isFinite(sequence) && sequence > highestSequence) {
         highestSequence = sequence;
       }
     }
@@ -93,24 +85,22 @@ export async function allocateProfessionalRegistrationNumber({
 
     const suffix = String(nextSequence).padStart(3, "0");
 
-    const registrationNumber =
-      `RX1-LAG27-PRO-${suffix}`;
+    const registrationNumber = `RX1-LAG26-PRO-${suffix}`;
 
     try {
-      const updated =
-        await prisma.professionalRegistration.update({
-          where: {
-            id: registration.id,
-          },
+      const updated = await prisma.professionalRegistration.update({
+        where: {
+          id: registration.id,
+        },
 
-          data: {
-            registrationNumber,
-          },
+        data: {
+          registrationNumber,
+        },
 
-          select: {
-            registrationNumber: true,
-          },
-        });
+        select: {
+          registrationNumber: true,
+        },
+      });
 
       return updated.registrationNumber!;
     } catch (error) {
@@ -124,16 +114,15 @@ export async function allocateProfessionalRegistrationNumber({
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002"
       ) {
-        const current =
-          await prisma.professionalRegistration.findUnique({
-            where: {
-              id: registration.id,
-            },
+        const current = await prisma.professionalRegistration.findUnique({
+          where: {
+            id: registration.id,
+          },
 
-            select: {
-              registrationNumber: true,
-            },
-          });
+          select: {
+            registrationNumber: true,
+          },
+        });
 
         if (current?.registrationNumber) {
           return current.registrationNumber;
@@ -146,7 +135,5 @@ export async function allocateProfessionalRegistrationNumber({
     }
   }
 
-  throw new Error(
-    "Unable to allocate professional registration number.",
-  );
+  throw new Error("Unable to allocate professional registration number.");
 }

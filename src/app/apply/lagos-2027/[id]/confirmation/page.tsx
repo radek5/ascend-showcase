@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
-import OfferResponseButtons from "./OfferResponseButtons";
 
 import {
   checkApplicantApplicationAccess,
@@ -72,6 +71,14 @@ export default async function ConfirmationPage({ params }: PageProps) {
         },
       },
 
+      selectedPlayerRecord: {
+        select: {
+          footballSelected: true,
+          matchedApplicationId: true,
+          registrationCompletedAt: true,
+        },
+      },
+
       registrationNumber: true,
     },
   });
@@ -95,6 +102,12 @@ export default async function ConfirmationPage({ params }: PageProps) {
     redirect(`/apply/${application.eventSlug}/${application.id}/review`);
   }
 
+  const preselected =
+    application.status === "SELECTED" &&
+    application.selectedPlayerRecord?.footballSelected === true &&
+    application.selectedPlayerRecord.matchedApplicationId === application.id &&
+    Boolean(application.selectedPlayerRecord.registrationCompletedAt);
+
   const decisionReleased = Boolean(application.selectionDecisionReleasedAt);
 
   const releasedOutcome =
@@ -106,33 +119,33 @@ export default async function ConfirmationPage({ params }: PageProps) {
   const outcomePresentation =
     releasedOutcome === "SELECTED"
       ? {
-          eyebrow: "Lagos 2027 Selection Decision",
+          eyebrow: "Lagos 2026 Selection Decision",
           title: "You Have Been Selected",
-          status: "Selected for Lagos 2027",
+          status: "Selected for Lagos 2026",
           tone: "selected" as const,
           message:
-            "Congratulations. Following the REVELATIONX1 eligibility and football assessment process, you have been selected for the Lagos 2027 Men's Football Showcase.",
-          next: "Your place has now been offered to you. REVELATIONX1 will provide the next steps for confirming your participation.",
+            "Congratulations. Following the REVELATIONX1 eligibility and football assessment process, you have been selected for the Lagos 2026 Men's Football Showcase.",
+          next: "An email has been sent to the email address on your application with your selection details and secure links to accept or decline your place.",
         }
       : releasedOutcome === "RESERVE"
         ? {
-            eyebrow: "Lagos 2027 Selection Decision",
-            title: "You Are on the Reserve List",
-            status: "Reserve List",
+            eyebrow: "Lagos 2026 Selection Decision",
+            title: "You Are on Standby",
+            status: "Standby",
             tone: "reserve" as const,
             message:
-              "Your application has completed the REVELATIONX1 assessment process and you have been placed on the Lagos 2027 reserve list.",
+              "Your application has completed the REVELATIONX1 assessment process and you have been placed on standby for Lagos 2026.",
             next: "If a suitable place becomes available, REVELATIONX1 may contact you with an offer to join the Showcase.",
           }
         : releasedOutcome === "NOT_SELECTED"
           ? {
-              eyebrow: "Lagos 2027 Selection Decision",
+              eyebrow: "Lagos 2026 Selection Decision",
               title: "Selection Decision",
               status: "Not Selected on This Occasion",
               tone: "not-selected" as const,
               message:
-                "Your Lagos 2027 application has completed the REVELATIONX1 eligibility and football assessment process. You have not been selected for the final Showcase on this occasion.",
-              next: "Lagos 2027 was a competitive selection process with only 50 available places. Thank you for the time and effort you invested in your application.",
+                "Your Lagos 2026 application has completed the REVELATIONX1 eligibility and football assessment process. You have not been selected for the final Showcase on this occasion.",
+              next: "Lagos 2026 was a competitive selection process with only 50 available places. Thank you for the time and effort you invested in your application.",
             }
           : null;
 
@@ -154,7 +167,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
           <div className="grid min-w-[1260px] grid-cols-10 gap-2">
-                        {steps.map((step, index) => {
+            {steps.map((step, index) => {
               const active = index === 9;
               const completed = index < 9;
 
@@ -170,7 +183,11 @@ export default async function ConfirmationPage({ params }: PageProps) {
                   }`}
                 >
                   <div className="mb-1 text-[9px] opacity-60">
-                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                    {
+                      ["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][
+                        index
+                      ]
+                    }
                   </div>
                   <div className="leading-4">{step}</div>
                 </div>
@@ -191,18 +208,22 @@ export default async function ConfirmationPage({ params }: PageProps) {
           </div>
 
           <h1 className="mt-6 text-4xl font-black sm:text-5xl">
-            {outcomePresentation
-              ? outcomePresentation.title
-              : "Application Submitted"}
+            {preselected
+              ? "Registration Complete"
+              : outcomePresentation
+                ? outcomePresentation.title
+                : "Application Submitted"}
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/60">
-            {outcomePresentation
-              ? outcomePresentation.message
-              : `Thank you, ${application.firstName}. Your application for the Lagos 2027 Men's Football Showcase and your submitted football evidence have been received.`}
+            {preselected
+              ? `Thank you, ${application.firstName}. Your registration for the REVELATIONX1 Lagos 2026 Football Showcase is complete.`
+              : outcomePresentation
+                ? outcomePresentation.message
+                : `Thank you, ${application.firstName}. Your application for the Lagos 2026 Men's Football Showcase has been received.`}
           </p>
 
-          {outcomePresentation ? (
+          {preselected ? null : outcomePresentation ? (
             <div
               className={[
                 "mt-6 rounded-xl border p-5",
@@ -252,8 +273,10 @@ export default async function ConfirmationPage({ params }: PageProps) {
 
               <p className="mt-2 text-sm leading-6 text-white/60">
                 A confirmation email has been sent to{" "}
-                <span className="font-bold text-white">{application.email}</span>.
-                It includes your permanent registration code and confirmation
+                <span className="font-bold text-white">
+                  {application.email}
+                </span>
+                . It includes your permanent registration code and confirmation
                 that your application has been received. Please keep it for your
                 records.
               </p>
@@ -272,7 +295,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
                 Keep this registration code safe. It remains your permanent
-                Lagos 2027 Men&apos;s Football Showcase registration identity
+                Lagos 2026 Men&apos;s Football Showcase registration identity
                 throughout the application, assessment and selection process.
               </p>
             </div>
@@ -301,7 +324,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
               {releasedOutcome === "SELECTED"
                 ? "What happens next?"
                 : releasedOutcome === "RESERVE"
-                  ? "What the reserve list means"
+                  ? "What standby means"
                   : "Thank you for applying"}
             </div>
 
@@ -309,8 +332,8 @@ export default async function ConfirmationPage({ params }: PageProps) {
               {releasedOutcome === "SELECTED" ? (
                 <>
                   <p>
-                    You have earned one of the 50 available places for the
-                    Lagos 2027 Men&apos;s Football Showcase.
+                    You have earned one of the 50 available places for the Lagos
+                    2026 Men&apos;s Football Showcase.
                   </p>
 
                   <p>
@@ -330,19 +353,20 @@ export default async function ConfirmationPage({ params }: PageProps) {
                   </p>
 
                   {application.selectionResponse === "PENDING" ? (
-                    <div className="border-t border-white/10 pt-5">
-                      <div className="mb-4">
-                        <div className="font-black text-white">
-                          Confirm your decision
-                        </div>
-
-                        <p className="mt-1 text-sm leading-6 text-white/50">
-                          Please tell us whether you accept your Lagos 2027
-                          place.
-                        </p>
+                    <div className="rounded-2xl border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.05] p-5">
+                      <div className="text-xs font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
+                        Check Your Email
                       </div>
 
-                      <OfferResponseButtons applicationId={application.id} />
+                      <p className="mt-2 text-sm leading-6 text-white/60">
+                        An email has been sent to{" "}
+                        <span className="font-bold text-white">
+                          {application.email}
+                        </span>{" "}
+                        confirming your selection. Please check your inbox for
+                        your selection details and the secure links to accept or
+                        decline your place.
+                      </p>
                     </div>
                   ) : application.selectionResponse === "ACCEPTED" ? (
                     <div className="rounded-2xl border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.05] p-5">
@@ -354,7 +378,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
                         Your acceptance has been recorded.
                         {application.selectedPlayerConfirmation?.confirmedAt
                           ? " Your Selected Player Confirmation is complete."
-                          : " Your next step is to complete your Selected Player Confirmation, including the information REVELATIONX1 needs to prepare you for Lagos 2027."}
+                          : " Your next step is to complete your Selected Player Confirmation, including the information REVELATIONX1 needs to prepare you for Lagos 2026."}
                       </p>
 
                       {application.selectedPlayerConfirmation?.confirmedAt ? (
@@ -400,7 +424,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
                       </div>
 
                       <p className="mt-2 text-sm leading-6 text-white/55">
-                        Your decision to decline the Lagos 2027 place has been
+                        Your decision to decline the Lagos 2026 place has been
                         recorded.
                       </p>
                     </div>
@@ -409,14 +433,14 @@ export default async function ConfirmationPage({ params }: PageProps) {
               ) : releasedOutcome === "RESERVE" ? (
                 <>
                   <p>
-                    You remain under consideration for Lagos 2027 if a suitable
+                    You remain under consideration for Lagos 2026 if a suitable
                     place becomes available.
                   </p>
 
                   <p>
-                    Reserve places are managed according to the needs of the
-                    final player group. Your numeric position on the reserve
-                    list is not published.
+                    Standby places are managed according to the needs of the
+                    final player group. Your numeric standby position is not
+                    published.
                   </p>
 
                   <p>
@@ -425,14 +449,14 @@ export default async function ConfirmationPage({ params }: PageProps) {
                   </p>
 
                   <p className="font-bold text-white">
-                    Being placed on the reserve list is not a confirmed
-                    invitation to attend the Showcase.
+                    Being placed on standby is not a confirmed invitation to
+                    attend the Showcase.
                   </p>
                 </>
               ) : (
                 <>
                   <p>
-                    Thank you for completing the Lagos 2027 application and
+                    Thank you for completing the Lagos 2026 application and
                     assessment process.
                   </p>
 
@@ -442,7 +466,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
                   </p>
 
                   <p>
-                    Not being selected for Lagos 2027 does not prevent you from
+                    Not being selected for Lagos 2026 does not prevent you from
                     being considered for future REVELATIONX1 programmes and
                     opportunities.
                   </p>
@@ -462,7 +486,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
             <div className="mt-5 space-y-5 text-sm leading-7 text-white/55">
               <p>
                 Your application will now enter REVELATIONX1&apos;s identity,
-                age and event eligibility verification process. Lagos 2027 is
+                age and event eligibility verification process. Lagos 2026 is
                 the Men&apos;s Football Showcase for eligible male players aged
                 18–20 on the first day of the programme.
               </p>
@@ -486,7 +510,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
 
               <p className="font-bold text-white">
                 The best 50 eligible players will be selected for the final
-                Lagos 2027 Men&apos;s Football Showcase.
+                Lagos 2026 Men&apos;s Football Showcase.
               </p>
             </div>
           </div>
@@ -500,7 +524,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
 
             <p className="mt-3 text-sm leading-7 text-white/60">
               Submission of an application does not guarantee selection or an
-              invitation to the Lagos 2027 Men&apos;s Football Showcase. Places
+              invitation to the Lagos 2026 Men&apos;s Football Showcase. Places
               cannot be purchased and selection is based on eligibility and
               football assessment.
             </p>

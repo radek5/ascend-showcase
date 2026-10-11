@@ -70,6 +70,19 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
           storageKey: true,
         },
       },
+
+      videoExemption: {
+        select: {
+          status: true,
+        },
+      },
+
+      selectedPlayerRecord: {
+        select: {
+          footballSelected: true,
+          matchedApplicationId: true,
+        },
+      },
     },
   });
 
@@ -200,6 +213,11 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
    * ----------------------------------------------------------
    */
 
+  const videoExempt =
+    application.videoExemption?.status === "MATCHED" ||
+    (application.selectedPlayerRecord?.footballSelected === true &&
+      application.selectedPlayerRecord.matchedApplicationId === application.id);
+
   const completedVideoTypes = new Set<string>(
     application.videos
       .filter(
@@ -211,9 +229,9 @@ export async function getApplicationSubmissionReadiness(applicationId: string) {
       .map((video) => video.type),
   );
 
-  const missingVideoTypes = REQUIRED_VIDEO_TYPES.filter(
-    (type) => !completedVideoTypes.has(type),
-  );
+  const missingVideoTypes = videoExempt
+    ? []
+    : REQUIRED_VIDEO_TYPES.filter((type) => !completedVideoTypes.has(type));
 
   /*
    * ----------------------------------------------------------

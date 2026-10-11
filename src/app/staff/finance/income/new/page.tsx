@@ -209,7 +209,7 @@ export default async function NewFinanceIncomePage() {
                 name="description"
                 rows={3}
                 className={inputClass}
-                placeholder="e.g. Lagos 2027 Official Kit & Equipment partnership"
+                placeholder="e.g. Lagos 2026 Official Kit & Equipment partnership"
               />
             </label>
           </section>

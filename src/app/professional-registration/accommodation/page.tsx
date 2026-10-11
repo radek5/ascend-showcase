@@ -121,7 +121,7 @@ useEffect(() => {
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -165,7 +165,7 @@ useEffect(() => {
             <p className="mt-2 text-sm leading-6 text-white/50">
               REVELATIONX1 is working with the Lagos Continental Hotel on preferential
               accommodation arrangements for registered club representatives, scouts and
-              football agents attending Lagos 2027.
+              football agents attending Lagos 2026.
             </p>
 
             <div className="mt-8 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.05] p-6">

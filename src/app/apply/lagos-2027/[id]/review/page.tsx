@@ -52,6 +52,20 @@ export default async function ReviewPage({ params }: PageProps) {
     },
 
     include: {
+      videoExemption: {
+        select: {
+          status: true,
+          reason: true,
+        },
+      },
+
+      selectedPlayerRecord: {
+        select: {
+          footballSelected: true,
+          matchedApplicationId: true,
+        },
+      },
+
       identityDocuments: {
         where: {
           type: "PASSPORT",
@@ -81,6 +95,13 @@ export default async function ReviewPage({ params }: PageProps) {
   }
 
   const isSubmitted = Boolean(application.submittedAt);
+
+  const preselected =
+    application.selectedPlayerRecord?.footballSelected === true &&
+    application.selectedPlayerRecord.matchedApplicationId === application.id;
+
+  const videoExempt =
+    application.videoExemption?.status === "MATCHED" || preselected;
 
   const governmentIdDocument = application.identityDocuments[0];
 
@@ -125,7 +146,7 @@ export default async function ReviewPage({ params }: PageProps) {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
           <div className="grid min-w-[1260px] grid-cols-10 gap-2">
-                        {steps.map((step, index) => {
+            {steps.map((step, index) => {
               const active = index === 8;
               const completed = index < 8;
 
@@ -141,7 +162,11 @@ export default async function ReviewPage({ params }: PageProps) {
                   }`}
                 >
                   <div className="mb-1 text-[9px] opacity-60">
-                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                    {
+                      ["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][
+                        index
+                      ]
+                    }
                   </div>
                   <div className="leading-4">{step}</div>
                 </div>
@@ -170,7 +195,11 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Player Information"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/player`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/player`
+            }
           >
             <ReviewGrid>
               <Item
@@ -245,7 +274,11 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Contact, Address & Emergency Information"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/contact`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/contact`
+            }
           >
             <ReviewGrid>
               <Item label="Email" value={application.email} />
@@ -281,10 +314,7 @@ export default async function ReviewPage({ params }: PageProps) {
               />
 
               {application.postalCode ? (
-                <Item
-                  label="Postcode / ZIP"
-                  value={application.postalCode}
-                />
+                <Item label="Postcode / ZIP" value={application.postalCode} />
               ) : null}
 
               <Item
@@ -310,7 +340,11 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Identity & Age Verification"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/identity`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/identity`
+            }
           >
             <ReviewGrid>
               <Item
@@ -350,7 +384,11 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Club & Academy Status"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/football-status`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/football-status`
+            }
           >
             <ReviewGrid>
               <Item
@@ -421,7 +459,11 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Representation"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/representation`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/representation`
+            }
           >
             <ReviewGrid>
               <Item
@@ -478,42 +520,82 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Video Evidence"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/video`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/video`
+            }
           >
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <VideoItem
-                title="Match Footage 1"
-                video={requiredVideos.MATCH_1}
-              />
-
-              <VideoItem
-                title="Match Footage 2"
-                video={requiredVideos.MATCH_2}
-              />
-
-              <VideoItem title="Highlights" video={requiredVideos.HIGHLIGHTS} />
-
-              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                <div className="text-xs font-black uppercase tracking-[0.1em] text-white/35">
-                  Additional Videos
+            {videoExempt ? (
+              <div className="rounded-xl border border-[#c7ff2f]/25 bg-[#c7ff2f]/[0.05] p-5">
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
+                  Video Requirement Exempt
                 </div>
 
-                <div className="mt-3 text-2xl font-black">
-                  {additionalVideos.length}
+                <div className="mt-3 text-lg font-black">
+                  {preselected
+                    ? "Already Selected — No Videos Required"
+                    : "Previously Observed Live"}
                 </div>
 
-                <div className="mt-1 text-xs text-white/40">
-                  Optional evidence submitted
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">
+                  {preselected
+                    ? "You have already been selected for the REVELATIONX1 Lagos 2026 Football Showcase. No scouting videos are required."
+                    : "REVELATIONX1 has previously observed this player live. The initial video assessment requirement has been waived."}
+                </p>
+
+                {additionalVideos.length > 0 ? (
+                  <div className="mt-5 text-sm text-white/50">
+                    Optional additional videos submitted:{" "}
+                    <span className="font-bold text-white">
+                      {additionalVideos.length}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <VideoItem
+                  title="Match Footage 1"
+                  video={requiredVideos.MATCH_1}
+                />
+
+                <VideoItem
+                  title="Match Footage 2"
+                  video={requiredVideos.MATCH_2}
+                />
+
+                <VideoItem
+                  title="Highlights"
+                  video={requiredVideos.HIGHLIGHTS}
+                />
+
+                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  <div className="text-xs font-black uppercase tracking-[0.1em] text-white/35">
+                    Additional Videos
+                  </div>
+
+                  <div className="mt-3 text-2xl font-black">
+                    {additionalVideos.length}
+                  </div>
+
+                  <div className="mt-1 text-xs text-white/40">
+                    Optional evidence submitted
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </ReviewSection>
 
           {/* KIT & SIZING */}
 
           <ReviewSection
             title="Kit & Sizing"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/sizing`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/sizing`
+            }
           >
             <ReviewGrid>
               <Item
@@ -554,7 +636,11 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <ReviewSection
             title="Medical & Consent"
-            editHref={isSubmitted ? undefined : `/apply/${application.eventSlug}/${application.id}/consent`}
+            editHref={
+              isSubmitted
+                ? undefined
+                : `/apply/${application.eventSlug}/${application.id}/consent`
+            }
           >
             <ReviewGrid>
               <Item
@@ -610,7 +696,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
         <div className="mt-10 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-6">
           <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
-            Lagos 2027 Selection
+            Lagos 2026 Selection
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -637,7 +723,7 @@ export default async function ReviewPage({ params }: PageProps) {
 
           <p className="mt-5 text-sm leading-7 text-white/65">
             Submitting an application does not guarantee a place at the Lagos
-            2027 Men&apos;s Football Showcase. Applications will be reviewed for
+            2026 Men&apos;s Football Showcase. Applications will be reviewed for
             eligibility and football evidence, and the strongest eligible
             applicants will progress through the assessment process.
           </p>

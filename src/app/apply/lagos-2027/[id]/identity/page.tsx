@@ -43,6 +43,7 @@ type Application = {
   age: number | null;
   eventSlug: string;
   status: string;
+  ninLast4: string | null;
   identityDocuments: IdentityDocument[];
 };
 
@@ -76,8 +77,7 @@ const documentConfig: Array<{
     type: "PASSPORT",
     number: "01",
     title: "Government-issued Photo ID",
-    description:
-      "Select and upload the player's passport or driver's licence.",
+    description: "Select and upload the player's passport or driver's licence.",
     accept: "application/pdf,image/jpeg,image/png",
     guidance: "PDF, JPG or PNG · Maximum 10 MB",
   },
@@ -121,6 +121,11 @@ export default function IdentityVerificationPage() {
   const [governmentIdType, setGovernmentIdType] =
     useState<GovernmentIdType | null>(null);
 
+  const [nin, setNin] = useState("");
+  const [ninSaved, setNinSaved] = useState(false);
+  const [ninSaving, setNinSaving] = useState(false);
+  const [ninError, setNinError] = useState("");
+
   const [uploads, setUploads] = useState<Record<DocumentType, UploadState>>({
     PASSPORT: {
       ...initialUploadState,
@@ -155,13 +160,24 @@ export default function IdentityVerificationPage() {
 
       setApplication(record);
 
+      setNin("");
+
+      if (record.ninLast4) {
+        setNinSaved(true);
+        setNinError("");
+      } else {
+        setNinSaved(false);
+      }
+
       const existingGovernmentId = record.identityDocuments.find(
         (document) =>
           document.type === "PASSPORT" && Boolean(document.uploadedAt),
       );
 
       if (existingGovernmentId) {
-        setGovernmentIdType(existingGovernmentId.governmentIdType || "PASSPORT");
+        setGovernmentIdType(
+          existingGovernmentId.governmentIdType || "PASSPORT",
+        );
       }
 
       setUploads((current) => {
@@ -264,7 +280,73 @@ export default function IdentityVerificationPage() {
     });
   }
 
+  async function saveNin(): Promise<boolean> {
+    setNinError("");
+
+    const normalized = nin.replace(/\D/g, "");
+
+    if (!/^\d{11}$/.test(normalized)) {
+      setNinError("Enter the player's complete 11-digit NIN.");
+      return false;
+    }
+
+    try {
+      setNinSaving(true);
+
+      const response = await fetch(
+        `/api/showcase-applications/${id}/identity`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nin: normalized,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to save the NIN.");
+      }
+
+      setNin("");
+      setNinSaved(true);
+      setNinError("");
+
+      setApplication((current) =>
+        current
+          ? {
+              ...current,
+              ninLast4: data.ninLast4,
+            }
+          : current,
+      );
+
+      return true;
+    } catch (error) {
+      setNinError(
+        error instanceof Error
+          ? error.message
+          : "Unable to save the NIN. Please try again.",
+      );
+
+      return false;
+    } finally {
+      setNinSaving(false);
+    }
+  }
+
   async function uploadDocument(type: DocumentType): Promise<boolean> {
+    if (type === "NIN" && !ninSaved) {
+      setNinError(
+        "Save the player's NIN number before uploading the NIN document.",
+      );
+      return false;
+    }
+
     const state = uploads[type];
 
     if (type === "PASSPORT" && !governmentIdType) {
@@ -379,11 +461,7 @@ export default function IdentityVerificationPage() {
   async function uploadAllDocuments() {
     setPageError("");
 
-    const documentTypes = [
-      "PASSPORT",
-      "NIN",
-      "HEADSHOT",
-    ] as DocumentType[];
+    const documentTypes = ["PASSPORT", "NIN", "HEADSHOT"] as DocumentType[];
 
     if (!governmentIdType) {
       updateUpload("PASSPORT", {
@@ -432,7 +510,8 @@ export default function IdentityVerificationPage() {
     (uploads.PASSPORT.uploaded || Boolean(uploads.PASSPORT.file)) &&
     (uploads.NIN.uploaded || Boolean(uploads.NIN.file)) &&
     (uploads.HEADSHOT.uploaded || Boolean(uploads.HEADSHOT.file)) &&
-    Boolean(governmentIdType);
+    Boolean(governmentIdType) &&
+    ninSaved;
 
   if (loading) {
     return (
@@ -476,7 +555,7 @@ export default function IdentityVerificationPage() {
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -492,7 +571,7 @@ export default function IdentityVerificationPage() {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
           <div className="grid min-w-[1260px] grid-cols-10 gap-2">
-                        {steps.map((step, index) => {
+            {steps.map((step, index) => {
               const active = index === 2;
               const completed = index < 2;
 
@@ -508,7 +587,11 @@ export default function IdentityVerificationPage() {
                   }`}
                 >
                   <div className="mb-1 text-[9px] opacity-60">
-                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                    {
+                      ["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][
+                        index
+                      ]
+                    }
                   </div>
                   <div className="leading-4">{step}</div>
                 </div>
@@ -546,7 +629,7 @@ export default function IdentityVerificationPage() {
                 </div>
 
                 <div className="mt-1 text-sm text-white/45">
-                  Age on first day of Lagos 2027
+                  Age on first day of Lagos 2026
                 </div>
               </div>
 
@@ -602,8 +685,7 @@ export default function IdentityVerificationPage() {
                         disabled={state.uploading}
                         onChange={(event) => {
                           const value = event.target.value as
-                            | GovernmentIdType
-                            | "";
+                            GovernmentIdType | "";
 
                           const nextType = value || null;
 
@@ -619,12 +701,90 @@ export default function IdentityVerificationPage() {
                         }}
                         className="mt-3 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-[#c7ff2f]/50"
                       >
-                        <option value="">Select government-issued photo ID</option>
+                        <option value="">
+                          Select government-issued photo ID
+                        </option>
                         <option value="PASSPORT">Passport</option>
                         <option value="DRIVERS_LICENCE">
                           Driver&apos;s Licence
                         </option>
                       </select>
+                    </div>
+                  ) : null}
+
+                  {document.type === "NIN" ? (
+                    <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-5">
+                      <label
+                        htmlFor="nin-number"
+                        className="text-xs font-bold uppercase tracking-[0.12em] text-white/45"
+                      >
+                        NIN Number
+                      </label>
+
+                      {ninSaved && application.ninLast4 ? (
+                        <div className="mt-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="rounded-xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.06] px-4 py-3 font-mono text-sm font-bold text-white">
+                              •••••••{application.ninLast4}
+                            </div>
+
+                            <span className="text-xs font-black uppercase tracking-[0.08em] text-[#c7ff2f]">
+                              ✓ NIN saved securely
+                            </span>
+                          </div>
+
+                          <p className="mt-3 text-xs leading-5 text-white/35">
+                            For security, the full NIN is not displayed after it
+                            has been saved.
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                            <input
+                              id="nin-number"
+                              type="text"
+                              inputMode="numeric"
+                              autoComplete="off"
+                              maxLength={11}
+                              pattern="[0-9]{11}"
+                              value={nin}
+                              disabled={ninSaving}
+                              onChange={(event) => {
+                                const value = event.target.value
+                                  .replace(/\D/g, "")
+                                  .slice(0, 11);
+
+                                setNin(value);
+                                setNinError("");
+                              }}
+                              placeholder="Enter 11-digit NIN"
+                              className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-sm text-white outline-none transition placeholder:font-sans placeholder:text-white/20 focus:border-[#c7ff2f]/50"
+                            />
+
+                            <button
+                              type="button"
+                              disabled={ninSaving || nin.length !== 11}
+                              onClick={() => void saveNin()}
+                              className="rounded-xl bg-white px-5 py-3 text-xs font-black uppercase tracking-[0.08em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
+                            >
+                              {ninSaving ? "Saving..." : "Save NIN"}
+                            </button>
+                          </div>
+
+                          <p className="mt-3 text-xs leading-5 text-white/35">
+                            Enter the player&apos;s 11-digit National
+                            Identification Number exactly as shown on the NIN
+                            document below.
+                          </p>
+                        </>
+                      )}
+
+                      {ninError ? (
+                        <div className="mt-4 rounded-lg border border-red-400/20 bg-red-400/10 p-3 text-xs font-semibold text-red-200">
+                          {ninError}
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
 

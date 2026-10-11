@@ -76,7 +76,7 @@ export async function sendShowcaseSelectionInvitation(
 
   if (application.selectionResponse !== "ACCEPTED") {
     throw new Error(
-      "The player must accept their Lagos 2027 place before an event credential can be issued.",
+      "The player must accept their Lagos 2026 place before an event credential can be issued.",
     );
   }
 

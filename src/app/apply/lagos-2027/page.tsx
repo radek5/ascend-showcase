@@ -27,35 +27,35 @@ export default async function Lagos2027ApplicationPage() {
         <RevelationX1Logo />
 
         <p className="mt-8 text-sm font-black uppercase tracking-[0.28em] text-emerald-300">
-          Lagos 2027
+          Lagos 2026
         </p>
 
         <h1 className="mt-4 max-w-4xl text-5xl font-black tracking-tight md:text-6xl">
           {squadComplete
-            ? "The Lagos 2027 Squad Is Complete"
-            : "Your Journey to Lagos 2027 Starts Here"}
+            ? "The Lagos 2026 Squad Is Complete"
+            : "Your Journey to Lagos 2026 Starts Here"}
         </h1>
 
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
           {squadComplete
-            ? "The Lagos 2027 selection process has been completed and selection decisions have now been released to applicants."
-            : "Show us your game. Share your football story and videos for the chance to earn one of 50 fully funded places at the REVELATIONX1 Lagos 2027 Football Showcase."}
+            ? "The Lagos 2026 selection process has been completed and selection decisions have now been released to applicants."
+            : "Show us your game. Share your football story and videos for the chance to earn one of 50 fully funded places at the REVELATIONX1 Lagos 2026 Football Showcase."}
         </p>
 
         {squadComplete ? (
           <section className="mt-10 rounded-[2rem] border border-emerald-400/25 bg-emerald-400/10 p-7">
             <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
-              Lagos 2027 Selection Complete
+              Lagos 2026 Selection Complete
             </p>
 
             <p className="mt-3 text-xl font-black leading-8 text-white">
-              Selection decisions for the 50 Lagos 2027 places have now been
+              Selection decisions for the 50 Lagos 2026 places have now been
               released.
             </p>
 
             <p className="mt-3 leading-7 text-slate-300">
               Applicants can sign in to their REVELATIONX1 account to view their
-              official Lagos 2027 selection decision and application status.
+              official Lagos 2026 selection decision and application status.
             </p>
 
             <p className="mt-3 leading-7 text-slate-400">
@@ -71,7 +71,7 @@ export default async function Lagos2027ApplicationPage() {
 
             <p className="mt-3 leading-7 text-emerald-100">
               There is no application fee or assessment fee for the REVELATIONX1
-              Lagos 2027 Men&apos;s Football Showcase.
+              Lagos 2026 Men&apos;s Football Showcase.
             </p>
 
             <p className="mt-3 font-bold leading-7 text-white">
@@ -166,7 +166,7 @@ export default async function Lagos2027ApplicationPage() {
           {squadComplete ? (
             <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] p-4">
               <p className="text-sm font-bold text-emerald-200">
-                Lagos 2027 selection decisions have been released.
+                Lagos 2026 selection decisions have been released.
               </p>
 
               <p className="mt-1 text-sm leading-6 text-slate-400">

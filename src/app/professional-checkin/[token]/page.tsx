@@ -65,7 +65,7 @@ export default async function ProfessionalCheckInPage({
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-5xl px-6 py-10 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            REVELATIONX1 Lagos 2027
+            REVELATIONX1 Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">

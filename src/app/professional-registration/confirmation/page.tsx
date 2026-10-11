@@ -73,7 +73,7 @@ export default async function ProfessionalConfirmationPage({
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -103,7 +103,7 @@ export default async function ProfessionalConfirmationPage({
           </h1>
 
           <p className="mt-4 text-lg text-white/70">
-            Your professional registration for REVELATIONX1 Lagos 2027
+            Your professional registration for REVELATIONX1 Lagos 2026
             has been received.
           </p>
 

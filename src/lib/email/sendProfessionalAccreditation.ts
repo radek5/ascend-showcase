@@ -223,12 +223,12 @@ export async function sendProfessionalAccreditation({
                 </div>
 
                 <h1 style="margin:14px 0 10px;font-size:34px;">
-                  Welcome to Lagos 2027
+                  Welcome to Lagos 2026
                 </h1>
 
                 <p style="margin:0;color:#a9a9a9;line-height:1.7;">
                   Dear ${registration.fullName}, your professional registration
-                  has been approved and your REVELATIONX1 Lagos 2027 Event Pass
+                  has been approved and your REVELATIONX1 Lagos 2026 Event Pass
                   has been issued.
                 </p>
 
@@ -365,7 +365,7 @@ export async function sendProfessionalAccreditation({
 
                       <p style="margin:0;color:#a9a9a9;line-height:1.8;">
                         Your Event Pass is required while attending REVELATIONX1
-                        Lagos 2027. Please present your QR code and any
+                        Lagos 2026. Please present your QR code and any
                         identification requested by REVELATIONX1 staff.
                       </p>
 
@@ -414,7 +414,7 @@ export async function sendProfessionalAccreditation({
     to: registration.email,
 
     subject:
-      `${registration.registrationNumber} — REVELATIONX1 Lagos 2027 Professional Event Pass`,
+      `${registration.registrationNumber} — REVELATIONX1 Lagos 2026 Professional Event Pass`,
 
     html,
 

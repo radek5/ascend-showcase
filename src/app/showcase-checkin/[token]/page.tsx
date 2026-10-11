@@ -163,7 +163,7 @@ export default async function ShowcasePlayerCheckInPage({
           />
 
           <div className="mt-8 text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -278,7 +278,7 @@ export default async function ShowcasePlayerCheckInPage({
                 </div>
 
                 <p className="mt-2 text-sm leading-6 text-white/55">
-                  This player does not currently have a valid Lagos 2027 event
+                  This player does not currently have a valid Lagos 2026 event
                   credential. Event entry requires a released selection
                   decision, an accepted place and completed Selected Player
                   Confirmation.

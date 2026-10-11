@@ -204,7 +204,7 @@ export default async function AirportTransfersPage({
           </Link>
 
           <div className="text-xs font-black uppercase tracking-[0.18em] text-[#1685ff]">
-            Lagos 2027
+            Lagos 2026
           </div>
         </div>
       </header>
@@ -222,7 +222,7 @@ export default async function AirportTransfersPage({
 
             <p className="mt-3 max-w-2xl text-white/50">
               Arrival and departure transport manifest
-              for REVELATIONX1 Lagos 2027.
+              for REVELATIONX1 Lagos 2026.
             </p>
           </div>
 

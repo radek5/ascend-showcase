@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 import { requireVerifiedApplicantUser } from "@/lib/applicants/auth";
+import { getSelectedPlayerInvitation } from "@/lib/applicants/selectedPlayerInvitation";
+import { hashSecureToken } from "@/lib/applicants/tokens";
 import { prisma } from "@/lib/prisma";
 import { getApplicationSubmissionReadiness } from "@/lib/showcase/getApplicationSubmissionReadiness";
 
@@ -11,6 +14,32 @@ const LAGOS_2027_EVENT_SLUG = "lagos-2027";
 
 export default async function ApplicantAccountPage() {
   const applicantUser = await requireVerifiedApplicantUser();
+
+  const invitationToken = await getSelectedPlayerInvitation();
+
+  const pendingSelectedInvitation = invitationToken
+    ? await prisma.showcaseSelectedPlayer.findFirst({
+        where: {
+          registrationTokenHash: hashSecureToken(invitationToken),
+          eventSlug: LAGOS_2027_EVENT_SLUG,
+          footballSelected: true,
+          registrationTokenUsedAt: null,
+          matchedApplicationId: null,
+          registrationTokenExpiresAt: {
+            gt: new Date(),
+          },
+        },
+        select: {
+          id: true,
+          fullName: true,
+          reportedAge: true,
+        },
+      })
+    : null;
+
+  if (pendingSelectedInvitation) {
+    redirect("/apply/lagos-2027/start");
+  }
 
   const application = await prisma.showcaseApplication.findFirst({
     where: {
@@ -121,7 +150,7 @@ export default async function ApplicantAccountPage() {
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-start">
             <div>
               <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
-                Lagos 2027
+                Lagos 2026
               </div>
 
               <h2 className="mt-3 text-2xl font-black">
@@ -132,7 +161,7 @@ export default async function ApplicantAccountPage() {
                 legacyDraft ? (
                   <>
                     <p className="mt-4 max-w-2xl leading-7 text-white/55">
-                      We found an unfinished Lagos 2027 application associated
+                      We found an unfinished Lagos 2026 application associated
                       with your verified email address. Continue to Step 1 to
                       confirm your application details and securely reconnect it
                       to your account.
@@ -145,7 +174,7 @@ export default async function ApplicantAccountPage() {
                 ) : (
                   <>
                     <p className="mt-4 max-w-2xl leading-7 text-white/55">
-                      You have not started your Lagos 2027 application yet.
+                      You have not started your Lagos 2026 application yet.
                       Applications are free and 50 players will be selected on
                       ability following the application and screening process.
                     </p>
@@ -159,12 +188,12 @@ export default async function ApplicantAccountPage() {
                 <>
                   <p className="mt-4 max-w-2xl leading-7 text-white/55">
                     {releasedOutcome === "SELECTED"
-                      ? "Your Lagos 2027 selection decision has been released. You have been selected for the Men's Football Showcase."
+                      ? "Your Lagos 2026 selection decision has been released. You have been selected for the Men's Football Showcase."
                       : releasedOutcome === "RESERVE"
-                        ? "Your Lagos 2027 selection decision has been released. You have been placed on the reserve list."
+                        ? "Your Lagos 2026 selection decision has been released. You have been placed on standby."
                         : releasedOutcome === "NOT_SELECTED"
-                          ? "Your Lagos 2027 selection decision has been released. You have not been selected on this occasion."
-                          : "Your Lagos 2027 application has been submitted and is now part of the REVELATIONX1 assessment and selection process."}
+                          ? "Your Lagos 2026 selection decision has been released. You have not been selected on this occasion."
+                          : "Your Lagos 2026 application has been submitted and is now part of the REVELATIONX1 assessment and selection process."}
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3">
@@ -172,7 +201,7 @@ export default async function ApplicantAccountPage() {
                       {releasedOutcome === "SELECTED"
                         ? "Selected"
                         : releasedOutcome === "RESERVE"
-                          ? "Reserve List"
+                          ? "Standby"
                           : releasedOutcome === "NOT_SELECTED"
                             ? "Decision Released"
                             : "Submitted"}
@@ -224,9 +253,9 @@ export default async function ApplicantAccountPage() {
                 value={
                   application.submittedAt
                     ? releasedOutcome === "SELECTED"
-                      ? "Selected for Lagos 2027"
+                      ? "Selected for Lagos 2026"
                       : releasedOutcome === "RESERVE"
-                        ? "Reserve List"
+                        ? "Standby"
                         : releasedOutcome === "NOT_SELECTED"
                           ? "Not Selected on This Occasion"
                           : "Submitted — Under Assessment"

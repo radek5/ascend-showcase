@@ -153,7 +153,7 @@ export default async function ProfessionalBadgePage({
 
             <div className="mt-[4mm] flex items-center justify-between border-t border-white/15 pt-[3mm]">
               <div className="text-[11px] font-black uppercase tracking-[0.1em] text-[#c7ff2f]">
-                Lagos 2027
+                Lagos 2026
               </div>
 
               <div className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/60">

@@ -1,5 +1,7 @@
 "use server";
 
+import { getNinLast4, hashNin, validateNin } from "@/lib/showcase/ninIdentity";
+
 import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
 
@@ -17,7 +19,7 @@ async function createAssessmentCode() {
   for (let attempt = 0; attempt < 20; attempt++) {
     const number = randomInt(1, 100000);
 
-    const code = `LAG27-${number.toString().padStart(5, "0")}`;
+    const code = `LAG26-${number.toString().padStart(5, "0")}`;
 
     const exists = await prisma.showcaseApplication.findUnique({
       where: {
@@ -34,6 +36,167 @@ async function createAssessmentCode() {
   }
 
   throw new Error("Unable to generate a unique assessment code.");
+}
+
+export async function addVideoExemption(formData: FormData) {
+  const admin = await requireStaffAdmin();
+
+  const fullName = String(formData.get("fullName") || "")
+    .trim()
+    .replace(/\s+/g, " ");
+
+  const rawNin = String(formData.get("nin") || "").trim();
+
+  if (!fullName) {
+    throw new Error("Player name is required.");
+  }
+
+  if (fullName.length > 150) {
+    throw new Error("Player name is too long.");
+  }
+
+  const nin = validateNin(rawNin);
+  const ninHash = hashNin(nin);
+  const ninLast4 = getNinLast4(nin);
+
+  const event = await prisma.event.findUnique({
+    where: {
+      slug: "lagos-2027",
+    },
+    select: {
+      slug: true,
+    },
+  });
+
+  if (!event) {
+    throw new Error("Showcase event not found.");
+  }
+
+  const existing = await prisma.showcaseVideoExemption.findUnique({
+    where: {
+      eventSlug_ninHash: {
+        eventSlug: event.slug,
+        ninHash,
+      },
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (existing) {
+    if (existing.status === "REVOKED") {
+      throw new Error(
+        "A revoked video exemption already exists for this NIN. Review the existing record instead of creating another.",
+      );
+    }
+
+    throw new Error(
+      "A video exemption already exists for this NIN and showcase.",
+    );
+  }
+
+  await prisma.showcaseVideoExemption.create({
+    data: {
+      eventSlug: event.slug,
+      fullName,
+      ninHash,
+      ninLast4,
+      reason: "PREVIOUSLY_OBSERVED_LIVE",
+      status: "AWAITING_REGISTRATION",
+      authorisedByStaffUserId: admin.id,
+    },
+  });
+
+  revalidatePath("/staff/selection");
+}
+
+export async function revokeVideoExemption(formData: FormData) {
+  const admin = await requireStaffAdmin();
+
+  const exemptionId = String(formData.get("exemptionId") || "").trim();
+
+  if (!exemptionId) {
+    throw new Error("Video exemption ID missing.");
+  }
+
+  const exemption = await prisma.showcaseVideoExemption.findUnique({
+    where: {
+      id: exemptionId,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!exemption) {
+    throw new Error("Video exemption not found.");
+  }
+
+  if (exemption.status === "REVOKED") {
+    throw new Error("This video exemption has already been revoked.");
+  }
+
+  await prisma.showcaseVideoExemption.update({
+    where: {
+      id: exemption.id,
+    },
+    data: {
+      status: "REVOKED",
+      revokedByStaffUserId: admin.id,
+      revokedAt: new Date(),
+    },
+  });
+
+  revalidatePath("/staff/selection");
+}
+
+export async function restoreVideoExemption(formData: FormData) {
+  const admin = await requireStaffAdmin();
+
+  const exemptionId = String(formData.get("exemptionId") || "").trim();
+
+  if (!exemptionId) {
+    throw new Error("Video exemption ID missing.");
+  }
+
+  const exemption = await prisma.showcaseVideoExemption.findUnique({
+    where: {
+      id: exemptionId,
+    },
+    select: {
+      id: true,
+      status: true,
+      matchedApplicationId: true,
+    },
+  });
+
+  if (!exemption) {
+    throw new Error("Video exemption not found.");
+  }
+
+  if (exemption.status !== "REVOKED") {
+    throw new Error("Only a revoked video exemption can be re-authorised.");
+  }
+
+  await prisma.showcaseVideoExemption.update({
+    where: {
+      id: exemption.id,
+    },
+    data: {
+      status: exemption.matchedApplicationId
+        ? "MATCHED"
+        : "AWAITING_REGISTRATION",
+      authorisedByStaffUserId: admin.id,
+      authorisedAt: new Date(),
+      revokedByStaffUserId: null,
+      revokedAt: null,
+    },
+  });
+
+  revalidatePath("/staff/selection");
 }
 
 export async function prepareForSelection(formData: FormData) {
@@ -388,19 +551,19 @@ export async function setFinalSelectionDecision(formData: FormData) {
     }
 
     const editableStatuses = [
-  "VIDEO_REVIEW",
-  "LONGLISTED",
-  "FINAL_REVIEW",
-  "SELECTED",
-  "RESERVE",
-  "NOT_SELECTED",
-];
+      "VIDEO_REVIEW",
+      "LONGLISTED",
+      "FINAL_REVIEW",
+      "SELECTED",
+      "RESERVE",
+      "NOT_SELECTED",
+    ];
 
-if (!editableStatuses.includes(application.status)) {
-  throw new Error(
-    "Application is not currently available for a selection decision.",
-  );
-}
+    if (!editableStatuses.includes(application.status)) {
+      throw new Error(
+        "Application is not currently available for a selection decision.",
+      );
+    }
 
     const completedAssessments = application.selectorAssignments.filter(
       (assignment) => Boolean(assignment.assessment?.submittedAt),
@@ -415,14 +578,14 @@ if (!editableStatuses.includes(application.status)) {
     const decidedAt = new Date();
 
     if (application.status === decision) {
-  return;
-}
+      return;
+    }
 
     /*
      * SELECTED
      *
      * Event.capacity is authoritative.
-     * Lagos 2027 is currently configured for 100 places.
+     * Lagos 2026 is currently configured for 100 places.
      */
     if (decision === "SELECTED") {
       if (!event.capacity || event.capacity < 1) {
@@ -565,14 +728,10 @@ if (!editableStatuses.includes(application.status)) {
 export async function releaseSelectionDecisions(formData: FormData) {
   const admin = await requireStaffAdmin();
 
-  const eventSlug = String(
-    formData.get("eventSlug") || "",
-  ).trim();
+  const eventSlug = String(formData.get("eventSlug") || "").trim();
 
   if (!eventSlug) {
-    throw new Error(
-      "Showcase event is required.",
-    );
+    throw new Error("Showcase event is required.");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -607,9 +766,7 @@ export async function releaseSelectionDecisions(formData: FormData) {
     const event = lockedEvents[0];
 
     if (!event) {
-      throw new Error(
-        "Showcase event not found.",
-      );
+      throw new Error("Showcase event not found.");
     }
 
     if (event.selectionDecisionsReleasedAt) {
@@ -627,16 +784,15 @@ export async function releaseSelectionDecisions(formData: FormData) {
     /*
      * The main squad must be complete before release.
      *
-     * Lagos 2027 currently has capacity 100, therefore release
+     * Lagos 2026 currently has capacity 100, therefore release
      * cannot occur at 99 or less and cannot occur above capacity.
      */
-    const selectedCount =
-      await tx.showcaseApplication.count({
-        where: {
-          eventSlug: event.slug,
-          status: "SELECTED",
-        },
-      });
+    const selectedCount = await tx.showcaseApplication.count({
+      where: {
+        eventSlug: event.slug,
+        status: "SELECTED",
+      },
+    });
 
     if (selectedCount !== event.capacity) {
       throw new Error(
@@ -648,18 +804,16 @@ export async function releaseSelectionDecisions(formData: FormData) {
      * Reserve capacity is a ceiling, rather than a requirement
      * that every reserve place must necessarily be filled.
      */
-    const reserveCount =
-      await tx.showcaseApplication.count({
-        where: {
-          eventSlug: event.slug,
-          status: "RESERVE",
-        },
-      });
+    const reserveCount = await tx.showcaseApplication.count({
+      where: {
+        eventSlug: event.slug,
+        status: "RESERVE",
+      },
+    });
 
     if (
       reserveCount > 0 &&
-      (!event.reserveCapacity ||
-        event.reserveCapacity < 1)
+      (!event.reserveCapacity || event.reserveCapacity < 1)
     ) {
       throw new Error(
         "Reserve players exist but no valid reserve capacity is configured.",
@@ -683,22 +837,21 @@ export async function releaseSelectionDecisions(formData: FormData) {
      * closure prevents new applications, but an unfinished draft
      * is not silently turned into a football-selection outcome.
      */
-    const unresolvedCount =
-      await tx.showcaseApplication.count({
-        where: {
-          eventSlug: event.slug,
+    const unresolvedCount = await tx.showcaseApplication.count({
+      where: {
+        eventSlug: event.slug,
 
-          status: {
-            in: [
-              "SUBMITTED",
-              "ELIGIBILITY_REVIEW",
-              "VIDEO_REVIEW",
-              "LONGLISTED",
-              "FINAL_REVIEW",
-            ],
-          },
+        status: {
+          in: [
+            "SUBMITTED",
+            "ELIGIBILITY_REVIEW",
+            "VIDEO_REVIEW",
+            "LONGLISTED",
+            "FINAL_REVIEW",
+          ],
         },
-      });
+      },
+    });
 
     if (unresolvedCount > 0) {
       throw new Error(
@@ -724,8 +877,7 @@ export async function releaseSelectionDecisions(formData: FormData) {
       },
 
       data: {
-        selectionDecisionReleasedAt:
-          releasedAt,
+        selectionDecisionReleasedAt: releasedAt,
 
         selectionResponse: "PENDING",
         selectionResponseAt: null,
@@ -743,16 +895,12 @@ export async function releaseSelectionDecisions(formData: FormData) {
         eventSlug: event.slug,
 
         status: {
-          in: [
-            "RESERVE",
-            "NOT_SELECTED",
-          ],
+          in: ["RESERVE", "NOT_SELECTED"],
         },
       },
 
       data: {
-        selectionDecisionReleasedAt:
-          releasedAt,
+        selectionDecisionReleasedAt: releasedAt,
 
         selectionResponse: null,
         selectionResponseAt: null,
@@ -773,11 +921,9 @@ export async function releaseSelectionDecisions(formData: FormData) {
       },
 
       data: {
-        selectionDecisionsReleasedAt:
-          releasedAt,
+        selectionDecisionsReleasedAt: releasedAt,
 
-        selectionDecisionsReleasedByStaffUserId:
-          admin.id,
+        selectionDecisionsReleasedByStaffUserId: admin.id,
 
         registrationOpen: false,
       },
@@ -790,7 +936,7 @@ export async function releaseSelectionDecisions(formData: FormData) {
   revalidatePath("/apply/lagos-2027");
 }
 
-  export async function sendReleasedSelectionOutcomes(formData: FormData) {
+export async function sendReleasedSelectionOutcomes(formData: FormData) {
   await requireStaffAdmin();
 
   const eventSlug = String(formData.get("eventSlug") || "").trim();
@@ -882,4 +1028,290 @@ export async function releaseSelectionDecisions(formData: FormData) {
     failed: failures.length,
     failures,
   };
+}
+
+const SELECTION_EXIT_REASONS = [
+  "PLAYER_WITHDREW",
+  "PLAYER_DECLINED",
+  "NO_RESPONSE",
+  "ADMIN_REMOVED",
+  "INDUCTION_REMOVAL",
+  "OTHER",
+] as const;
+
+type SelectionExitReason = (typeof SELECTION_EXIT_REASONS)[number];
+
+export async function withdrawSelectedPlayer(formData: FormData) {
+  const admin = await requireStaffAdmin();
+
+  const applicationId = String(formData.get("applicationId") || "").trim();
+  const reason = String(formData.get("reason") || "").trim();
+  const notes = String(formData.get("notes") || "").trim();
+
+  if (!applicationId) {
+    throw new Error("Application ID missing.");
+  }
+
+  if (!SELECTION_EXIT_REASONS.includes(reason as SelectionExitReason)) {
+    throw new Error("A valid withdrawal reason is required.");
+  }
+
+  const applicationIdentity = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+    select: {
+      id: true,
+      eventSlug: true,
+    },
+  });
+
+  if (!applicationIdentity) {
+    throw new Error("Application not found.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const lockedEvents = await tx.$queryRaw<
+      Array<{
+        id: string;
+        slug: string;
+        capacity: number | null;
+        selectionDecisionsReleasedAt: Date | null;
+      }>
+    >`
+      SELECT
+        "id",
+        "slug",
+        "capacity",
+        "selectionDecisionsReleasedAt"
+      FROM "Event"
+      WHERE "slug" = ${applicationIdentity.eventSlug}
+      FOR UPDATE
+    `;
+
+    const event = lockedEvents[0];
+
+    if (!event) {
+      throw new Error("Showcase event not found.");
+    }
+
+    if (!event.selectionDecisionsReleasedAt) {
+      throw new Error(
+        "Selected-player withdrawals are only available after selection decisions have been released.",
+      );
+    }
+
+    const application = await tx.showcaseApplication.findUnique({
+      where: {
+        id: applicationId,
+      },
+      select: {
+        id: true,
+        eventSlug: true,
+        status: true,
+        selectionResponse: true,
+        selectionExitAt: true,
+      },
+    });
+
+    if (!application) {
+      throw new Error("Application not found.");
+    }
+
+    if (application.eventSlug !== event.slug) {
+      throw new Error("Application does not belong to this showcase event.");
+    }
+
+    if (application.status !== "SELECTED") {
+      throw new Error(
+        "Only a currently selected player can leave a selected place.",
+      );
+    }
+
+    if (application.selectionExitAt) {
+      throw new Error("This selected place has already been closed.");
+    }
+
+    if (
+      reason === "PLAYER_DECLINED" &&
+      application.selectionResponse !== "DECLINED"
+    ) {
+      throw new Error(
+        "PLAYER_DECLINED can only be recorded after the player has declined the offer.",
+      );
+    }
+
+    const exitedAt = new Date();
+
+    await tx.showcaseApplication.update({
+      where: {
+        id: application.id,
+      },
+      data: {
+        status: "WITHDRAWN",
+        selectionExitAt: exitedAt,
+        selectionExitReason: reason,
+        selectionExitNotes: notes || null,
+        selectionExitByStaffUserId: admin.id,
+      },
+    });
+  });
+
+  revalidatePath("/staff/selection");
+}
+
+export async function promoteReservePlayer(formData: FormData) {
+  const admin = await requireStaffAdmin();
+
+  const applicationId = String(formData.get("applicationId") || "").trim();
+  const reason = String(formData.get("reason") || "").trim();
+
+  if (!applicationId) {
+    throw new Error("Application ID missing.");
+  }
+
+  if (!reason) {
+    throw new Error("A promotion reason is required.");
+  }
+
+  const applicationIdentity = await prisma.showcaseApplication.findUnique({
+    where: {
+      id: applicationId,
+    },
+    select: {
+      id: true,
+      eventSlug: true,
+    },
+  });
+
+  if (!applicationIdentity) {
+    throw new Error("Application not found.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const lockedEvents = await tx.$queryRaw<
+      Array<{
+        id: string;
+        slug: string;
+        capacity: number | null;
+        selectionDecisionsReleasedAt: Date | null;
+      }>
+    >`
+      SELECT
+        "id",
+        "slug",
+        "capacity",
+        "selectionDecisionsReleasedAt"
+      FROM "Event"
+      WHERE "slug" = ${applicationIdentity.eventSlug}
+      FOR UPDATE
+    `;
+
+    const event = lockedEvents[0];
+
+    if (!event) {
+      throw new Error("Showcase event not found.");
+    }
+
+    if (!event.selectionDecisionsReleasedAt) {
+      throw new Error(
+        "Reserve promotion is only available after selection decisions have been released.",
+      );
+    }
+
+    if (!event.capacity || event.capacity < 1) {
+      throw new Error(
+        "A valid showcase capacity must be configured before a reserve player can be promoted.",
+      );
+    }
+
+    const application = await tx.showcaseApplication.findUnique({
+      where: {
+        id: applicationId,
+      },
+      select: {
+        id: true,
+        eventSlug: true,
+        status: true,
+        reserveRank: true,
+        reservePromotedAt: true,
+      },
+    });
+
+    if (!application) {
+      throw new Error("Application not found.");
+    }
+
+    if (application.eventSlug !== event.slug) {
+      throw new Error("Application does not belong to this showcase event.");
+    }
+
+    if (application.status !== "RESERVE") {
+      throw new Error("Only a current reserve player can be promoted.");
+    }
+
+    if (application.reservePromotedAt) {
+      throw new Error("This reserve player has already been promoted.");
+    }
+
+    const selectedCount = await tx.showcaseApplication.count({
+      where: {
+        eventSlug: event.slug,
+        status: "SELECTED",
+      },
+    });
+
+    if (selectedCount >= event.capacity) {
+      throw new Error(
+        "There is no vacant showcase place available for a reserve promotion.",
+      );
+    }
+
+    const promotedAt = new Date();
+
+    await tx.showcaseApplication.update({
+      where: {
+        id: application.id,
+      },
+      data: {
+        status: "SELECTED",
+        selectedAt: promotedAt,
+
+        /*
+         * Preserve reserveRank as historical evidence of the player's
+         * original position on the reserve list.
+         */
+        reservePromotedAt: promotedAt,
+        reservePromotedByStaffUserId: admin.id,
+        reservePromotionReason: reason,
+
+        /*
+         * Promotion is itself the released selection decision for this
+         * player. They now enter the normal selected-player offer flow.
+         */
+        selectionDecisionReleasedAt: promotedAt,
+        selectionResponse: "PENDING",
+        selectionResponseAt: null,
+        selectionResponseDeadline: null,
+
+        /*
+         * The player may already have received their original RESERVE
+         * outcome email. Promotion creates a new SELECTED outcome, so reset
+         * the delivery state and allow the existing outcome sender to issue
+         * the new selected-place notification.
+         */
+        selectionOutcomeEmailSentAt: null,
+        selectionOutcomeMessageId: null,
+        selectionOutcomeEmailClaimedAt: null,
+        selectionOutcomeEmailClaimToken: null,
+
+        selectionExitAt: null,
+        selectionExitReason: null,
+        selectionExitNotes: null,
+        selectionExitByStaffUserId: null,
+      },
+    });
+  });
+
+  revalidatePath("/staff/selection");
 }

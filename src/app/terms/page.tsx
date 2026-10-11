@@ -25,7 +25,7 @@ export default function TermsPage() {
         </h1>
 
         <p className="mt-3 text-sm text-white/40">
-          ASCEND Football Showcase — Lagos 2027
+          ASCEND Football Showcase — Lagos 2026
         </p>
 
         <div className="mt-10 space-y-10 text-sm leading-7 text-white/65">

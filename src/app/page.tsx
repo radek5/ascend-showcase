@@ -54,12 +54,12 @@ export default function Home() {
               <span className="h-px w-10 bg-[#c7ff2f]" />
 
               <span className="text-sm font-bold uppercase tracking-[0.28em] text-[#c7ff2f]">
-                Lagos 2027
+                Lagos 2026
               </span>
             </div>
 
             <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.05em] sm:text-6xl lg:text-7xl">
-              Revelation
+              RevelationX1
               <span className="text-[#c7ff2f]">X1</span>
               <br />
               Football
@@ -73,13 +73,13 @@ export default function Home() {
 
             <p className="mt-5 max-w-xl text-base leading-7 text-white/60 sm:text-lg">
               Train with UEFA-qualified coaches, compete in a professional
-              football environment, and perform in front of scouts from
-              European football.
+              football environment, and perform in front of scouts from European
+              football.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/70">
               <span>Lagos, Nigeria</span>
-              <span>January 2027</span>
+              <span>December 2026</span>
               <span>Monday – Friday</span>
             </div>
 
@@ -117,24 +117,19 @@ export default function Home() {
                 Registration Weekend
               </div>
 
-              <div className="mt-3 text-2xl font-black">
-                Saturday + Sunday
-              </div>
+              <div className="mt-3 text-2xl font-black">Saturday + Sunday</div>
 
               <p className="mt-2 max-w-lg text-sm leading-6 text-white/60">
-                Check-in, documentation, medical and consent verification,
-                bib collection, and group allocation before football begins
-                on Monday.
+                Check-in, documentation, medical and consent verification, bib
+                collection, and group allocation before football begins on
+                Monday.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section
-        id="event"
-        className="border-y border-white/10 bg-white/[0.02]"
-      >
+      <section id="event" className="border-y border-white/10 bg-white/[0.02]">
         <div className="mx-auto grid max-w-7xl grid-cols-2 px-6 sm:grid-cols-4 lg:px-8">
           {[
             ["5 Days", "Football Programme", null],
@@ -189,18 +184,18 @@ export default function Home() {
             Official Partners
           </div>
 
-            <div className="mt-8 grid grid-cols-2 items-center gap-8 sm:grid-cols-4">
-              {[1, 2, 3, 4].map((partner) => (
-                <div
-                  key={partner}
-                  className="flex h-20 items-center justify-center rounded-xl border border-white/5 bg-white/[0.015]"
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/20">
-                    Partner
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="mt-8 grid grid-cols-2 items-center gap-8 sm:grid-cols-4">
+            {[1, 2, 3, 4].map((partner) => (
+              <div
+                key={partner}
+                className="flex h-20 items-center justify-center rounded-xl border border-white/5 bg-white/[0.015]"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/20">
+                  Partner
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </main>

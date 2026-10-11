@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import RevelationX1Logo from "@/components/brand/RevelationX1Logo";
 import ProfessionalRegistrationProgress from "@/components/professional-registration/ProfessionalRegistrationProgress";
 import { updateProfessionalRole } from "./actions/updateProfessionalRole";
@@ -14,8 +11,7 @@ function ProfessionalRegistrationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const registrationId =
-    searchParams.get("registration") || "";
+  const registrationId = searchParams.get("registration") || "";
 
   const isEditMode = Boolean(registrationId);
 
@@ -51,10 +47,7 @@ function ProfessionalRegistrationPageContent() {
         setRole(registration.role || "");
         setRegistrationAccess("AUTHORISED");
       } catch (error) {
-        console.error(
-          "Unable to load professional registration:",
-          error,
-        );
+        console.error("Unable to load professional registration:", error);
         setRegistrationAccess("DENIED");
       }
     }
@@ -80,9 +73,7 @@ function ProfessionalRegistrationPageContent() {
     return (
       <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
         <div className="mx-auto max-w-3xl">
-          <div className="text-sm text-white/45">
-            Loading registration...
-          </div>
+          <div className="text-sm text-white/45">Loading registration...</div>
         </div>
       </main>
     );
@@ -92,9 +83,7 @@ function ProfessionalRegistrationPageContent() {
     return (
       <main className="min-h-screen bg-[#090909] px-6 py-16 text-white">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-black">
-            Registration not found
-          </h1>
+          <h1 className="text-3xl font-black">Registration not found</h1>
         </div>
       </main>
     );
@@ -118,7 +107,7 @@ function ProfessionalRegistrationPageContent() {
       <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-[#c7ff2f]">
-            Lagos 2027
+            Lagos 2026
           </div>
 
           <h1 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
@@ -127,7 +116,7 @@ function ProfessionalRegistrationPageContent() {
 
           <p className="mt-3 max-w-2xl text-white/55">
             Club representatives, scouts and football agents attending Lagos
-            2027 must register for event accreditation.
+            2026 must register for event accreditation.
           </p>
         </div>
       </section>
@@ -140,26 +129,15 @@ function ProfessionalRegistrationPageContent() {
             Step 1 of 6
           </div>
 
-          <h2 className="mt-3 text-2xl font-black">
-            How are you attending?
-          </h2>
+          <h2 className="mt-3 text-2xl font-black">How are you attending?</h2>
 
           <p className="mt-2 text-sm leading-6 text-white/50">
-            Select the role that best describes your attendance at the
-            showcase.
+            Select the role that best describes your attendance at the showcase.
           </p>
 
           <form
-            action={
-              isEditMode
-                ? updateProfessionalRole
-                : undefined
-            }
-            onSubmit={
-              isEditMode
-                ? undefined
-                : handleNewRegistrationSubmit
-            }
+            action={isEditMode ? updateProfessionalRole : undefined}
+            onSubmit={isEditMode ? undefined : handleNewRegistrationSubmit}
             className="mt-8"
           >
             {isEditMode && (
@@ -170,9 +148,7 @@ function ProfessionalRegistrationPageContent() {
               />
             )}
             <label className="block space-y-3">
-              <span className="text-sm font-semibold">
-                I am attending as:
-              </span>
+              <span className="text-sm font-semibold">I am attending as:</span>
 
               <select
                 name="role"
@@ -184,13 +160,9 @@ function ProfessionalRegistrationPageContent() {
                 <option value="" disabled>
                   Select role
                 </option>
-                <option value="CLUB_REPRESENTATIVE">
-                  Club Representative
-                </option>
+                <option value="CLUB_REPRESENTATIVE">Club Representative</option>
                 <option value="SCOUT">Scout</option>
-                <option value="FOOTBALL_AGENT">
-                  Football Agent
-                </option>
+                <option value="FOOTBALL_AGENT">Football Agent</option>
               </select>
             </label>
 
@@ -216,9 +188,7 @@ export default function ProfessionalRegistrationPage() {
       fallback={
         <main className="min-h-screen bg-[#090909] text-white">
           <div className="mx-auto max-w-3xl px-6 py-16 lg:px-8">
-            <div className="text-sm text-white/45">
-              Loading registration...
-            </div>
+            <div className="text-sm text-white/45">Loading registration...</div>
           </div>
         </main>
       }

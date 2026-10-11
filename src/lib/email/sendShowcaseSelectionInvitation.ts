@@ -88,7 +88,7 @@ export async function sendShowcaseSelectionInvitation({
 
   if (application.selectionResponse !== "ACCEPTED") {
     throw new Error(
-      "The player must accept their Lagos 2027 place before an event credential can be issued.",
+      "The player must accept their Lagos 2026 place before an event credential can be issued.",
     );
   }
 
@@ -205,7 +205,7 @@ export async function sendShowcaseSelectionInvitation({
   </div>
 
   <h1 style="margin:14px 0 10px;font-size:34px;">
-    Your Lagos 2027 event credential
+    Your Lagos 2026 event credential
   </h1>
 
   <p style="margin:0 0 18px;color:#c8c8c8;">
@@ -213,14 +213,14 @@ export async function sendShowcaseSelectionInvitation({
   </p>
 
   <p style="margin:0;color:#a9a9a9;line-height:1.8;">
-    Your Lagos 2027 place has been accepted and your
+    Your Lagos 2026 place has been accepted and your
     Selected Player Confirmation has been completed.
     Your official REVELATIONX1 event credential is below.
   </p>
 
   <p style="margin:16px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
     Keep this credential secure and present it when reporting
-    for the Lagos 2027 Men's Football Showcase.
+    for the Lagos 2026 Men's Football Showcase.
   </p>
 
   <div style="margin-top:28px;padding-top:24px;border-top:1px solid #303030;">
@@ -267,7 +267,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
     src="cid:revelationx1-showcase-selection-qr"
     width="230"
     height="230"
-    alt="REVELATIONX1 Lagos 2027 event credential"
+    alt="REVELATIONX1 Lagos 2026 event credential"
     style="display:block;background:white;padding:10px;border-radius:14px;"
   />
 
@@ -339,7 +339,7 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
     </div>
 
     <p style="margin:6px 0 0;color:#a9a9a9;line-height:1.7;">
-      This email contains your official Lagos 2027
+      This email contains your official Lagos 2026
       selected-player credential.
     </p>
   </div>
@@ -390,7 +390,7 @@ ${supportEmail}
 
 <br />
 
-REVELATIONX1 Football Showcase · Lagos 2027
+REVELATIONX1 Football Showcase · Lagos 2026
 
 </td>
 </tr>
@@ -412,7 +412,7 @@ REVELATIONX1 Football Showcase · Lagos 2027
 
     to: application.email,
 
-    subject: `${application.registrationNumber} — Your REVELATIONX1 Lagos 2027 Event Credential`,
+    subject: `${application.registrationNumber} — Your REVELATIONX1 Lagos 2026 Event Credential`,
 
     html,
 
