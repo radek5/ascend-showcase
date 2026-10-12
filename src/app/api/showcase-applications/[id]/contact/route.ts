@@ -38,7 +38,8 @@ export async function PUT(
     if (access.submittedAt) {
       return NextResponse.json(
         {
-          error: "This application has already been submitted and can no longer be edited.",
+          error:
+            "This application has already been submitted and can no longer be edited.",
           code: "APPLICATION_ALREADY_SUBMITTED",
         },
         { status: 409 },
@@ -66,6 +67,13 @@ export async function PUT(
 
     const phone = String(body.phone || "").trim();
 
+    const addressLine1 = String(body.addressLine1 || "").trim();
+    const addressLine2 = String(body.addressLine2 || "").trim();
+    const city = String(body.city || "").trim();
+    const stateRegion = String(body.stateRegion || "").trim();
+    const countryOfResidence = String(body.countryOfResidence || "").trim();
+    const postalCode = String(body.postalCode || "").trim();
+
     const emergencyContactName = String(body.emergencyContactName || "").trim();
 
     const emergencyContactRelationship = String(
@@ -75,6 +83,13 @@ export async function PUT(
     const emergencyContactPhone = String(
       body.emergencyContactPhone || "",
     ).trim();
+
+    if (!addressLine1 || !city || !stateRegion || !countryOfResidence) {
+      return NextResponse.json(
+        { error: "Residential address, city, state and country are required." },
+        { status: 400 },
+      );
+    }
 
     if (!email || !phone) {
       return NextResponse.json(
@@ -104,6 +119,13 @@ export async function PUT(
       data: {
         email,
         phone,
+
+        addressLine1,
+        addressLine2,
+        city,
+        stateRegion,
+        countryOfResidence,
+        postalCode,
 
         emergencyContactName,
         emergencyContactRelationship,

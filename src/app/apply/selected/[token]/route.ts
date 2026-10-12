@@ -75,9 +75,8 @@ export async function GET(
   <main>
     <h1>REVELATIONX1</h1>
     <h2>Selected Player Registration</h2>
-    <p>You have received a private invitation to complete your
-    registration for the Lagos 2026 Football Showcase.</p>
-    <p>Only continue if this invitation was intended for you.</p>
+    <p>This link allows you to complete your registration.
+    Please note the link is valid for 7 days.</p>
     <form method="POST">
       <button type="submit">Create Account &amp; Continue</button>
     </form>

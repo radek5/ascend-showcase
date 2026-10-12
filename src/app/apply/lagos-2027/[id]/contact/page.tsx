@@ -13,6 +13,12 @@ type Application = {
   phone: string | null;
   age: number | null;
 
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  stateRegion: string | null;
+  countryOfResidence: string | null;
+  postalCode: string | null;
 
   emergencyContactName: string | null;
   emergencyContactRelationship: string | null;
@@ -143,7 +149,7 @@ export default function ContactPage() {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-[1800px] overflow-x-auto px-6 lg:px-8">
           <div className="grid min-w-[1260px] grid-cols-10 gap-2">
-                        {steps.map((step, index) => {
+            {steps.map((step, index) => {
               const active = index === 1;
               const completed = index < 1;
 
@@ -159,7 +165,11 @@ export default function ContactPage() {
                   }`}
                 >
                   <div className="mb-1 text-[9px] opacity-60">
-                    {["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][index]}
+                    {
+                      ["1", "2", "3", "4A", "4B", "5", "6", "7", "8", "9"][
+                        index
+                      ]
+                    }
                   </div>
                   <div className="leading-4">{step}</div>
                 </div>
@@ -200,6 +210,55 @@ export default function ContactPage() {
               type="tel"
               required
               defaultValue={application.phone || ""}
+            />
+
+            <div className="sm:col-span-2 border-t border-white/10 pt-8">
+              <div className="text-lg font-black">Residential Address</div>
+              <p className="mt-2 text-sm text-white/45">
+                Provide the player's current residential address.
+              </p>
+            </div>
+
+            <Field
+              label="Residential address / Street"
+              name="addressLine1"
+              required
+              defaultValue={application.addressLine1 || ""}
+            />
+
+            <Field
+              label="Address line 2 (optional)"
+              name="addressLine2"
+
+              defaultValue={application.addressLine2 || ""}
+            />
+
+            <Field
+              label="Town / City"
+              name="city"
+              required
+              defaultValue={application.city || ""}
+            />
+
+            <Field
+              label="State / Region"
+              name="stateRegion"
+              required
+              defaultValue={application.stateRegion || ""}
+            />
+
+            <Field
+              label="Country"
+              name="countryOfResidence"
+              required
+              defaultValue={application.countryOfResidence || ""}
+            />
+
+            <Field
+              label="Postal code (optional)"
+              name="postalCode"
+
+              defaultValue={application.postalCode || ""}
             />
 
             <div className="sm:col-span-2 border-t border-white/10 pt-8">
