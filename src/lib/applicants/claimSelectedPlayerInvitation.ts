@@ -28,8 +28,19 @@ function samePlayerName(a: string, b: string): boolean {
   const first = words(a);
   const second = words(b);
 
+  if (first.length === 0 || second.length === 0) {
+    return false;
+  }
+
+  // The selected-player record may contain only one known name.
+  // Accept it when it appears as a complete name component
+  // in the applicant's full registration name.
+  if (second.length === 1) {
+    return first.includes(second[0]);
+  }
+
+  // Preserve existing order-independent matching for full names.
   return (
-    first.length > 0 &&
     first.length === second.length &&
     first.every((word, index) => word === second[index])
   );
