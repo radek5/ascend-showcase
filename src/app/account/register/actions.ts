@@ -3,6 +3,8 @@
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 
+import { getSelectedPlayerInvitation } from "@/lib/applicants/selectedPlayerInvitation";
+
 import { createSecureToken, hashSecureToken } from "@/lib/applicants/tokens";
 import { sendApplicantVerificationEmail } from "@/lib/email/sendApplicantVerificationEmail";
 import { prisma } from "@/lib/prisma";
@@ -73,6 +75,7 @@ export async function registerApplicant(formData: FormData) {
     );
   }
 
+  const selectedInvitationToken = await getSelectedPlayerInvitation();
   const passwordHash = await bcrypt.hash(password, 12);
 
   const rawToken = createSecureToken();
@@ -88,13 +91,40 @@ export async function registerApplicant(formData: FormData) {
       },
     });
 
-    await tx.applicantVerificationToken.create({
+        await tx.applicantVerificationToken.create({
       data: {
         userId: user.id,
         tokenHash,
         expiresAt,
       },
     });
+
+    if (selectedInvitationToken) {
+      const invitationHash = hashSecureToken(selectedInvitationToken);
+      const now = new Date();
+
+      const consumed = await tx.showcaseSelectedPlayer.updateMany({
+        where: {
+          registrationTokenHash: invitationHash,
+          eventSlug: "lagos-2027",
+          footballSelected: true,
+          registrationTokenUsedAt: null,
+          registeredApplicantUserId: null,
+          matchedApplicationId: null,
+          registrationTokenExpiresAt: {
+            gt: now,
+          },
+        },
+        data: {
+          registrationTokenUsedAt: now,
+          registeredApplicantUserId: user.id,
+        },
+      });
+
+      if (consumed.count !== 1) {
+        throw new Error("SELECTED_PLAYER_INVITATION_UNAVAILABLE");
+      }
+    }
 
     return user;
   });

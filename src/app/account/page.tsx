@@ -23,7 +23,8 @@ export default async function ApplicantAccountPage() {
           registrationTokenHash: hashSecureToken(invitationToken),
           eventSlug: LAGOS_2027_EVENT_SLUG,
           footballSelected: true,
-          registrationTokenUsedAt: null,
+          registrationTokenUsedAt: { not: null },
+          registeredApplicantUserId: applicantUser.id,
           matchedApplicationId: null,
           registrationTokenExpiresAt: {
             gt: new Date(),

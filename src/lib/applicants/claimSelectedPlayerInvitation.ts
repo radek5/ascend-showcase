@@ -92,6 +92,7 @@ export async function claimSelectedPlayerInvitation({
         matchedApplicationId: applicationId,
         footballSelected: true,
         registrationTokenUsedAt: { not: null },
+        registeredApplicantUserId: applicantUserId,
       },
       select: { id: true },
     });
@@ -109,7 +110,8 @@ export async function claimSelectedPlayerInvitation({
       eventSlug,
       footballSelected: true,
       registrationTokenExpiresAt: { gt: now },
-      registrationTokenUsedAt: null,
+      registrationTokenUsedAt: { not: null },
+      registeredApplicantUserId: applicantUserId,
       matchedApplicationId: null,
     },
     select: {
@@ -129,7 +131,7 @@ export async function claimSelectedPlayerInvitation({
     throw new Error("SELECTED_PLAYER_IDENTITY_MISMATCH");
   }
 
-  const claimed = await tx.showcaseSelectedPlayer.updateMany({
+    const claimed = await tx.showcaseSelectedPlayer.updateMany({
     where: {
       registrationTokenHash: tokenHash,
       eventSlug,
@@ -137,11 +139,11 @@ export async function claimSelectedPlayerInvitation({
       registrationTokenExpiresAt: {
         gt: now,
       },
-      registrationTokenUsedAt: null,
+      registrationTokenUsedAt: { not: null },
+      registeredApplicantUserId: applicantUserId,
       matchedApplicationId: null,
     },
     data: {
-      registrationTokenUsedAt: now,
       matchedApplicationId: applicationId,
       matchedAt: now,
     },

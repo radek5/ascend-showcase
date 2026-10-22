@@ -17,7 +17,8 @@ export default async function SelectedInvitationPage() {
           eventSlug: "lagos-2027",
           registrationTokenHash: hashSecureToken(token),
           footballSelected: true,
-          registrationTokenUsedAt: null,
+          registrationTokenUsedAt: { not: null },
+          registeredApplicantUserId: applicantUser.id,
           matchedApplicationId: null,
           registrationTokenExpiresAt: {
             gt: new Date(),

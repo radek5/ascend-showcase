@@ -1521,6 +1521,8 @@ model ApplicantUser {
 
   applications ShowcaseApplication[]
 
+  selectedPlayerInvitations ShowcaseSelectedPlayer[]
+
   verificationTokens  ApplicantVerificationToken[]
   passwordResetTokens ApplicantPasswordResetToken[]
 
@@ -1596,6 +1598,10 @@ model ShowcaseSelectedPlayer {
   registrationTokenHash      String?   @unique
   registrationTokenExpiresAt DateTime?
   registrationTokenUsedAt    DateTime?
+
+  // Account that permanently consumed this invitation.
+  registeredApplicantUserId String?        @unique
+  registeredApplicantUser   ApplicantUser? @relation(fields: [registeredApplicantUserId], references: [id], onDelete: SetNull)
 
   // Registration linkage.
   matchedApplicationId String?              @unique
