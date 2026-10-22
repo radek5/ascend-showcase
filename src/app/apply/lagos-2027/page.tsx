@@ -5,7 +5,51 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default async function Lagos2027ApplicationPage() {
+export default async function Lagos2027ApplicationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invitation?: string }>;
+}) {
+  const { invitation } = await searchParams;
+
+  if (invitation === "invalid") {
+    return (
+      <main className="min-h-screen bg-[#030817] px-6 py-12 text-white">
+        <div className="mx-auto max-w-5xl">
+          <RevelationX1Logo />
+
+          <section className="mt-12 max-w-2xl rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
+            <h1 className="text-3xl font-black">
+              Invitation Already Used or Invalid
+            </h1>
+
+            <p className="mt-5 leading-7 text-slate-300">
+              This invitation link is no longer valid. If you have already
+              created your account, please sign in using your registered email
+              address.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/account/login"
+                className="rounded-full bg-emerald-400 px-7 py-4 font-black text-slate-950"
+              >
+                Sign In
+              </Link>
+
+              <Link
+                href="/"
+                className="rounded-full border border-white/15 px-7 py-4 font-bold text-white"
+              >
+                Back to REVELATIONX1
+              </Link>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   const event = await prisma.event.findUnique({
     where: {
       slug: "lagos-2027",
