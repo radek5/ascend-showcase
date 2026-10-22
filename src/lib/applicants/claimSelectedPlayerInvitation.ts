@@ -7,7 +7,7 @@ function normalisePlayerName(value: string) {
   return value
     .normalize("NFKC")
     .trim()
-    .replace(/\\s+/g, " ")
+    .replace(/\s+/g, " ")
     .toLocaleUpperCase("en");
 }
 
