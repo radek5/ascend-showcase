@@ -251,7 +251,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
                 {outcomePresentation.next}
               </p>
             </div>
-          ) : (
+          ) : preselected ? null : (
             <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-5">
               <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
                 Application Received
@@ -276,9 +276,11 @@ export default async function ConfirmationPage({ params }: PageProps) {
                 <span className="font-bold text-white">
                   {application.email}
                 </span>
-                . It includes your permanent registration code and confirmation
-                that your application has been received. Please keep it for your
-                records.
+                . It includes your permanent registration code and{" "}
+                {preselected
+                  ? "confirmation that your registration is complete."
+                  : "confirmation that your application has been received."}{" "}
+                Please keep it for your records.
               </p>
             </div>
           ) : null}

@@ -29,7 +29,7 @@ export async function sendApplicantPasswordResetEmail({
   const from =
     process.env.REVELATIONX1_FROM_EMAIL ||
     process.env.ASCEND_FROM_EMAIL ||
-    "ralph@rznconsulting.com";
+    "support@revelationx1.com";
 
   const resetUrl = `${appUrl}/account/reset-password?token=${encodeURIComponent(
     token,

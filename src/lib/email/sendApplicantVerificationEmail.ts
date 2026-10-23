@@ -17,12 +17,12 @@ export async function sendApplicantVerificationEmail({ email, token }: Args) {
   const supportEmail =
     process.env.REVELATIONX1_SUPPORT_EMAIL ||
     process.env.ASCEND_SUPPORT_EMAIL ||
-    "ralph@rznconsulting.com";
+    "support@revelationx1.com";
 
   const fromEmail =
     process.env.REVELATIONX1_FROM_EMAIL ||
     process.env.ASCEND_FROM_EMAIL ||
-    "ralph@rznconsulting.com";
+    "support@revelationx1.com";
 
   const fromName =
     process.env.REVELATIONX1_FROM_NAME ||

@@ -14,6 +14,14 @@ export async function sendShowcaseApplicationConfirmation({
     where: {
       id: applicationId,
     },
+    include: {
+      selectedPlayerRecord: {
+        select: {
+          footballSelected: true,
+          matchedApplicationId: true,
+        },
+      },
+    },
   });
 
   if (!application) {
@@ -52,6 +60,10 @@ export async function sendShowcaseApplicationConfirmation({
     };
   }
 
+  const preselected =
+    application.selectedPlayerRecord?.footballSelected === true &&
+    application.selectedPlayerRecord.matchedApplicationId === application.id;
+
   const recipientEmail = application.email;
   const recipientName = application.firstName;
 
@@ -72,12 +84,12 @@ export async function sendShowcaseApplicationConfirmation({
   const supportEmail =
     process.env.REVELATIONX1_SUPPORT_EMAIL ||
     process.env.ASCEND_SUPPORT_EMAIL ||
-    "ralph@rznconsulting.com";
+    "support@revelationx1.com";
 
   const fromEmail =
     process.env.REVELATIONX1_FROM_EMAIL ||
     process.env.ASCEND_FROM_EMAIL ||
-    "ralph@rznconsulting.com";
+    "support@revelationx1.com";
 
   const fromName =
     process.env.REVELATIONX1_FROM_NAME ||
@@ -89,6 +101,22 @@ export async function sendShowcaseApplicationConfirmation({
       Dear ${recipientName},
     </p>
   `;
+
+  const emailHeading = preselected
+    ? "REGISTRATION CONFIRMED"
+    : "APPLICATION RECEIVED";
+
+  const emailTitle = preselected
+    ? "Your registration is complete"
+    : "Your application has been submitted";
+
+  const emailIntroduction = preselected
+    ? `Your REVELATIONX1 Lagos 2026 registration has been successfully completed following your selection for the Showcase.`
+    : `Your REVELATIONX1 Lagos 2026 player application has been successfully received.`;
+
+  const emailStatus = preselected
+    ? `Your place remains subject to verification of your identity, age and eligibility documentation. REVELATIONX1 will contact you with further programme and arrival instructions.`
+    : `Your application will now enter the eligibility and football assessment process. Submission does not mean that you have been selected for the Showcase.`;
 
   const html = `
 <!DOCTYPE html>
@@ -117,23 +145,21 @@ export async function sendShowcaseApplicationConfirmation({
 <td style="border:1px solid #2c3911;background:#11160b;border-radius:22px;padding:34px;">
 
   <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#c7ff2f;">
-    APPLICATION RECEIVED
+    ${emailHeading}
   </div>
 
   <h1 style="margin:14px 0 10px;font-size:34px;">
-    Your application has been submitted
+    ${emailTitle}
   </h1>
 
   ${intro}
 
   <p style="margin:0;color:#a9a9a9;line-height:1.7;">
-    Your REVELATIONX1 Lagos 2026 player application has been successfully received.
+    ${emailIntroduction}
   </p>
 
   <p style="margin:14px 0 0;color:#ffffff;font-weight:700;line-height:1.7;">
-    Your application will now enter the eligibility and football
-    assessment process. Submission does not mean that you have
-    been selected for the Showcase.
+    ${emailStatus}
   </p>
 
   <div style="margin-top:28px;padding-top:24px;border-top:1px solid #303030;">
@@ -181,7 +207,38 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
   </p>
 </div>
 
+${
+  preselected
+    ? `<div style="margin-bottom:22px;">
+  <div style="font-weight:800;color:#c7ff2f;">
+    2. Registration Verification
+  </div>
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    Our team will check your registration information and contact you
+    if any documents or clarification are required.
+  </p>
+</div>
+
 <div style="margin-bottom:22px;">
+  <div style="font-weight:800;color:#c7ff2f;">
+    3. Programme Information
+  </div>
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    REVELATIONX1 will provide further information about the Showcase
+    programme, reporting arrangements and arrival instructions.
+  </p>
+</div>
+
+<div>
+  <div style="font-weight:800;color:#c7ff2f;">
+    4. Final Instructions
+  </div>
+  <p style="margin:7px 0 0;color:#a9a9a9;line-height:1.7;">
+    Please monitor your registered email address for official
+    communications from REVELATIONX1.
+  </p>
+</div>`
+    : `<div style="margin-bottom:22px;">
   <div style="font-weight:800;color:#c7ff2f;">
     2. Football Assessment
   </div>
@@ -220,7 +277,8 @@ style="border:1px solid #262626;background:#111111;border-radius:18px;">
     final REVELATIONX1 Lagos 2026 Men's Football Showcase.
   </p>
 </div>
-
+`
+}
 </td>
 </tr>
 
@@ -241,6 +299,25 @@ style="border:1px solid #3c3210;background:#181507;border-radius:18px;">
 <div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#f3c950;">
   IMPORTANT
 </div>
+${
+  preselected
+    ? `
+<p style="margin:14px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
+  You have already been selected for the REVELATIONX1 Lagos 2026
+  Football Showcase and have completed your registration.
+</p>
+
+<p style="margin:12px 0 0;color:#b8b8b8;line-height:1.8;">
+  Participation remains subject to successful identity, age
+  and eligibility verification and compliance with programme requirements.
+</p>
+
+<p style="margin:12px 0 0;color:#b8b8b8;line-height:1.8;">
+  Please retain your registration code and await further official
+  programme and arrival instructions from REVELATIONX1.
+</p>
+`
+    : `
 
 <p style="margin:14px 0 0;color:#ffffff;font-weight:800;line-height:1.8;">
   Submission of an application does not guarantee selection
@@ -257,7 +334,8 @@ style="border:1px solid #3c3210;background:#181507;border-radius:18px;">
   separately with your official invitation and Showcase
   instructions.
 </p>
-
+`
+}
 </td>
 </tr>
 
@@ -308,7 +386,7 @@ REVELATIONX1 Football Showcase · Lagos 2026
 
     to: recipientEmail,
 
-    subject: `${application.registrationNumber} — REVELATIONX1 Lagos 2026 Application Received`,
+    subject: `${application.registrationNumber} — REVELATIONX1 Lagos 2026 ${preselected ? "Registration Confirmed" : "Application Received"}`,
 
     html,
   });
