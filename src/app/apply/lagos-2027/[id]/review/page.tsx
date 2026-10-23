@@ -694,49 +694,53 @@ export default async function ReviewPage({ params }: PageProps) {
 
         {/* SUBMISSION */}
 
-        <div className="mt-10 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-6">
-          <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
-            Lagos 2026 Selection
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-black text-white">FREE TO APPLY</div>
+        {!preselected ? (
+          <div className="mt-10 rounded-2xl border border-[#c7ff2f]/20 bg-[#c7ff2f]/[0.04] p-6">
+            <div className="text-xs font-black uppercase tracking-[0.18em] text-[#c7ff2f]">
+              Lagos 2026 Selection
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-black text-white">50 PLACES</div>
-            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="text-sm font-black text-white">
+                  FREE TO APPLY
+                </div>
+              </div>
 
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-black text-white">
-                SELECTION ON ABILITY
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="text-sm font-black text-white">50 PLACES</div>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="text-sm font-black text-white">
+                  SELECTION ON ABILITY
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <div className="text-sm font-black text-white">
+                  FULL DISCLOSURE REQUIRED
+                </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-sm font-black text-white">
-                FULL DISCLOSURE REQUIRED
-              </div>
-            </div>
+            <p className="mt-5 text-sm leading-7 text-white/65">
+              Submitting an application does not guarantee a place at the Lagos
+              2026 Men&apos;s Football Showcase. Applications will be reviewed
+              for eligibility and football evidence, and the strongest eligible
+              applicants will progress through the assessment process.
+            </p>
+
+            <p className="mt-3 font-bold leading-7 text-white">
+              The best 50 players will be selected for the final Showcase.
+            </p>
+
+            <p className="mt-3 text-sm leading-7 text-white/55">
+              Further video evidence or information may be requested during the
+              assessment process.
+            </p>
           </div>
-
-          <p className="mt-5 text-sm leading-7 text-white/65">
-            Submitting an application does not guarantee a place at the Lagos
-            2026 Men&apos;s Football Showcase. Applications will be reviewed for
-            eligibility and football evidence, and the strongest eligible
-            applicants will progress through the assessment process.
-          </p>
-
-          <p className="mt-3 font-bold leading-7 text-white">
-            The best 50 players will be selected for the final Showcase.
-          </p>
-
-          <p className="mt-3 text-sm leading-7 text-white/55">
-            Further video evidence or information may be requested during the
-            assessment process.
-          </p>
-        </div>
+        ) : null}
 
         <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
           {isSubmitted ? (
