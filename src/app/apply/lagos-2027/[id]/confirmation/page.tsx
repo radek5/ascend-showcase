@@ -481,6 +481,34 @@ export default async function ConfirmationPage({ params }: PageProps) {
               )}
             </div>
           </div>
+        ) : preselected ? (
+          <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+            <div className="text-lg font-black">What happens next?</div>
+
+            <div className="mt-5 space-y-5 text-sm leading-7 text-white/55">
+              <p>
+                Your registration for the REVELATIONX1 Lagos 2026 Football
+                Showcase is complete following your selection.
+              </p>
+
+              <p>
+                REVELATIONX1 will verify your identity, age and eligibility
+                documentation. We will contact you if any additional information
+                or clarification is required.
+              </p>
+
+              <p>
+                You will receive further information about the programme,
+                reporting arrangements and arrival instructions through your
+                registered email address.
+              </p>
+
+              <p className="font-bold text-white">
+                Please retain your permanent registration code and monitor your
+                email for official communications from REVELATIONX1.
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
             <div className="text-lg font-black">What happens next?</div>
@@ -518,7 +546,7 @@ export default async function ConfirmationPage({ params }: PageProps) {
           </div>
         )}
 
-        {!outcomePresentation ? (
+        {!outcomePresentation && !preselected ? (
           <div className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-6">
             <div className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">
               Important
