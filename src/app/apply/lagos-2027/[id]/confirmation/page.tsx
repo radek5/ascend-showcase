@@ -312,9 +312,11 @@ export default async function ConfirmationPage({ params }: PageProps) {
             <SummaryItem
               label="Application Status"
               value={
-                outcomePresentation
-                  ? outcomePresentation.status
-                  : "Submitted — Under Assessment"
+                preselected
+                  ? "Selected"
+                  : outcomePresentation
+                    ? outcomePresentation.status
+                    : "Submitted — Under Assessment"
               }
             />
           </div>
