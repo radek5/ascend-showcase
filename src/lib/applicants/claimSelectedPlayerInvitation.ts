@@ -15,7 +15,7 @@ type TransactionClient = Prisma.TransactionClient;
 
 type ClaimSelectedPlayerInvitationArgs = {
   tx: TransactionClient;
-  token: string;
+  token?: string | null;
   applicationId: string;
   applicantUserId: string;
   eventSlug: string;
@@ -52,8 +52,8 @@ export async function claimSelectedPlayerInvitation({
   applicationId,
   applicantUserId,
   eventSlug,
-}: ClaimSelectedPlayerInvitationArgs) {
-  if (token.length < 32 || token.length > 256) {
+}: ClaimSelectedPlayerInvitationArgs): Promise<boolean> {
+  if (token && (token.length < 32 || token.length > 256)) {
     throw new Error("INVALID_SELECTED_PLAYER_INVITATION");
   }
 
@@ -70,9 +70,7 @@ export async function claimSelectedPlayerInvitation({
       firstName: true,
       lastName: true,
       selectedPlayerRecord: {
-        select: {
-          id: true,
-        },
+        select: { id: true },
       },
     },
   });
@@ -81,46 +79,50 @@ export async function claimSelectedPlayerInvitation({
     throw new Error("APPLICATION_NOT_CLAIMABLE");
   }
 
-  const tokenHash = hashSecureToken(token);
+  const tokenHash = token ? hashSecureToken(token) : null;
   const now = new Date();
 
-  if (application.selectedPlayerRecord) {
-    const existingClaim = await tx.showcaseSelectedPlayer.findFirst({
-      where: {
-        id: application.selectedPlayerRecord.id,
-        registrationTokenHash: tokenHash,
-        matchedApplicationId: applicationId,
-        footballSelected: true,
-        registrationTokenUsedAt: { not: null },
-        registeredApplicantUserId: applicantUserId,
-      },
-      select: { id: true },
-    });
+  const claimedInvitations = await tx.showcaseSelectedPlayer.findMany({
+    where: {
+      eventSlug,
+      footballSelected: true,
+      registeredApplicantUserId: applicantUserId,
+      registrationTokenUsedAt: { not: null },
+      ...(tokenHash ? { registrationTokenHash: tokenHash } : {}),
+    },
+    select: {
+      id: true,
+      fullName: true,
+      matchedApplicationId: true,
+    },
+    take: 2,
+  });
 
-    if (existingClaim) {
-      return true;
+  if (claimedInvitations.length === 0) {
+    if (tokenHash) {
+      throw new Error("SELECTED_PLAYER_INVITATION_UNAVAILABLE");
     }
+    return false;
+  }
 
+  if (claimedInvitations.length !== 1) {
+    throw new Error("MULTIPLE_SELECTED_PLAYER_INVITATIONS");
+  }
+
+  const invitation = claimedInvitations[0];
+
+  if (
+    application.selectedPlayerRecord &&
+    application.selectedPlayerRecord.id !== invitation.id
+  ) {
     throw new Error("APPLICATION_ALREADY_LINKED_TO_ANOTHER_INVITATION");
   }
 
-  const invitation = await tx.showcaseSelectedPlayer.findFirst({
-    where: {
-      registrationTokenHash: tokenHash,
-      eventSlug,
-      footballSelected: true,
-      registrationTokenExpiresAt: { gt: now },
-      registrationTokenUsedAt: { not: null },
-      registeredApplicantUserId: applicantUserId,
-      matchedApplicationId: null,
-    },
-    select: {
-      fullName: true,
-    },
-  });
-
-  if (!invitation) {
-    throw new Error("SELECTED_PLAYER_INVITATION_UNAVAILABLE");
+  if (
+    invitation.matchedApplicationId &&
+    invitation.matchedApplicationId !== applicationId
+  ) {
+    throw new Error("SELECTED_PLAYER_INVITATION_ALREADY_LINKED");
   }
 
   const applicationName = normalisePlayerName(
@@ -131,17 +133,19 @@ export async function claimSelectedPlayerInvitation({
     throw new Error("SELECTED_PLAYER_IDENTITY_MISMATCH");
   }
 
-    const claimed = await tx.showcaseSelectedPlayer.updateMany({
+  if (invitation.matchedApplicationId === applicationId) {
+    return true;
+  }
+
+  const claimed = await tx.showcaseSelectedPlayer.updateMany({
     where: {
-      registrationTokenHash: tokenHash,
+      id: invitation.id,
       eventSlug,
       footballSelected: true,
-      registrationTokenExpiresAt: {
-        gt: now,
-      },
-      registrationTokenUsedAt: { not: null },
       registeredApplicantUserId: applicantUserId,
+      registrationTokenUsedAt: { not: null },
       matchedApplicationId: null,
+      ...(tokenHash ? { registrationTokenHash: tokenHash } : {}),
     },
     data: {
       matchedApplicationId: applicationId,

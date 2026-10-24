@@ -22,15 +22,16 @@ export default async function StaffDashboardPage({
     professionalCheckedInCount,
     transferCount,
   ] = await Promise.all([
-    prisma.registration.count(),
+    prisma.showcaseApplication.count({
+      where: { eventSlug: "lagos-2027" },
+    }),
 
     prisma.professionalRegistration.count(),
 
-    prisma.registration.count({
+    prisma.showcaseApplication.count({
       where: {
-        checkedInAt: {
-          not: null,
-        },
+        eventSlug: "lagos-2027",
+        checkedInAt: { not: null },
       },
     }),
 

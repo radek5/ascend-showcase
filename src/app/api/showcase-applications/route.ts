@@ -356,7 +356,7 @@ export async function POST(req: Request) {
           },
         });
 
-        if (selectedInvitationToken) {
+        {
           await claimSelectedPlayerInvitation({
             tx,
             token: selectedInvitationToken,
@@ -518,7 +518,7 @@ export async function POST(req: Request) {
           },
         });
 
-        if (selectedInvitationToken) {
+        {
           await claimSelectedPlayerInvitation({
             tx,
             token: selectedInvitationToken,
@@ -641,7 +641,7 @@ export async function POST(req: Request) {
         },
       });
 
-      if (selectedInvitationToken) {
+      {
         await claimSelectedPlayerInvitation({
           tx,
           token: selectedInvitationToken,

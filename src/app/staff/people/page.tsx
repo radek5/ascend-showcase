@@ -12,7 +12,9 @@ export default async function PeoplePage() {
     accredited,
     professionalCheckedIn,
   ] = await Promise.all([
-    prisma.registration.count(),
+    prisma.showcaseApplication.count({
+      where: { eventSlug: "lagos-2027" },
+    }),
 
     prisma.professionalRegistration.count(),
 
@@ -63,7 +65,7 @@ export default async function PeoplePage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <Link
-            href="/staff/registrations"
+            href="/staff/selection"
             className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-8 transition hover:border-[#c7ff2f]/30"
           >
             <div className="text-xs font-black uppercase tracking-[0.15em] text-white/35">
