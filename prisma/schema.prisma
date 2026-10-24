@@ -392,7 +392,8 @@ model StaffUser {
   name  String
   email String @unique
 
-  passwordHash String
+  passwordHash   String
+  sessionVersion Int    @default(0)
 
   role   StaffRole @default(STAFF)
   active Boolean   @default(true)
@@ -1588,6 +1589,9 @@ model ShowcaseSelectedPlayer {
 
   // Football selection has already been made.
   footballSelected Boolean @default(true)
+
+  // Management status in the pre-selected player register.
+  listStatus String @default("PRE_SELECTED")
 
   // Individually approved exceptions to the event age range.
   ageExceptionApproved   Boolean   @default(false)

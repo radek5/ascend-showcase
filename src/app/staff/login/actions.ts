@@ -7,15 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { createStaffSession } from "@/lib/staff/session";
 
 export async function staffLogin(formData: FormData) {
-  const email = String(
-    formData.get("email") || "",
-  )
+  const email = String(formData.get("email") || "")
     .trim()
     .toLowerCase();
 
-  const password = String(
-    formData.get("password") || "",
-  );
+  const password = String(formData.get("password") || "");
 
   if (!email || !password) {
     redirect(
@@ -30,9 +26,7 @@ export async function staffLogin(formData: FormData) {
   });
 
   if (!staffUser || !staffUser.active) {
-    redirect(
-      "/staff/login?error=Invalid%20email%20or%20password.",
-    );
+    redirect("/staff/login?error=Invalid%20email%20or%20password.");
   }
 
   const passwordMatches = await bcrypt.compare(
@@ -41,9 +35,7 @@ export async function staffLogin(formData: FormData) {
   );
 
   if (!passwordMatches) {
-    redirect(
-      "/staff/login?error=Invalid%20email%20or%20password.",
-    );
+    redirect("/staff/login?error=Invalid%20email%20or%20password.");
   }
 
   await prisma.staffUser.update({
@@ -58,6 +50,7 @@ export async function staffLogin(formData: FormData) {
   await createStaffSession({
     staffUserId: staffUser.id,
     role: staffUser.role,
+    sessionVersion: staffUser.sessionVersion,
   });
 
   redirect("/staff/dashboard");

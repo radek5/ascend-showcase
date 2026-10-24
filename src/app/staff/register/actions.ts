@@ -6,26 +6,16 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createStaffSession } from "@/lib/staff/session";
 
-export async function registerStaffUser(
-  formData: FormData,
-) {
-  const name = String(
-    formData.get("name") || "",
-  ).trim();
+export async function registerStaffUser(formData: FormData) {
+  const name = String(formData.get("name") || "").trim();
 
-  const email = String(
-    formData.get("email") || "",
-  )
+  const email = String(formData.get("email") || "")
     .trim()
     .toLowerCase();
 
-  const password = String(
-    formData.get("password") || "",
-  );
+  const password = String(formData.get("password") || "");
 
-  const confirmPassword = String(
-    formData.get("confirmPassword") || "",
-  );
+  const confirmPassword = String(formData.get("confirmPassword") || "");
 
   if (!name || !email || !password) {
     redirect(
@@ -40,20 +30,17 @@ export async function registerStaffUser(
   }
 
   if (password !== confirmPassword) {
-    redirect(
-      "/staff/register?error=Passwords%20do%20not%20match.",
-    );
+    redirect("/staff/register?error=Passwords%20do%20not%20match.");
   }
 
-  const existing =
-    await prisma.staffUser.findUnique({
-      where: {
-        email,
-      },
-      select: {
-        id: true,
-      },
-    });
+  const existing = await prisma.staffUser.findUnique({
+    where: {
+      email,
+    },
+    select: {
+      id: true,
+    },
+  });
 
   if (existing) {
     redirect(
@@ -61,36 +48,31 @@ export async function registerStaffUser(
     );
   }
 
-  const passwordHash =
-    await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, 12);
 
-  const staffUser = await prisma.$transaction(
-    async (tx) => {
-      const staffCount =
-        await tx.staffUser.count();
+  const staffUser = await prisma.$transaction(async (tx) => {
+    const staffCount = await tx.staffUser.count();
 
-      return tx.staffUser.create({
-        data: {
-          name,
-          email,
-          passwordHash,
-          role:
-            staffCount === 0
-              ? "ADMIN"
-              : "STAFF",
-          active: true,
-        },
-        select: {
-          id: true,
-          role: true,
-        },
-      });
-    },
-  );
+    return tx.staffUser.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        role: staffCount === 0 ? "ADMIN" : "STAFF",
+        active: true,
+      },
+      select: {
+        id: true,
+        role: true,
+        sessionVersion: true,
+      },
+    });
+  });
 
   await createStaffSession({
     staffUserId: staffUser.id,
     role: staffUser.role,
+    sessionVersion: staffUser.sessionVersion,
   });
 
   redirect("/staff/dashboard");

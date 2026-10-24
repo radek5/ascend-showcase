@@ -12,14 +12,17 @@ export async function getCurrentStaffUser() {
     return null;
   }
 
-  const staffUser =
-    await prisma.staffUser.findUnique({
-      where: {
-        id: session.staffUserId,
-      },
-    });
+  const staffUser = await prisma.staffUser.findUnique({
+    where: {
+      id: session.staffUserId,
+    },
+  });
 
-  if (!staffUser || !staffUser.active) {
+  if (
+    !staffUser ||
+    !staffUser.active ||
+    staffUser.sessionVersion !== session.sessionVersion
+  ) {
     return null;
   }
 
@@ -27,8 +30,7 @@ export async function getCurrentStaffUser() {
 }
 
 export async function requireStaffUser() {
-  const staffUser =
-    await getCurrentStaffUser();
+  const staffUser = await getCurrentStaffUser();
 
   if (!staffUser) {
     redirect("/staff/login");
@@ -38,8 +40,7 @@ export async function requireStaffUser() {
 }
 
 export async function requireStaffAdmin() {
-  const staffUser =
-    await requireStaffUser();
+  const staffUser = await requireStaffUser();
 
   if (staffUser.role !== "ADMIN") {
     redirect("/staff/dashboard?error=access-restricted");

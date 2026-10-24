@@ -228,11 +228,10 @@ export default async function StaffDashboardPage({
                   href="/staff/commercial"
                   label="Sponsors & Partners"
                 />
-
-                <QuickLink href="/staff/selection" label="Selection Control" />
               </>
             )}
 
+            <QuickLink href="/staff/selection" label="Selection Control" />
             <QuickLink href="/staff/checkin" label="Check-In" />
 
             <QuickLink href="/staff/scout-requests" label="Scout Requests" />
@@ -244,6 +243,11 @@ export default async function StaffDashboardPage({
                 <QuickLink href="/staff/users" label="Staff" />
               </>
             )}
+
+            <QuickLink
+              href="/staff/change-password"
+              label="Change My Password"
+            />
           </div>
         </div>
       </section>

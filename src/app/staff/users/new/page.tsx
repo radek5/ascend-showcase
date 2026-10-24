@@ -21,9 +21,7 @@ export default async function NewStaffUserPage() {
             Administration
           </div>
 
-          <h1 className="mt-3 text-4xl font-black">
-            Create Staff User
-          </h1>
+          <h1 className="mt-3 text-4xl font-black">Create Staff User</h1>
 
           <p className="mt-3 text-white/50">
             Create an authorised REVELATIONX1 Back Office account.
@@ -35,9 +33,7 @@ export default async function NewStaffUserPage() {
           className="mt-10 space-y-6 rounded-2xl border border-white/10 bg-white/[0.025] p-6"
         >
           <label className="block">
-            <span className="text-sm font-bold">
-              Full name
-            </span>
+            <span className="text-sm font-bold">Full name</span>
 
             <input
               name="name"
@@ -47,9 +43,7 @@ export default async function NewStaffUserPage() {
           </label>
 
           <label className="block">
-            <span className="text-sm font-bold">
-              Email
-            </span>
+            <span className="text-sm font-bold">Email</span>
 
             <input
               name="email"
@@ -60,9 +54,7 @@ export default async function NewStaffUserPage() {
           </label>
 
           <label className="block">
-            <span className="text-sm font-bold">
-              Temporary password
-            </span>
+            <span className="text-sm font-bold">Password</span>
 
             <input
               name="password"
@@ -78,22 +70,16 @@ export default async function NewStaffUserPage() {
           </label>
 
           <label className="block">
-            <span className="text-sm font-bold">
-              Role
-            </span>
+            <span className="text-sm font-bold">Role</span>
 
             <select
               name="role"
               defaultValue="STAFF"
               className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-4 outline-none focus:border-[#c7ff2f]/60"
             >
-              <option value="STAFF">
-                Staff
-              </option>
+              <option value="STAFF">Staff</option>
 
-              <option value="ADMIN">
-                Admin
-              </option>
+              <option value="ADMIN">Admin</option>
             </select>
           </label>
 

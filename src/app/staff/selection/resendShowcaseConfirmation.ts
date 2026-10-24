@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffAdmin } from "@/lib/staff/auth";
+import { requireStaffUser } from "@/lib/staff/auth";
 import { sendShowcaseApplicationConfirmation } from "@/lib/email/sendShowcaseApplicationConfirmation";
 
 export async function resendShowcaseConfirmation(applicationId: string) {
-  await requireStaffAdmin();
+  await requireStaffUser();
 
   const application = await prisma.showcaseApplication.findUnique({
     where: {

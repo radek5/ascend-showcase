@@ -6,7 +6,7 @@ import { randomBytes, randomInt, createHash } from "crypto";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffAdmin } from "@/lib/staff/auth";
+import { requireStaffAdmin, requireStaffUser } from "@/lib/staff/auth";
 
 import { sendShowcaseSelectionOutcome } from "@/lib/email/sendShowcaseSelectionOutcome";
 
@@ -39,14 +39,13 @@ async function createAssessmentCode() {
 }
 
 export async function addPreSelectedPlayer(formData: FormData) {
-  await requireStaffAdmin();
+  await requireStaffUser();
 
   const fullName = String(formData.get("fullName") || "")
     .trim()
     .replace(/\\s+/g, " ");
 
-  const whatsappNumber = String(formData.get("whatsappNumber") || "")
-    .trim();
+  const whatsappNumber = String(formData.get("whatsappNumber") || "").trim();
 
   if (!fullName || fullName.length > 150) {
     throw new Error("A valid player name is required.");
@@ -82,10 +81,8 @@ export async function addPreSelectedPlayer(formData: FormData) {
   revalidatePath("/staff/selection");
 }
 
-export async function generatePreSelectedInvitation(
-  formData: FormData,
-) {
-  await requireStaffAdmin();
+export async function generatePreSelectedInvitation(formData: FormData) {
+  await requireStaffUser();
 
   const playerId = String(formData.get("playerId") || "").trim();
 
@@ -117,7 +114,9 @@ export async function generatePreSelectedInvitation(
   }
 
   if (player.registrationTokenHash) {
-    throw new Error("An invitation has already been generated for this player.");
+    throw new Error(
+      "An invitation has already been generated for this player.",
+    );
   }
 
   const token = randomBytes(32).toString("hex");
@@ -142,13 +141,11 @@ export async function generatePreSelectedInvitation(
   }
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "https://ascend-showcase.netlify.app";
+    process.env.NEXT_PUBLIC_APP_URL || "https://ascend-showcase.netlify.app";
 
   const invitationUrl = `${baseUrl.replace(/\/$/, "")}/apply/selected/${token}`;
 
-  const whatsappNumber = (player.whatsappNumber || "")
-    .replace(/\D/g, "");
+  const whatsappNumber = (player.whatsappNumber || "").replace(/\D/g, "");
 
   if (!whatsappNumber) {
     throw new Error("Player has no WhatsApp number.");
@@ -162,7 +159,7 @@ export async function generatePreSelectedInvitation(
 }
 
 export async function revokeVideoExemption(formData: FormData) {
-  const admin = await requireStaffAdmin();
+  const admin = await requireStaffUser();
 
   const exemptionId = String(formData.get("exemptionId") || "").trim();
 
@@ -203,7 +200,7 @@ export async function revokeVideoExemption(formData: FormData) {
 }
 
 export async function restoreVideoExemption(formData: FormData) {
-  const admin = await requireStaffAdmin();
+  const admin = await requireStaffUser();
 
   const exemptionId = String(formData.get("exemptionId") || "").trim();
 
@@ -249,7 +246,7 @@ export async function restoreVideoExemption(formData: FormData) {
 }
 
 export async function prepareForSelection(formData: FormData) {
-  await requireStaffAdmin();
+  await requireStaffUser();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -300,7 +297,7 @@ export async function prepareForSelection(formData: FormData) {
 }
 
 export async function assignSelector(formData: FormData) {
-  await requireStaffAdmin();
+  await requireStaffUser();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -404,7 +401,7 @@ export async function assignSelector(formData: FormData) {
 }
 
 export async function sendForSecondReview(formData: FormData) {
-  await requireStaffAdmin();
+  await requireStaffUser();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -472,7 +469,7 @@ export async function sendForSecondReview(formData: FormData) {
 }
 
 export async function setFinalSelectionDecision(formData: FormData) {
-  await requireStaffAdmin();
+  await requireStaffUser();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
 
@@ -1091,7 +1088,7 @@ const SELECTION_EXIT_REASONS = [
 type SelectionExitReason = (typeof SELECTION_EXIT_REASONS)[number];
 
 export async function withdrawSelectedPlayer(formData: FormData) {
-  const admin = await requireStaffAdmin();
+  const admin = await requireStaffUser();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
   const reason = String(formData.get("reason") || "").trim();
@@ -1210,7 +1207,7 @@ export async function withdrawSelectedPlayer(formData: FormData) {
 }
 
 export async function promoteReservePlayer(formData: FormData) {
-  const admin = await requireStaffAdmin();
+  const admin = await requireStaffUser();
 
   const applicationId = String(formData.get("applicationId") || "").trim();
   const reason = String(formData.get("reason") || "").trim();
@@ -1361,6 +1358,125 @@ export async function promoteReservePlayer(formData: FormData) {
       },
     });
   });
+
+  revalidatePath("/staff/selection");
+}
+
+export async function movePreSelectedPlayerToStandby(formData: FormData) {
+  await requireStaffUser();
+
+  const playerId = String(formData.get("playerId") || "").trim();
+
+  if (!playerId) {
+    throw new Error("Player ID is required.");
+  }
+
+  const result = await prisma.showcaseSelectedPlayer.updateMany({
+    where: {
+      id: playerId,
+      eventSlug: "lagos-2027",
+      listStatus: "PRE_SELECTED",
+    },
+    data: {
+      listStatus: "STANDBY",
+      footballSelected: false,
+      registrationTokenHash: null,
+      registrationTokenExpiresAt: null,
+      invitationRecoveryTokenHash: null,
+    },
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Player could not be moved to standby.");
+  }
+
+  revalidatePath("/staff/selection");
+}
+
+export async function removePreSelectedPlayer(formData: FormData) {
+  await requireStaffUser();
+
+  const playerId = String(formData.get("playerId") || "").trim();
+
+  if (!playerId) {
+    throw new Error("Player ID is required.");
+  }
+
+  const result = await prisma.showcaseSelectedPlayer.updateMany({
+    where: {
+      id: playerId,
+      eventSlug: "lagos-2027",
+      listStatus: { not: "REMOVED" },
+    },
+    data: {
+      listStatus: "REMOVED",
+      footballSelected: false,
+      registrationTokenHash: null,
+      registrationTokenExpiresAt: null,
+      invitationRecoveryTokenHash: null,
+    },
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Player could not be removed.");
+  }
+
+  revalidatePath("/staff/selection");
+}
+
+export async function editPreSelectedPlayer(formData: FormData) {
+  await requireStaffUser();
+
+  const playerId = String(formData.get("playerId") || "").trim();
+  const fullName = String(formData.get("fullName") || "")
+    .trim()
+    .replace(/\s+/g, " ");
+  const position = String(formData.get("position") || "").trim();
+  const whatsappNumber = String(formData.get("whatsappNumber") || "").trim();
+  const ageInput = String(formData.get("reportedAge") || "").trim();
+
+  if (!playerId) {
+    throw new Error("Player ID is required.");
+  }
+
+  if (!fullName || fullName.length > 150) {
+    throw new Error("A valid player name is required.");
+  }
+
+  if (position.length > 100) {
+    throw new Error("Position is too long.");
+  }
+
+  if (whatsappNumber && !/^\+?[0-9\s()-]{7,25}$/.test(whatsappNumber)) {
+    throw new Error("Invalid WhatsApp number.");
+  }
+
+  const reportedAge = ageInput === "" ? null : Number(ageInput);
+
+  if (
+    reportedAge !== null &&
+    (!Number.isInteger(reportedAge) || reportedAge < 1 || reportedAge > 100)
+  ) {
+    throw new Error("Invalid player age.");
+  }
+
+  const result = await prisma.showcaseSelectedPlayer.updateMany({
+    where: {
+      id: playerId,
+      eventSlug: "lagos-2027",
+      listStatus: { not: "REMOVED" },
+    },
+    data: {
+      fullName,
+      position,
+      whatsappNumber: whatsappNumber || null,
+      reportedAge,
+    },
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Player could not be updated.");
+  }
 
   revalidatePath("/staff/selection");
 }

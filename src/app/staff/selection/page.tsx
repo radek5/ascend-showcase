@@ -1,4 +1,5 @@
 import GenerateWhatsAppInvitationButton from "./GenerateWhatsAppInvitationButton";
+import PlayerActionsDropdown from "./PlayerActionsDropdown";
 import Link from "next/link";
 
 import ShowcaseConfirmationButton from "./ShowcaseConfirmationButton";
@@ -8,7 +9,7 @@ import ReleaseSelectionDecisionsButton from "./ReleaseSelectionDecisionsButton";
 import SendSelectionOutcomesButton from "./SendSelectionOutcomesButton";
 
 import { prisma } from "@/lib/prisma";
-import { requireStaffAdmin } from "@/lib/staff/auth";
+import { requireStaffUser } from "@/lib/staff/auth";
 
 import {
   addPreSelectedPlayer,
@@ -23,7 +24,7 @@ import {
 } from "./actions";
 
 export default async function SelectionPage() {
-  const staffUser = await requireStaffAdmin();
+  const staffUser = await requireStaffUser();
 
   const event = await prisma.event.findUnique({
     where: {
@@ -179,6 +180,8 @@ export default async function SelectionPage() {
       select: {
         id: true,
         fullName: true,
+        reportedAge: true,
+        position: true,
         whatsappNumber: true,
         batchCode: true,
         registrationTokenHash: true,
@@ -198,8 +201,8 @@ export default async function SelectionPage() {
     (player) => !player.registeredApplicantUserId,
   ).length;
 
-  const registeredPreSelectedPlayers = preSelectedPlayers.filter(
-    (player) => Boolean(player.registeredApplicantUserId),
+  const registeredPreSelectedPlayers = preSelectedPlayers.filter((player) =>
+    Boolean(player.registeredApplicantUserId),
   ).length;
 
   const selectedCount = applications.filter(
@@ -307,18 +310,23 @@ export default async function SelectionPage() {
                 Pre-selected Players
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">
-                Add pre-selected players and manage their registration invitations.
-                Players provide their remaining details during registration.
+                Add pre-selected players and manage their registration
+                invitations. Players provide their remaining details during
+                registration.
               </p>
             </div>
             <div className="flex gap-3 text-sm">
               <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
                 <span className="text-white/40">Awaiting </span>
-                <span className="font-black text-white">{awaitingPreSelectedPlayers}</span>
+                <span className="font-black text-white">
+                  {awaitingPreSelectedPlayers}
+                </span>
               </div>
               <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
                 <span className="text-white/40">Registered </span>
-                <span className="font-black text-white">{registeredPreSelectedPlayers}</span>
+                <span className="font-black text-white">
+                  {registeredPreSelectedPlayers}
+                </span>
               </div>
             </div>
           </div>
@@ -328,7 +336,10 @@ export default async function SelectionPage() {
             className="mt-6 grid gap-4 border-t border-white/10 pt-6 lg:grid-cols-[1fr_1fr_auto]"
           >
             <div>
-              <label htmlFor="preselected-name" className="text-xs font-black uppercase tracking-[0.08em] text-white/40">
+              <label
+                htmlFor="preselected-name"
+                className="text-xs font-black uppercase tracking-[0.08em] text-white/40"
+              >
                 Full Name
               </label>
               <input
@@ -342,7 +353,10 @@ export default async function SelectionPage() {
               />
             </div>
             <div>
-              <label htmlFor="preselected-whatsapp" className="text-xs font-black uppercase tracking-[0.08em] text-white/40">
+              <label
+                htmlFor="preselected-whatsapp"
+                className="text-xs font-black uppercase tracking-[0.08em] text-white/40"
+              >
                 WhatsApp Number
               </label>
               <input
@@ -356,7 +370,10 @@ export default async function SelectionPage() {
               />
             </div>
             <div className="flex items-end">
-              <button type="submit" className="w-full rounded-xl bg-[#c7ff2f] px-5 py-3 text-sm font-black text-black transition hover:bg-white lg:w-auto">
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-[#c7ff2f] px-5 py-3 text-sm font-black text-black transition hover:bg-white lg:w-auto"
+              >
                 Add Player
               </button>
             </div>
@@ -380,9 +397,16 @@ export default async function SelectionPage() {
                 </thead>
                 <tbody>
                   {preSelectedPlayers.map((player) => (
-                    <tr key={player.id} className="border-b border-white/[0.06]">
-                      <td className="px-3 py-4 font-bold text-white">{player.fullName}</td>
-                      <td className="px-3 py-4 text-white/60">{player.whatsappNumber || "—"}</td>
+                    <tr
+                      key={player.id}
+                      className="border-b border-white/[0.06]"
+                    >
+                      <td className="px-3 py-4 font-bold text-white">
+                        {player.fullName}
+                      </td>
+                      <td className="px-3 py-4 text-white/60">
+                        {player.whatsappNumber || "—"}
+                      </td>
                       <td className="px-3 py-4 text-white/60">
                         {player.registrationTokenUsedAt
                           ? "Used"
@@ -394,19 +418,31 @@ export default async function SelectionPage() {
                               : "Active"}
                       </td>
                       <td className="px-3 py-4 text-white/60">
-                        {player.registeredApplicantUserId ? "Registered" : "Not registered"}
+                        {player.registeredApplicantUserId
+                          ? "Registered"
+                          : "Not registered"}
                       </td>
                       <td className="px-3 py-4">
-                        {!player.registrationTokenHash &&
-                        !player.registeredApplicantUserId &&
-                        player.whatsappNumber ? (
-                          <GenerateWhatsAppInvitationButton
+                        <div className="flex flex-wrap items-center gap-2">
+                          <PlayerActionsDropdown
                             playerId={player.id}
+                            playerName={player.fullName}
+                            fullName={player.fullName}
+                            reportedAge={player.reportedAge}
+                            position={player.position}
                             whatsappNumber={player.whatsappNumber}
                           />
-                        ) : (
-                          <span className="text-white/35">—</span>
-                        )}
+                          {!player.registrationTokenHash &&
+                          !player.registeredApplicantUserId &&
+                          player.whatsappNumber ? (
+                            <GenerateWhatsAppInvitationButton
+                              playerId={player.id}
+                              whatsappNumber={player.whatsappNumber}
+                            />
+                          ) : (
+                            <span className="text-white/35">—</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -636,6 +672,13 @@ export default async function SelectionPage() {
                         <div className="font-black">
                           {application.firstName} {application.lastName}
                         </div>
+
+                        <Link
+                          href={`/staff/registrations/${application.id}`}
+                          className="mt-2 inline-block text-xs font-bold text-[#c7ff2f] hover:underline"
+                        >
+                          Edit Profile
+                        </Link>
 
                         <div className="mt-1 text-xs text-white/40">
                           {application.position || "Position —"}
