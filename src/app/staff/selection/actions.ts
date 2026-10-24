@@ -2,7 +2,7 @@
 
 import { getNinLast4, hashNin, validateNin } from "@/lib/showcase/ninIdentity";
 
-import { randomInt } from "crypto";
+import { randomBytes, randomInt, createHash } from "crypto";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
@@ -38,78 +38,127 @@ async function createAssessmentCode() {
   throw new Error("Unable to generate a unique assessment code.");
 }
 
-export async function addVideoExemption(formData: FormData) {
-  const admin = await requireStaffAdmin();
+export async function addPreSelectedPlayer(formData: FormData) {
+  await requireStaffAdmin();
 
   const fullName = String(formData.get("fullName") || "")
     .trim()
-    .replace(/\s+/g, " ");
+    .replace(/\\s+/g, " ");
 
-  const rawNin = String(formData.get("nin") || "").trim();
+  const whatsappNumber = String(formData.get("whatsappNumber") || "")
+    .trim();
 
-  if (!fullName) {
-    throw new Error("Player name is required.");
+  if (!fullName || fullName.length > 150) {
+    throw new Error("A valid player name is required.");
   }
 
-  if (fullName.length > 150) {
-    throw new Error("Player name is too long.");
+  if (!/^\\+?[0-9\\s()-]{7,25}$/.test(whatsappNumber)) {
+    throw new Error("A valid WhatsApp number is required.");
   }
 
-  const nin = validateNin(rawNin);
-  const ninHash = hashNin(nin);
-  const ninLast4 = getNinLast4(nin);
+  const eventSlug = "lagos-2027";
+  const batchCode = "BATCH-999";
 
-  const event = await prisma.event.findUnique({
-    where: {
-      slug: "lagos-2027",
-    },
-    select: {
-      slug: true,
-    },
-  });
+  await prisma.$transaction(async (tx) => {
+    const latest = await tx.showcaseSelectedPlayer.findFirst({
+      where: { eventSlug, batchCode },
+      orderBy: { sourceRowNumber: "desc" },
+      select: { sourceRowNumber: true },
+    });
 
-  if (!event) {
-    throw new Error("Showcase event not found.");
-  }
-
-  const existing = await prisma.showcaseVideoExemption.findUnique({
-    where: {
-      eventSlug_ninHash: {
-        eventSlug: event.slug,
-        ninHash,
+    await tx.showcaseSelectedPlayer.create({
+      data: {
+        eventSlug,
+        batchCode,
+        sourceRowNumber: (latest?.sourceRowNumber ?? 0) + 1,
+        fullName,
+        position: "",
+        whatsappNumber,
+        footballSelected: true,
       },
-    },
-    select: {
-      id: true,
-      status: true,
-    },
-  });
-
-  if (existing) {
-    if (existing.status === "REVOKED") {
-      throw new Error(
-        "A revoked video exemption already exists for this NIN. Review the existing record instead of creating another.",
-      );
-    }
-
-    throw new Error(
-      "A video exemption already exists for this NIN and showcase.",
-    );
-  }
-
-  await prisma.showcaseVideoExemption.create({
-    data: {
-      eventSlug: event.slug,
-      fullName,
-      ninHash,
-      ninLast4,
-      reason: "PREVIOUSLY_OBSERVED_LIVE",
-      status: "AWAITING_REGISTRATION",
-      authorisedByStaffUserId: admin.id,
-    },
+    });
   });
 
   revalidatePath("/staff/selection");
+}
+
+export async function generatePreSelectedInvitation(
+  formData: FormData,
+) {
+  await requireStaffAdmin();
+
+  const playerId = String(formData.get("playerId") || "").trim();
+
+  if (!playerId) {
+    throw new Error("Player ID is required.");
+  }
+
+  const player = await prisma.showcaseSelectedPlayer.findFirst({
+    where: {
+      id: playerId,
+      eventSlug: "lagos-2027",
+      batchCode: "BATCH-999",
+    },
+    select: {
+      id: true,
+      whatsappNumber: true,
+      registrationTokenHash: true,
+      registeredApplicantUserId: true,
+      registrationTokenUsedAt: true,
+    },
+  });
+
+  if (!player) {
+    throw new Error("Pre-selected player not found.");
+  }
+
+  if (player.registeredApplicantUserId || player.registrationTokenUsedAt) {
+    throw new Error("This player has already registered.");
+  }
+
+  if (player.registrationTokenHash) {
+    throw new Error("An invitation has already been generated for this player.");
+  }
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const result = await prisma.showcaseSelectedPlayer.updateMany({
+    where: {
+      id: player.id,
+      registrationTokenHash: null,
+      registeredApplicantUserId: null,
+      registrationTokenUsedAt: null,
+    },
+    data: {
+      registrationTokenHash: tokenHash,
+      registrationTokenExpiresAt: expiresAt,
+    },
+  });
+
+  if (result.count !== 1) {
+    throw new Error("Invitation could not be generated.");
+  }
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://ascend-showcase.netlify.app";
+
+  const invitationUrl = `${baseUrl.replace(/\/$/, "")}/apply/selected/${token}`;
+
+  const whatsappNumber = (player.whatsappNumber || "")
+    .replace(/\D/g, "");
+
+  if (!whatsappNumber) {
+    throw new Error("Player has no WhatsApp number.");
+  }
+
+  const message = `Hello, you have been invited to register for the REVELATIONX1 Football Showcase. Please create your account using this personalised link within 7 days: ${invitationUrl}`;
+
+  revalidatePath("/staff/selection");
+
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 export async function revokeVideoExemption(formData: FormData) {

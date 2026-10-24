@@ -1,3 +1,4 @@
+import GenerateWhatsAppInvitationButton from "./GenerateWhatsAppInvitationButton";
 import Link from "next/link";
 
 import ShowcaseConfirmationButton from "./ShowcaseConfirmationButton";
@@ -10,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { requireStaffAdmin } from "@/lib/staff/auth";
 
 import {
-  addVideoExemption,
+  addPreSelectedPlayer,
   assignSelector,
   prepareForSelection,
   promoteReservePlayer,
@@ -43,7 +44,7 @@ export default async function SelectionPage() {
     throw new Error("Lagos 2026 showcase event not found.");
   }
 
-  const [applications, selectors, videoExemptions] = await Promise.all([
+  const [applications, selectors, preSelectedPlayers] = await Promise.all([
     prisma.showcaseApplication.findMany({
       where: {
         eventSlug: event.slug,
@@ -168,49 +169,37 @@ export default async function SelectionPage() {
       },
     }),
 
-    prisma.showcaseVideoExemption.findMany({
+    prisma.showcaseSelectedPlayer.findMany({
       where: {
         eventSlug: event.slug,
       },
-
       orderBy: {
         createdAt: "desc",
       },
-
       select: {
         id: true,
         fullName: true,
-        ninLast4: true,
-        reason: true,
-        status: true,
-        authorisedAt: true,
-        matchedAt: true,
-        revokedAt: true,
-
-        authorisedByStaffUser: {
-          select: {
-            name: true,
-          },
-        },
-
+        whatsappNumber: true,
+        batchCode: true,
+        registrationTokenHash: true,
+        registrationTokenExpiresAt: true,
+        registrationTokenUsedAt: true,
+        registeredApplicantUserId: true,
         matchedApplication: {
           select: {
-            id: true,
             registrationNumber: true,
-            firstName: true,
-            lastName: true,
           },
         },
       },
     }),
   ]);
 
-  const awaitingVideoExemptions = videoExemptions.filter(
-    (exemption) => exemption.status === "AWAITING_REGISTRATION",
+  const awaitingPreSelectedPlayers = preSelectedPlayers.filter(
+    (player) => !player.registeredApplicantUserId,
   ).length;
 
-  const matchedVideoExemptions = videoExemptions.filter(
-    (exemption) => exemption.status === "MATCHED",
+  const registeredPreSelectedPlayers = preSelectedPlayers.filter(
+    (player) => Boolean(player.registeredApplicantUserId),
   ).length;
 
   const selectedCount = applications.filter(
@@ -312,209 +301,117 @@ export default async function SelectionPage() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="text-xs font-black uppercase tracking-[0.12em] text-[#c7ff2f]">
-                Video Exemptions
+                Player Invitations
               </div>
-
               <h2 className="mt-2 text-2xl font-black text-white">
-                Pre-authorised Players
+                Pre-selected Players
               </h2>
-
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">
-                Pre-authorise players who have already been observed live. They
-                will still complete the normal player registration journey, but
-                their video requirement can be waived once their registration is
-                matched.
+                Add pre-selected players and manage their registration invitations.
+                Players provide their remaining details during registration.
               </p>
             </div>
-
             <div className="flex gap-3 text-sm">
               <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
                 <span className="text-white/40">Awaiting </span>
-                <span className="font-black text-white">
-                  {awaitingVideoExemptions}
-                </span>
+                <span className="font-black text-white">{awaitingPreSelectedPlayers}</span>
               </div>
-
               <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-                <span className="text-white/40">Matched </span>
-                <span className="font-black text-white">
-                  {matchedVideoExemptions}
-                </span>
+                <span className="text-white/40">Registered </span>
+                <span className="font-black text-white">{registeredPreSelectedPlayers}</span>
               </div>
             </div>
           </div>
 
           <form
-            action={addVideoExemption}
+            action={addPreSelectedPlayer}
             className="mt-6 grid gap-4 border-t border-white/10 pt-6 lg:grid-cols-[1fr_1fr_auto]"
           >
             <div>
-              <label
-                htmlFor="video-exemption-full-name"
-                className="text-xs font-black uppercase tracking-[0.08em] text-white/40"
-              >
+              <label htmlFor="preselected-name" className="text-xs font-black uppercase tracking-[0.08em] text-white/40">
                 Full Name
               </label>
-
               <input
-                id="video-exemption-full-name"
+                id="preselected-name"
                 name="fullName"
                 type="text"
                 required
                 maxLength={150}
-                autoComplete="off"
                 placeholder="Player's full name"
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-[#c7ff2f]/60"
               />
             </div>
-
             <div>
-              <label
-                htmlFor="video-exemption-nin"
-                className="text-xs font-black uppercase tracking-[0.08em] text-white/40"
-              >
-                NIN
+              <label htmlFor="preselected-whatsapp" className="text-xs font-black uppercase tracking-[0.08em] text-white/40">
+                WhatsApp Number
               </label>
-
               <input
-                id="video-exemption-nin"
-                name="nin"
-                type="text"
+                id="preselected-whatsapp"
+                name="whatsappNumber"
+                type="tel"
                 required
-                inputMode="numeric"
-                autoComplete="off"
-                maxLength={11}
-                pattern="[0-9]{11}"
-                placeholder="11-digit NIN"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-sm text-white outline-none placeholder:font-sans placeholder:text-white/20 focus:border-[#c7ff2f]/60"
+                maxLength={25}
+                placeholder="+234..."
+                className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-[#c7ff2f]/60"
               />
-
-              <p className="mt-2 text-xs text-white/30">
-                Used securely for registration matching. The full NIN is not
-                retained in the exemption record.
-              </p>
             </div>
-
             <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-[#c7ff2f] px-5 py-3 text-sm font-black text-black transition hover:bg-white lg:w-auto"
-              >
+              <button type="submit" className="w-full rounded-xl bg-[#c7ff2f] px-5 py-3 text-sm font-black text-black transition hover:bg-white lg:w-auto">
                 Add Player
               </button>
             </div>
           </form>
 
-          <div className="mt-7 border-t border-white/10 pt-6">
-            {videoExemptions.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-white/10 px-5 py-8 text-center text-sm text-white/35">
-                No players have been pre-authorised for video exemption yet.
-              </div>
+          <div className="mt-7 overflow-x-auto border-t border-white/10 pt-6">
+            {preSelectedPlayers.length === 0 ? (
+              <p className="py-6 text-center text-sm text-white/35">
+                No pre-selected players have been added yet.
+              </p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[850px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-white/10 text-xs font-black uppercase tracking-[0.08em] text-white/35">
-                      <th className="px-3 py-3">Player</th>
-                      <th className="px-3 py-3">NIN</th>
-                      <th className="px-3 py-3">Reason</th>
-                      <th className="px-3 py-3">Registration</th>
-                      <th className="px-3 py-3">Status</th>
-                      <th className="px-3 py-3">Authorised</th>
-                      <th className="px-3 py-3 text-right">Action</th>
+              <table className="w-full min-w-[650px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-xs font-black uppercase text-white/35">
+                    <th className="px-3 py-3">Player</th>
+                    <th className="px-3 py-3">WhatsApp</th>
+                    <th className="px-3 py-3">Invitation</th>
+                    <th className="px-3 py-3">Account</th>
+                    <th className="px-3 py-3">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {preSelectedPlayers.map((player) => (
+                    <tr key={player.id} className="border-b border-white/[0.06]">
+                      <td className="px-3 py-4 font-bold text-white">{player.fullName}</td>
+                      <td className="px-3 py-4 text-white/60">{player.whatsappNumber || "—"}</td>
+                      <td className="px-3 py-4 text-white/60">
+                        {player.registrationTokenUsedAt
+                          ? "Used"
+                          : !player.registrationTokenHash
+                            ? "Not generated"
+                            : player.registrationTokenExpiresAt &&
+                                player.registrationTokenExpiresAt <= new Date()
+                              ? "Expired"
+                              : "Active"}
+                      </td>
+                      <td className="px-3 py-4 text-white/60">
+                        {player.registeredApplicantUserId ? "Registered" : "Not registered"}
+                      </td>
+                      <td className="px-3 py-4">
+                        {!player.registrationTokenHash &&
+                        !player.registeredApplicantUserId &&
+                        player.whatsappNumber ? (
+                          <GenerateWhatsAppInvitationButton
+                            playerId={player.id}
+                            whatsappNumber={player.whatsappNumber}
+                          />
+                        ) : (
+                          <span className="text-white/35">—</span>
+                        )}
+                      </td>
                     </tr>
-                  </thead>
-
-                  <tbody>
-                    {videoExemptions.map((exemption) => (
-                      <tr
-                        key={exemption.id}
-                        className="border-b border-white/[0.06] last:border-0"
-                      >
-                        <td className="px-3 py-4 font-bold text-white">
-                          {exemption.fullName}
-                        </td>
-
-                        <td className="px-3 py-4 font-mono text-white/60">
-                          •••••••{exemption.ninLast4}
-                        </td>
-
-                        <td className="px-3 py-4 text-white/50">
-                          Previously Observed Live
-                        </td>
-
-                        <td className="px-3 py-4">
-                          {exemption.matchedApplication ? (
-                            <div>
-                              <div className="font-bold text-white">
-                                {exemption.matchedApplication
-                                  .registrationNumber || "Registered"}
-                              </div>
-                              <div className="mt-1 text-xs text-white/35">
-                                {exemption.matchedApplication.firstName}{" "}
-                                {exemption.matchedApplication.lastName}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-white/30">
-                              Not registered
-                            </span>
-                          )}
-                        </td>
-
-                        <td className="px-3 py-4">
-                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-black text-white/60">
-                            {exemption.status === "AWAITING_REGISTRATION"
-                              ? "AWAITING REGISTRATION"
-                              : exemption.status}
-                          </span>
-                        </td>
-
-                        <td className="px-3 py-4 text-white/45">
-                          <div>{exemption.authorisedByStaffUser.name}</div>
-                          <div className="mt-1 text-xs text-white/25">
-                            {exemption.authorisedAt.toLocaleDateString("en-GB")}
-                          </div>
-                        </td>
-
-                        <td className="px-3 py-4 text-right">
-                          {exemption.status !== "REVOKED" ? (
-                            <form action={revokeVideoExemption}>
-                              <input
-                                type="hidden"
-                                name="exemptionId"
-                                value={exemption.id}
-                              />
-
-                              <button
-                                type="submit"
-                                className="rounded-lg border border-red-400/20 px-3 py-2 text-xs font-black text-red-300 transition hover:border-red-400/50 hover:bg-red-400/10"
-                              >
-                                Revoke
-                              </button>
-                            </form>
-                          ) : (
-                            <form action={restoreVideoExemption}>
-                              <input
-                                type="hidden"
-                                name="exemptionId"
-                                value={exemption.id}
-                              />
-
-                              <button
-                                type="submit"
-                                className="rounded-lg border border-[#c7ff2f]/25 px-3 py-2 text-xs font-black text-[#c7ff2f] transition hover:border-[#c7ff2f]/50 hover:bg-[#c7ff2f]/10"
-                              >
-                                Re-authorise
-                              </button>
-                            </form>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>
