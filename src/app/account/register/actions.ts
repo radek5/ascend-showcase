@@ -118,6 +118,7 @@ export async function registerApplicant(formData: FormData) {
         data: {
           registrationTokenUsedAt: now,
           registeredApplicantUserId: user.id,
+          invitationRecoveryTokenHash: null,
         },
       });
 

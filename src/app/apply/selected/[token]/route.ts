@@ -47,6 +47,85 @@ export async function GET(
   const { token } = await context.params;
   const invitation = await findInvitation(token);
 
+  // Distinguish expired, unused invitations from invalid or used links.
+  if (!invitation && token && token.length >= 32 && token.length <= 256) {
+    const tokenHash = hashSecureToken(token);
+
+    const player = await prisma.showcaseSelectedPlayer.findFirst({
+      where: {
+        OR: [
+          { registrationTokenHash: tokenHash },
+          { invitationRecoveryTokenHash: tokenHash },
+        ],
+      },
+      select: {
+        eventSlug: true,
+        footballSelected: true,
+        invitationRecoveryTokenHash: true,
+        registrationTokenExpiresAt: true,
+        registrationTokenUsedAt: true,
+        registeredApplicantUserId: true,
+        matchedApplicationId: true,
+      },
+    });
+
+    const isRecoveryLink = player?.invitationRecoveryTokenHash === tokenHash;
+
+    if (
+      player?.eventSlug === "lagos-2027" &&
+      player.footballSelected &&
+      player.registrationTokenExpiresAt &&
+      (isRecoveryLink || player.registrationTokenExpiresAt <= new Date()) &&
+      !player.registrationTokenUsedAt &&
+      !player.registeredApplicantUserId &&
+      !player.matchedApplicationId
+    ) {
+      return new NextResponse(
+        `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>REVELATIONX1 — Invitation Expired</title>
+  <style>
+    body{margin:0;background:#090909;color:white;font-family:Arial,sans-serif;
+      min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box}
+    main{max-width:480px;text-align:center}
+    h1{font-size:32px}
+    p{color:#bbb;line-height:1.7}
+    button{background:#c7ff2f;color:#090909;border:0;border-radius:40px;
+      padding:17px 28px;font-weight:800;font-size:15px}
+    button:disabled{opacity:.55;cursor:not-allowed}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>REVELATIONX1</h1>
+    <h2>Invitation Expired</h2>
+    <p>Your registration invitation is no longer available through this link.
+    If your latest invitation has expired, you may request a replacement.</p>
+    <p>You will be able to request a new invitation sent to the same
+    WhatsApp number when automated messaging becomes available.</p>
+    <button type="button" disabled>Request New Invitation</button>
+    <p>Invitation renewal is temporarily unavailable.</p>
+  </main>
+</body>
+</html>`,
+        {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+            "Referrer-Policy": "no-referrer",
+            "X-Robots-Tag": "noindex, nofollow, noarchive",
+            "Content-Security-Policy":
+              "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",
+          },
+        },
+      );
+    }
+  }
+
   if (!invitation) {
     return NextResponse.redirect(
       new URL("/apply/lagos-2027?invitation=invalid", request.url),

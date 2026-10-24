@@ -1599,6 +1599,12 @@ model ShowcaseSelectedPlayer {
   registrationTokenExpiresAt DateTime?
   registrationTokenUsedAt    DateTime?
 
+  // Self-service renewal of expired, unused invitations.
+  // Retains the original link for recovery after token replacement.
+  invitationRecoveryTokenHash  String?   @unique
+  invitationRenewalRequestedAt DateTime?
+  invitationRenewalCount       Int       @default(0)
+
   // Account that permanently consumed this invitation.
   registeredApplicantUserId String?        @unique
   registeredApplicantUser   ApplicantUser? @relation(fields: [registeredApplicantUserId], references: [id], onDelete: SetNull)
